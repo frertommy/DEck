@@ -45,7 +45,7 @@ function Nav({ active, onChange }) {
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 200, background: "rgba(0,0,0,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid #222", padding: "10px 20px", display: "flex", alignItems: "center", gap: 10, fontFamily: "monospace", fontSize: 11 }}>
       <span style={{ color: "#444", marginRight: 4 }}>CONCEPTS:</span>
-      {["A · Minimal", "B · Demo", "C · Social", "D · Ad-Safe"].map((l, i) => (
+      {["A · Minimal", "B · Demo", "C · Social", "D · Ad-Safe", "E · FOMO", "F · World Cup"].map((l, i) => (
         <button key={i} onClick={() => onChange(i)} style={{ background: active === i ? LIME : "transparent", color: active === i ? BG : "#888", border: active === i ? "none" : "1px solid #333", padding: "5px 14px", cursor: "pointer", fontFamily: "monospace", fontSize: 10.5, fontWeight: active === i ? 700 : 400 }}>{l}</button>
       ))}
     </div>
@@ -732,6 +732,307 @@ function PhoneMockupSafe() {
   );
 }
 
+/* ═══ VERSION E — FOMO / HYPE (ad-safe) ══════════════════ */
+/* No: crypto, blockchain, Solana, leverage, derivatives, perpetual, betting, gambling, wager */
+function VersionE() {
+  const [step, setStep] = useState("main");
+  const [email, setEmail] = useState("");
+  const [pos, setPos] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const code = useMemo(() => Math.random().toString(36).slice(2, 8), []);
+  const link = `notch.win/?ref=${code}`;
+  const total = pos + Math.floor(Math.random() * 400) + 100;
+
+  const submit = () => {
+    if (!email.includes("@")) return;
+    setPos(Math.floor(Math.random() * 3000) + 800);
+    setStep("done");
+  };
+
+  /* Animated counter */
+  function AnimCounter({ end }) {
+    const [val, setVal] = useState(0);
+    useEffect(() => {
+      let frame;
+      const start = Date.now();
+      const dur = 1800;
+      const tick = () => {
+        const t = Math.min((Date.now() - start) / dur, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        setVal(Math.floor(ease * end));
+        if (t < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(frame);
+    }, [end]);
+    return val.toLocaleString();
+  }
+
+  return (
+    <div>
+      {step === "main" && (
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 24px" }}>
+          <div style={{ maxWidth: 520, margin: "0 auto", width: "100%", animation: "fadeUp 0.5s ease" }}>
+            {/* urgency banner */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(178,237,104,0.06)", border: "1px solid rgba(178,237,104,0.15)", padding: "6px 14px", marginBottom: 28, fontFamily: "monospace", fontSize: 10 }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: LIME, animation: "pulse 2s infinite" }} />
+              <span style={{ color: "#888" }}><AnimCounter end={4217} /> fans already signed up</span>
+            </div>
+
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: LIME, letterSpacing: 3, marginBottom: 24 }}>notch.win</div>
+            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(28px, 5.5vw, 48px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", marginBottom: 16 }}>
+              What if your team<br />had a stock price?
+            </h1>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#555", lineHeight: 1.65, marginBottom: 12, maxWidth: 400 }}>
+              Win, sign a star, go on a run — the score goes up. Lose, get injuries, drop form — it goes down.
+            </p>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#555", lineHeight: 1.65, marginBottom: 36, maxWidth: 400 }}>
+              Back the teams you believe in. We're launching soon.
+            </p>
+
+            <div style={{ display: "flex", gap: 0, maxWidth: 440 }}>
+              <input type="email" placeholder="your@email.com" value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && submit()}
+                style={{ flex: 1, background: "transparent", border: `1px solid ${BORDER}`, borderRight: "none", padding: "14px 18px", fontFamily: "monospace", fontSize: 14, color: "#fff" }}
+              />
+              <button onClick={submit} style={{
+                background: LIME, color: BG, border: "none", padding: "14px 28px",
+                fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 700,
+                cursor: "pointer", whiteSpace: "nowrap",
+              }}>
+                Get early access →
+              </button>
+            </div>
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: "#333", marginTop: 14 }}>
+              Free to join · First 5,000 get priority access
+            </div>
+
+            {/* 3 value props */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: BORDER, border: `1px solid ${BORDER}`, marginTop: 48 }}>
+              {[
+                { num: "98", label: "Teams across Europe's top 5 leagues" },
+                { num: "24/7", label: "Scores update with every real event" },
+                { num: "∞", label: "No expiry — hold through every season" },
+              ].map(x => (
+                <div key={x.num} style={{ background: CARD, padding: "20px 16px", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 700, color: LIME, marginBottom: 6 }}>{x.num}</div>
+                  <div style={{ fontFamily: "monospace", fontSize: 9, color: MUTED, lineHeight: 1.5 }}>{x.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* social proof ticker */}
+            <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 6 }}>
+              {[
+                { name: "Marcus from London", action: "backed Arsenal", time: "2m ago" },
+                { name: "Luca from Milan", action: "backed Inter", time: "5m ago" },
+                { name: "Pablo from Madrid", action: "backed Real Madrid", time: "8m ago" },
+              ].map((x, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", border: `1px solid ${BORDER}`, fontFamily: "monospace", fontSize: 10 }}>
+                  <span style={{ color: "#666" }}>{x.name} <span style={{ color: LIME }}>{x.action}</span></span>
+                  <span style={{ color: "#333" }}>{x.time}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === "done" && (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: "0 24px" }}>
+          <div style={{ maxWidth: 480, margin: "0 auto", width: "100%", animation: "popIn 0.6s cubic-bezier(0.16,1,0.3,1)" }}>
+            <div style={{ border: `1px solid ${BORDER}`, background: CARD, padding: "28px 24px", marginBottom: 1 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16 }}>You're in</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Welcome to the waitlist.</div>
+              <div style={{ fontFamily: "monospace", fontSize: 12, color: MUTED, lineHeight: 1.7 }}>We'll notify you when we launch. Early access goes to the top of the list.</div>
+            </div>
+            <div style={{ border: `1px solid ${BORDER}`, borderTop: "none", background: CARD, padding: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontFamily: "monospace", fontSize: 10, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>YOUR SPOT</div>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 40, fontWeight: 700 }}>#{pos.toLocaleString()}</div>
+                </div>
+                <div style={{ fontFamily: "monospace", fontSize: 11, color: MUTED }}>{total.toLocaleString()} total</div>
+              </div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Move up the list</div>
+              <div style={{ display: "flex", gap: 0, marginBottom: 14 }}>
+                <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: `1px solid ${BORDER}`, borderRight: "none", padding: "9px 12px", fontFamily: "monospace", fontSize: 11, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</div>
+                <button onClick={() => { navigator.clipboard?.writeText(`https://${link}`); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{ background: LIME, color: BG, border: "none", padding: "9px 18px", fontFamily: "'Space Grotesk', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{copied ? "Copied ✓" : "Copy"}</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                {[{ n: "3 friends", r: "Priority access" }, { n: "10 friends", r: "Founding member" }].map(x => (
+                  <div key={x.n} style={{ padding: "7px 10px", border: `1px solid ${BORDER}`, fontFamily: "monospace", fontSize: 9 }}>
+                    <div style={{ color: LIME, marginBottom: 2, fontWeight: 700 }}>{x.n}</div><div style={{ color: MUTED }}>{x.r}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <Footer />
+    </div>
+  );
+}
+
+/* ═══ VERSION F — WORLD CUP 2026 (ad-safe) ═══════════════ */
+/* No: crypto, blockchain, Solana, leverage, derivatives, perpetual, betting, gambling, wager */
+function VersionF() {
+  const [step, setStep] = useState("main");
+  const [email, setEmail] = useState("");
+  const [nation, setNation] = useState(null);
+  const [pos, setPos] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const code = useMemo(() => Math.random().toString(36).slice(2, 8), []);
+  const link = `notch.win/?ref=${code}`;
+  const total = pos + Math.floor(Math.random() * 400) + 100;
+
+  const NATIONS = [
+    { name: "Brazil", flag: "🇧🇷" }, { name: "Argentina", flag: "🇦🇷" },
+    { name: "France", flag: "🇫🇷" }, { name: "England", flag: "🏴\u200D☠️" },
+    { name: "Germany", flag: "🇩🇪" }, { name: "Spain", flag: "🇪🇸" },
+    { name: "Portugal", flag: "🇵🇹" }, { name: "Netherlands", flag: "🇳🇱" },
+    { name: "USA", flag: "🇺🇸" }, { name: "Mexico", flag: "🇲🇽" },
+    { name: "Italy", flag: "🇮🇹" }, { name: "Belgium", flag: "🇧🇪" },
+  ];
+
+  const submit = () => {
+    if (!email.includes("@")) return;
+    setPos(Math.floor(Math.random() * 3000) + 800);
+    setStep("done");
+  };
+
+  /* countdown to WC 2026 — June 11, 2026 */
+  function Countdown() {
+    const [diff, setDiff] = useState({});
+    useEffect(() => {
+      const target = new Date("2026-06-11T00:00:00").getTime();
+      const calc = () => {
+        const now = Date.now();
+        const ms = Math.max(0, target - now);
+        setDiff({
+          d: Math.floor(ms / 86400000),
+          h: Math.floor((ms % 86400000) / 3600000),
+          m: Math.floor((ms % 3600000) / 60000),
+        });
+      };
+      calc();
+      const id = setInterval(calc, 60000);
+      return () => clearInterval(id);
+    }, []);
+    return (
+      <div style={{ display: "flex", gap: 1, background: BORDER, border: `1px solid ${BORDER}` }}>
+        {[
+          { val: diff.d, label: "DAYS" },
+          { val: diff.h, label: "HRS" },
+          { val: diff.m, label: "MIN" },
+        ].map(x => (
+          <div key={x.label} style={{ flex: 1, background: CARD, padding: "14px 8px", textAlign: "center" }}>
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 700, color: "#fff" }}>{x.val ?? "—"}</div>
+            <div style={{ fontFamily: "monospace", fontSize: 8, color: MUTED, letterSpacing: 2, marginTop: 2 }}>{x.label}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {step === "main" && (
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 24px" }}>
+          <div style={{ maxWidth: 520, margin: "0 auto", width: "100%", animation: "fadeUp 0.5s ease" }}>
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: LIME, letterSpacing: 3, marginBottom: 24 }}>notch.win · WORLD CUP 2026</div>
+
+            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(26px, 5vw, 44px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", marginBottom: 16 }}>
+              Back your country.<br /><span style={{ color: MUTED }}>All tournament long.</span>
+            </h1>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: "#555", lineHeight: 1.65, marginBottom: 32, maxWidth: 400 }}>
+              Every nation gets a live score. Group stage wins, knockout drama, injuries, red cards — it all moves the number. Pick your country before kickoff.
+            </p>
+
+            {/* Countdown */}
+            <div style={{ marginBottom: 32, maxWidth: 300 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>KICKOFF IN</div>
+              <Countdown />
+            </div>
+
+            {/* Nation picker */}
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: MUTED, letterSpacing: 2, marginBottom: 10 }}>PICK YOUR COUNTRY</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 1, background: BORDER, border: `1px solid ${BORDER}`, marginBottom: 20 }}>
+              {NATIONS.map(n => {
+                const sel = nation?.name === n.name;
+                return (
+                  <button key={n.name} onClick={() => setNation(n)} style={{ background: sel ? "rgba(178,237,104,0.06)" : CARD, border: "none", cursor: "pointer", padding: "12px 8px", textAlign: "center", position: "relative" }}>
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>{n.flag}</div>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 11, fontWeight: 600, color: sel ? "#fff" : "#666" }}>{n.name}</div>
+                    {sel && <div style={{ position: "absolute", top: 4, right: 4, width: 12, height: 12, borderRadius: "50%", background: LIME, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: BG, fontSize: 8, fontWeight: 900 }}>✓</span></div>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Email + CTA */}
+            <div style={{ display: "flex", gap: 0, maxWidth: 440 }}>
+              <input type="email" placeholder="your@email.com" value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && submit()}
+                style={{ flex: 1, background: "transparent", border: `1px solid ${BORDER}`, borderRight: "none", padding: "14px 18px", fontFamily: "monospace", fontSize: 14, color: "#fff" }}
+              />
+              <button onClick={submit} style={{
+                background: (email.includes("@") && nation) ? LIME : "#222",
+                color: (email.includes("@") && nation) ? BG : "#555",
+                border: "none", padding: "14px 24px",
+                fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 700,
+                cursor: (email.includes("@") && nation) ? "pointer" : "default", whiteSpace: "nowrap",
+              }}>
+                {nation ? `Back ${nation.name} →` : "Pick a country"}
+              </button>
+            </div>
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: "#333", marginTop: 14 }}>
+              Free to join · Launching before the World Cup
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === "done" && (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: "0 24px" }}>
+          <div style={{ maxWidth: 480, margin: "0 auto", width: "100%", animation: "popIn 0.6s cubic-bezier(0.16,1,0.3,1)" }}>
+            <div style={{ border: `1px solid ${BORDER}`, background: CARD, padding: "28px 24px", marginBottom: 1 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16 }}>You're backing</div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 700, marginBottom: 4 }}>{nation?.flag} {nation?.name}</div>
+              <div style={{ fontFamily: "monospace", fontSize: 12, color: MUTED, lineHeight: 1.7 }}>We'll notify you before the tournament starts. Follow your country's score through every match.</div>
+            </div>
+            <div style={{ border: `1px solid ${BORDER}`, borderTop: "none", background: CARD, padding: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontFamily: "monospace", fontSize: 10, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>YOUR SPOT</div>
+                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 40, fontWeight: 700 }}>#{pos.toLocaleString()}</div>
+                </div>
+                <div style={{ fontFamily: "monospace", fontSize: 11, color: MUTED }}>{total.toLocaleString()} fans</div>
+              </div>
+              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Move up the list</div>
+              <div style={{ display: "flex", gap: 0, marginBottom: 14 }}>
+                <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: `1px solid ${BORDER}`, borderRight: "none", padding: "9px 12px", fontFamily: "monospace", fontSize: 11, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</div>
+                <button onClick={() => { navigator.clipboard?.writeText(`https://${link}`); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{ background: LIME, color: BG, border: "none", padding: "9px 18px", fontFamily: "'Space Grotesk', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{copied ? "Copied ✓" : "Copy"}</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                {[{ n: "3 friends", r: "Priority access" }, { n: "5 friends", r: "Early access" }, { n: "10 friends", r: "Founding fan" }].map(x => (
+                  <div key={x.n} style={{ padding: "7px 10px", border: `1px solid ${BORDER}`, fontFamily: "monospace", fontSize: 9 }}>
+                    <div style={{ color: LIME, marginBottom: 2, fontWeight: 700 }}>{x.n}</div><div style={{ color: MUTED }}>{x.r}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <Footer />
+    </div>
+  );
+}
+
 /* ═══ MAIN ════════════════════════════════════════════════ */
 function App() {
   const [v, setV] = useState(0);
@@ -758,6 +1059,9 @@ function App() {
         {v === 0 && <VersionA />}
         {v === 1 && <VersionB />}
         {v === 2 && <VersionC />}
+        {v === 3 && <VersionD />}
+        {v === 4 && <VersionE />}
+        {v === 5 && <VersionF />}
       </div>
     </div>
   );
