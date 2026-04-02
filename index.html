@@ -297,6 +297,44 @@
   </div>
 </div></div>
 
+<!-- WHY WE WIN -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">05 · Why We Win</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Event markets kill liquidity. <span style="color:var(--lime)">Our perps let it stack.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Match-based products lose their entire liquidity pool at the final whistle. Persistent positions let liquidity stack.</p>
+
+  <!-- Side-by-side liquidity comparison chart -->
+  <div class="reveal d2" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
+    <div style="background:var(--bg);padding:20px 20px 0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--red)"></div><span class="lbl" style="color:var(--red)">Sportsbook & Prediction Market Model</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Liquidity resets to zero after every event</div>
+      <canvas id="chart-sawtooth" style="width:100%;height:200px;display:block"></canvas>
+    </div>
+    <div style="background:var(--bg);padding:20px 20px 0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--lime)"></div><span class="lbl" style="color:var(--lime)">Notch Model</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Positions persist — liquidity accumulates</div>
+      <canvas id="chart-staircase" style="width:100%;height:200px;display:block"></canvas>
+    </div>
+  </div>
+  <div class="reveal d2" style="background:var(--bg);border:1px solid var(--border);border-top:none;padding:12px 20px;display:flex;justify-content:center;gap:32px">
+    <div style="display:flex;align-items:center;gap:6px"><div class="mono" style="font-size:11px;color:var(--t3)">←</div><span style="font-size:12px;color:var(--t2)">Match events across seasons — positions never expire</span><div class="mono" style="font-size:11px;color:var(--t3)">→</div></div>
+  </div>
+
+  <!-- Flywheel as horizontal flow -->
+  <div class="reveal d3" style="margin-top:32px;display:flex;align-items:center;justify-content:center;gap:0;overflow-x:hidden;flex-wrap:nowrap;padding:24px 0">
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Traders open<br>positions</div></div>
+    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Deeper<br>liquidity</div></div>
+    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Better price<br>discovery</div></div>
+    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">More<br>credibility</div></div>
+    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">More<br>traders</div></div>
+    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">↻</div>
+  </div>
+
+</div></div>
 
 <!-- 04 DATA FEED -->
 <div class="sec"><div class="sec-inner">
@@ -526,45 +564,6 @@
     <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="lbl" style="color:var(--purple)">Prices the Asset</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">ORACLE COMPANY</div><div class="card-body" style="margin-top:16px">Proprietary algorithm synthesizes odds, results, injuries, transfers, and sentiment into a continuous team price index.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Key insight</div><div style="font-size:12px;color:var(--t1)">The price has value beyond our own exchange. Other venues will pay for it.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="assets/kops.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="KOPS"></div><a href="https://kops.ai" target="_blank" class="mono" style="font-size:11px;color:var(--purple);display:block;text-align:center;margin-top:8px">kops.ai</a></div></div>
     <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="lbl" style="color:var(--blue)">Is the Market</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">PERP DEX</div><div class="card-body" style="margin-top:16px">Order matching, margin, funding, and liquidation turn the price into a tradable market.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Key insight</div><div style="font-size:12px;color:var(--t1)">Hyperliquid model. Builder codes for all existing sports betting platforms.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="assets/tail.trade.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="TAIL.TRADE"></div><a href="https://tail.trade" target="_blank" class="mono" style="font-size:11px;color:var(--blue);display:block;text-align:center;margin-top:8px">tail.trade</a></div></div>
     <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="lbl" style="color:var(--lime)">Distributes to Retail</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">CONSUMER APP</div><div class="card-body" style="margin-top:16px">Consumer UX, non-custodial wallet, and fiat on-ramp make the perp market accessible to anyone with a phone.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Key insight</div><div style="font-size:12px;color:var(--t1)">Enables retail to participate via fiat. The only entity that touches regulators.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="assets/notch.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="NOTCH"></div><a href="https://notch.win" target="_blank" class="mono" style="font-size:11px;color:var(--lime);display:block;text-align:center;margin-top:8px">notch.win</a></div></div>
-  </div>
-
-</div></div>
-
-<!-- 07 WHY WE WIN -->
-<div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">09 · Why We Win</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Event markets kill liquidity. <span style="color:var(--lime)">Our perps let it stack.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Match-based products lose their entire liquidity pool at the final whistle. Persistent positions let liquidity stack.</p>
-  
-  <!-- Side-by-side liquidity comparison chart -->
-  <div class="reveal d2" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
-    <div style="background:var(--bg);padding:20px 20px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--red)"></div><span class="lbl" style="color:var(--red)">Sportsbook & Prediction Market Model</span></div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Liquidity resets to zero after every event</div>
-      <canvas id="chart-sawtooth" style="width:100%;height:200px;display:block"></canvas>
-    </div>
-    <div style="background:var(--bg);padding:20px 20px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--lime)"></div><span class="lbl" style="color:var(--lime)">Notch Model</span></div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Positions persist — liquidity accumulates</div>
-      <canvas id="chart-staircase" style="width:100%;height:200px;display:block"></canvas>
-    </div>
-  </div>
-  <div class="reveal d2" style="background:var(--bg);border:1px solid var(--border);border-top:none;padding:12px 20px;display:flex;justify-content:center;gap:32px">
-    <div style="display:flex;align-items:center;gap:6px"><div class="mono" style="font-size:11px;color:var(--t3)">←</div><span style="font-size:12px;color:var(--t2)">Match events across seasons — positions never expire</span><div class="mono" style="font-size:11px;color:var(--t3)">→</div></div>
-  </div>
-
-  <!-- Flywheel as horizontal flow -->
-  <div class="reveal d3" style="margin-top:32px;display:flex;align-items:center;justify-content:center;gap:0;overflow-x:hidden;flex-wrap:nowrap;padding:24px 0">
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Traders open<br>positions</div></div>
-    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Deeper<br>liquidity</div></div>
-    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Better price<br>discovery</div></div>
-    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">More<br>credibility</div></div>
-    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">More<br>traders</div></div>
-    <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">↻</div>
   </div>
 
 </div></div>
