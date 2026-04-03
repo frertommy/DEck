@@ -477,11 +477,17 @@ p strong {
 
   .fade-in { opacity: 1 !important; transform: none !important; }
 
-  a { color: #1a1a1a !important; text-decoration: none !important; }
+  a, a[style] { color: #1a1a1a !important; text-decoration: none !important; }
 
+  p strong { color: #000 !important; }
+
+  /* Override all inline lime color styles */
+  [style*="lime"] { color: #555 !important; }
+
+  /* Hide browser-generated headers/footers via margin */
   @page {
     size: A4;
-    margin: 20mm 18mm;
+    margin: 18mm 18mm 18mm 18mm;
   }
 }
 </style>
