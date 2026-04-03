@@ -416,6 +416,74 @@ p strong {
   opacity: 1;
   transform: translateY(0);
 }
+/* === PRINT / PDF === */
+@media print {
+  *,*::before,*::after { color-adjust: exact; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    background: #fff !important;
+    color: #1a1a1a !important;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .nav, .hero-actions, .contact, .ask-box { display: none !important; }
+
+  .hero {
+    padding: 40px 0 24px !important;
+  }
+  .hero-label { color: #555 !important; }
+  .hero h1 svg { width: 220px; height: auto; color: #000 !important; }
+  .hero-sub { color: #444 !important; font-size: 14pt; }
+  .hero-meta { color: #555 !important; font-size: 9pt; }
+  .hero-meta a { color: #555 !important; text-decoration: none; border: none !important; }
+
+  .content { padding: 0 !important; }
+
+  .section { padding-top: 24px !important; margin-bottom: 8px !important; }
+
+  .divider { border-color: #ccc !important; }
+
+  h2 { color: #000 !important; font-size: 16pt; margin-bottom: 10px; page-break-after: avoid; }
+  h3 { color: #000 !important; font-size: 12pt; page-break-after: avoid; }
+  p { color: #1a1a1a !important; margin-bottom: 8px; orphans: 3; widows: 3; }
+
+  .faq-item {
+    background: #f7f7f7 !important;
+    border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+  }
+  .faq-item h3 { color: #000 !important; }
+  .faq-item p { color: #333 !important; }
+
+  .entity-card {
+    background: #f7f7f7 !important;
+    border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+  }
+  .entity-label { color: #666 !important; }
+  .entity-name { color: #000 !important; }
+  .entity-card p { color: #333 !important; }
+
+  .risk-card {
+    border-left: 3px solid #333 !important;
+    background: #f9f9f9 !important;
+    page-break-inside: avoid;
+  }
+  .risk-card strong { color: #000 !important; }
+  .risk-card p { color: #333 !important; }
+
+  .closing-line { color: #000 !important; font-size: 14pt; border-color: #ccc !important; }
+
+  .fade-in { opacity: 1 !important; transform: none !important; }
+
+  a { color: #1a1a1a !important; text-decoration: none !important; }
+
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+}
 </style>
 </head>
 <body>
@@ -445,6 +513,10 @@ p strong {
     <button class="hero-btn" id="copyBtn" onclick="copyFullText()">
       <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       Copy full text
+    </button>
+    <button class="hero-btn" id="pdfBtn" onclick="downloadPDF()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+      Download PDF
     </button>
   </div>
 </header>
@@ -642,6 +714,19 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Download PDF via print
+function downloadPDF() {
+  const btn = document.getElementById('pdfBtn');
+  const originalHTML = btn.innerHTML;
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg> Generating…';
+  setTimeout(() => {
+    window.print();
+    btn.innerHTML = originalHTML;
+    btn.classList.remove('copied');
+  }, 100);
+}
 
 // Download docx
 function downloadDocx() {
