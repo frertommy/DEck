@@ -390,73 +390,87 @@
   <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Every match <span style="color:var(--lime)">reprices the asset.</span></div>
   <p class="body reveal d2" style="margin-top:12px;max-width:600px">Bookmaker odds, prediction market prices, and match outcomes feed into team prices in real time. This makes the perp directly connected to event market pricing — giving bookmaker and prediction market traders a new venue to arb and hedge.</p>
 
-  <!-- Two-column: match card left, price factors right -->
+  <!-- Two match cards in MSI oracle style -->
   <div class="reveal d2" style="margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
 
-    <!-- LEFT: Match card -->
-    <div style="background:var(--bg)">
-      <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="mono" style="font-weight:700;font-size:10px;color:var(--bg);background:var(--lime);padding:2px 6px;border-radius:2px">EPL</span>
-          <span class="mono" style="font-size:10px;color:var(--t3)">Friday, Mar 20</span>
-        </div>
-        <span class="lbl" style="color:var(--t3);font-size:10px">Example · Upcoming match</span>
+    <!-- CARD 1: Brighton vs Man United -->
+    <div style="background:var(--bg);padding:20px 24px">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <span class="mono" style="font-weight:700;font-size:11px;color:var(--bg);background:var(--lime);padding:3px 8px;border-radius:12px">EPL</span>
+        <span class="mono" style="font-size:11px;color:var(--t3)">2026-03-20</span>
       </div>
-
       <!-- Teams -->
-      <div style="padding:20px 20px 0;display:grid;grid-template-columns:1fr 40px 1fr;align-items:center">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:0">
         <div>
-          <div style="font-weight:700;font-size:16px;color:var(--w)">Brighton</div>
-          <div class="mono" style="font-weight:700;font-size:22px;color:var(--lime);margin-top:2px">$181.92</div>
+          <div style="font-weight:700;font-size:17px;color:var(--w)">Brighton</div>
+          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$181.92 · Idx 1642</div>
         </div>
-        <div class="mono" style="font-size:12px;color:var(--t3);text-align:center;font-weight:700">vs</div>
+        <div class="mono" style="font-size:13px;color:var(--t3);font-weight:700;padding:0 20px;padding-top:2px">VS</div>
         <div style="text-align:right">
-          <div style="font-weight:700;font-size:16px;color:var(--w)">Man United</div>
-          <div class="mono" style="font-weight:700;font-size:22px;color:var(--lime);margin-top:2px">$201.62</div>
+          <div style="font-weight:700;font-size:17px;color:var(--w)">Man United</div>
+          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$201.62 · Idx 1823</div>
         </div>
       </div>
-
       <!-- Impact rows -->
-      <div style="padding:16px 20px">
-        <div class="mono" style="font-size:9px;color:var(--t3);padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span>BRIGHTON</span><span>UNITED</span></div>
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-          <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$3.47</span>
-          <span style="font-size:10px;color:var(--t2)"><span style="color:var(--lime)">BHA Win</span> · <span style="color:var(--red)">UTD Loss</span></span>
-          <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$3.47</span>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:0">
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--t2)">Brighton Win</span>
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$3.47</span>
+            <span class="mono" style="font-size:10px;color:var(--lime)">+1.9%</span>
+            <span style="color:var(--lime);font-size:10px">&#8593;</span>
+          </div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding:0 12px">+2.4%</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$3.47</span>
+            <span style="font-size:12px;color:var(--t2)">United Loss</span>
+          </div>
         </div>
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-          <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$0.47</span>
-          <span style="font-size:10px;color:var(--amber)">Draw</span>
-          <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$0.47</span>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--t2)">Draw</span>
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$1.03</span>
+            <span class="mono" style="font-size:10px;color:var(--red)">-0.6%</span>
+            <span style="color:var(--amber);font-size:10px">&#8593;</span>
+          </div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding:0 12px">+0.7%</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$1.02</span>
+            <span style="font-size:12px;color:var(--t2)">Draw</span>
+          </div>
         </div>
-        <div style="padding:8px 0;display:flex;justify-content:space-between;align-items:center">
-          <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$2.53</span>
-          <span style="font-size:10px;color:var(--t2)"><span style="color:var(--red)">BHA Loss</span> · <span style="color:var(--lime)">UTD Win</span></span>
-          <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$2.53</span>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--t2)">Brighton Loss</span>
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$4.03</span>
+            <span class="mono" style="font-size:10px;color:var(--red)">-2.2%</span>
+            <span style="color:var(--red);font-size:10px">&#8595;</span>
+          </div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding:0 12px">-1.4%</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$2.53</span>
+            <span style="font-size:12px;color:var(--t2)">United Win</span>
+          </div>
         </div>
       </div>
-
-      <!-- Odds + Poly -->
-      <div style="border-top:1px solid var(--border);padding:12px 20px">
-        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr;gap:0;text-align:center">
+      <!-- Odds -->
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center">
           <div></div>
-          <div class="mono" style="font-size:10px;font-weight:700;color:var(--lime);padding-bottom:6px">BHA</div>
-          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber);padding-bottom:6px">Draw</div>
-          <div class="mono" style="font-size:10px;font-weight:700;color:var(--red);padding-bottom:6px">UTD</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--lime)">Brighton</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber)">Draw</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--red)">United</div>
+          <div></div>
         </div>
-        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr;gap:0;text-align:center;padding:4px 0;border-top:1px solid var(--border)">
+        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center;padding:6px 0">
           <div class="mono" style="font-size:10px;color:var(--t3);text-align:left">Odds</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">3.25</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">3.82</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">2.10</div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding-left:8px">24b</div>
         </div>
-        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr;gap:0;text-align:center;padding:4px 0;border-top:1px solid var(--border)">
-          <div class="mono" style="font-size:10px;color:var(--purple);text-align:left">Poly</div>
-          <div class="mono" style="font-size:12px;color:var(--t1)">28¢</div>
-          <div class="mono" style="font-size:12px;color:var(--t1)">26¢</div>
-          <div class="mono" style="font-size:12px;color:var(--t1)">46¢</div>
-        </div>
-        <div style="margin-top:10px;display:flex;height:5px;border-radius:3px;overflow:hidden">
+        <div style="margin-top:8px;display:flex;height:6px;border-radius:3px;overflow:hidden">
           <div style="width:29%;background:var(--lime)"></div>
           <div style="width:25%;background:var(--amber)"></div>
           <div style="width:46%;background:var(--red)"></div>
@@ -464,34 +478,98 @@
         <div style="display:flex;justify-content:space-between;margin-top:4px">
           <span class="mono" style="font-size:10px;color:var(--lime)">29%</span>
           <span class="mono" style="font-size:10px;color:var(--amber)">25%</span>
-          <span class="mono" style="font-size:10px;color:var(--red)">45%</span>
+          <span class="mono" style="font-size:10px;color:var(--red)">46%</span>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: What affects price -->
-    <div style="background:var(--bg);display:flex;flex-direction:column">
-      <div style="padding:12px 20px;border-bottom:1px solid var(--border)">
-        <span class="lbl" style="color:var(--t3);font-size:10px">What affects the price</span>
+    <!-- CARD 2: Arsenal vs Chelsea -->
+    <div style="background:var(--bg);padding:20px 24px">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <span class="mono" style="font-weight:700;font-size:11px;color:var(--bg);background:var(--lime);padding:3px 8px;border-radius:12px">EPL</span>
+        <span class="mono" style="font-size:11px;color:var(--t3)">2026-03-22</span>
       </div>
-      <div style="padding:20px;flex:1">
-        <div class="lbl" style="color:var(--lime);margin-bottom:12px">Direct Inputs</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Match results</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Historical form & xG</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">League standings</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Home / away advantage</span></div>
+      <!-- Teams -->
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:0">
+        <div>
+          <div style="font-weight:700;font-size:17px;color:var(--w)">Arsenal</div>
+          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$223.42 · Idx 2014</div>
+        </div>
+        <div class="mono" style="font-size:13px;color:var(--t3);font-weight:700;padding:0 20px;padding-top:2px">VS</div>
+        <div style="text-align:right">
+          <div style="font-weight:700;font-size:17px;color:var(--w)">Chelsea</div>
+          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$198.17 · Idx 1791</div>
         </div>
       </div>
-      <div style="padding:20px;border-top:1px solid var(--border);flex:1">
-        <div class="lbl" style="color:var(--purple);margin-bottom:12px">Market-Priced <span style="color:var(--t3)">(via odds)</span></div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Injuries & suspensions</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Transfers & new signings</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Manager changes</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Fixture congestion & fatigue</span></div>
+      <!-- Impact rows -->
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:0">
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--t2)">Arsenal Win</span>
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$1.01</span>
+            <span class="mono" style="font-size:10px;color:var(--lime)">+0.5%</span>
+            <span style="color:var(--lime);font-size:10px">&#8593;</span>
+          </div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding:0 12px">+3.5%</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$4.99</span>
+            <span style="font-size:12px;color:var(--t2)">Chelsea Loss</span>
+          </div>
         </div>
-        <div style="margin-top:10px;font-size:10px;color:var(--t3)">Bookmakers price these within minutes. Our odds feed inherits the signal.</div>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--t2)">Draw</span>
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$1.99</span>
+            <span class="mono" style="font-size:10px;color:var(--red)">-1.0%</span>
+            <span style="color:var(--amber);font-size:10px">&#8593;</span>
+          </div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding:0 12px">+1.4%</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$1.99</span>
+            <span style="font-size:12px;color:var(--t2)">Draw</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--t2)">Arsenal Loss</span>
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">-$4.99</span>
+            <span class="mono" style="font-size:10px;color:var(--red)">-2.5%</span>
+            <span style="color:var(--red);font-size:10px">&#8595;</span>
+          </div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding:0 12px">-0.7%</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$4.99</span>
+            <span style="font-size:12px;color:var(--t2)">Chelsea Win</span>
+          </div>
+        </div>
+      </div>
+      <!-- Odds -->
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center">
+          <div></div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--lime)">Arsenal</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber)">Draw</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--red)">Chelsea</div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center;padding:6px 0">
+          <div class="mono" style="font-size:10px;color:var(--t3);text-align:left">Odds</div>
+          <div class="mono" style="font-size:12px;color:var(--t1)">1.28</div>
+          <div class="mono" style="font-size:12px;color:var(--t1)">6.10</div>
+          <div class="mono" style="font-size:12px;color:var(--t1)">10.50</div>
+          <div class="mono" style="font-size:10px;color:var(--t3);padding-left:8px">27b</div>
+        </div>
+        <div style="margin-top:8px;display:flex;height:6px;border-radius:3px;overflow:hidden">
+          <div style="width:75%;background:var(--lime)"></div>
+          <div style="width:16%;background:var(--amber)"></div>
+          <div style="width:9%;background:var(--red)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span class="mono" style="font-size:10px;color:var(--lime)">75%</span>
+          <span class="mono" style="font-size:10px;color:var(--amber)">16%</span>
+          <span class="mono" style="font-size:10px;color:var(--red)">9%</span>
+        </div>
       </div>
     </div>
 
