@@ -687,7 +687,7 @@ p strong {
   </section>
 
   <!-- CLOSING -->
-  <div class="closing-line">Sports betting never became a market. We're fixing that.</div>
+  <div class="closing-line">Taking over a trillion dollar industry.</div>
 
   <div class="contact">
     <div class="contact-label">Contact</div>
@@ -729,7 +729,10 @@ function downloadPDF() {
   btn.classList.add('copied');
   btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg> Generating…';
   setTimeout(() => {
+    const originalTitle = document.title;
+    document.title = 'Notch_Memo';
     window.print();
+    document.title = originalTitle;
     btn.innerHTML = originalHTML;
     btn.classList.remove('copied');
   }, 100);
@@ -739,8 +742,8 @@ function downloadPDF() {
 function downloadDocx() {
   // Point this to wherever you host the docx file
   const link = document.createElement('a');
-  link.href = 'notch_investment_memo_v2.docx';
-  link.download = 'Notch_Investment_Memo_2026.docx';
+  link.href = 'Notch_Memo.docx';
+  link.download = 'Notch_Memo.docx';
   link.click();
 }
 
