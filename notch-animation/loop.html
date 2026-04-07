@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — Break The Deposit Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+  #progress {
+    position: fixed; bottom: 0; left: 0; height: 3px;
+    background: #b2ed68; z-index: 10; transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<div id="progress"></div>
+<script>
+// ── SETUP ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+const progressBar = document.getElementById('progress');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy;
+    this.life = this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.vy += 120 * dt; // gravity
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SHATTER PIECES ──
+let shatterPieces = [];
+class ShatterPiece {
+  constructor(x, y, w, h, color, vx, vy, rot) {
+    this.x = x; this.y = y; this.w = w; this.h = h;
+    this.color = color;
+    this.vx = vx; this.vy = vy;
+    this.rot = 0; this.rotV = rot;
+    this.life = 2.5;
+    this.maxLife = 2.5;
+  }
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.vy += 300 * dt;
+    this.rot += this.rotV * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rot);
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 2 * S;
+    ctx.strokeRect(-this.w/2, -this.h/2, this.w, this.h);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── MONEY PARTICLES ──
+let moneyParticles = [];
+class MoneyParticle {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.vx = (Math.random() - 0.5) * 200;
+    this.vy = -Math.random() * 150 - 50;
+    this.life = 1.5;
+    this.maxLife = 1.5;
+    this.rot = Math.random() * Math.PI * 2;
+    this.rotV = (Math.random() - 0.5) * 8;
+  }
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.vy += 200 * dt;
+    this.rot += this.rotV * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rot);
+    ctx.fillStyle = RED;
+    ctx.font = `${14 * S}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.fillText('$', 0, 0);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 800;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── EASING ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+
+// ── WHEEL DRAWING ──
+const wheelNodes = ['DEPOSIT $50', 'BET', 'LOSE', 'DEPOSIT $50'];
+const wheelColors = [RED, WHITE, RED, RED];
+
+function drawWheel(cx, cy, radius, rotation, alpha, scale) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, cy);
+  ctx.scale(scale, scale);
+
+  // Draw circle track
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+
+  // Draw nodes and arrows
+  for (let i = 0; i < 4; i++) {
+    const angle = rotation + (i * Math.PI / 2);
+    const nx = Math.cos(angle) * radius;
+    const ny = Math.sin(angle) * radius;
+
+    // Node background
+    ctx.fillStyle = DIMMER;
+    const bw = (i === 0 || i === 3) ? 90 * S : 50 * S;
+    const bh = 28 * S;
+    const br = 6 * S;
+    roundRect(ctx, nx - bw/2, ny - bh/2, bw, bh, br);
+    ctx.fill();
+    ctx.strokeStyle = wheelColors[i];
+    ctx.lineWidth = 1.5 * S;
+    roundRect(ctx, nx - bw/2, ny - bh/2, bw, bh, br);
+    ctx.stroke();
+
+    // Node text
+    ctx.fillStyle = wheelColors[i];
+    ctx.font = `600 ${12 * S}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(wheelNodes[i], nx, ny);
+
+    // Arrow to next node
+    const nextAngle = rotation + ((i + 1) * Math.PI / 2);
+    const midAngle = (angle + nextAngle) / 2;
+    const arrowR = radius * 0.78;
+    const ax = Math.cos(midAngle) * arrowR;
+    const ay = Math.sin(midAngle) * arrowR;
+
+    ctx.fillStyle = DIM;
+    ctx.font = `${16 * S}px Space Grotesk`;
+    ctx.fillText('\u2192', ax, ay);
+  }
+
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ── PHASE 1: HAMSTER WHEEL (0-4s) ──
+let wheelSpawnTimer = 0;
+function drawPhase1(t) {
+  const cx = W / 2;
+  const cy = H / 2 - 20 * S;
+  const radius = 140 * S;
+
+  // Speed up rotation over time
+  const speed = 0.3 + t * 0.6; // accelerates
+  const rotation = -t * speed * Math.PI;
+
+  drawWheel(cx, cy, radius, rotation, 1, 1);
+
+  // Money flying out
+  wheelSpawnTimer += t > 0.5 ? 0.05 : 0;
+  if (Math.random() < 0.08 + t * 0.04) {
+    const angle = Math.random() * Math.PI * 2;
+    const mx = cx + Math.cos(angle) * radius;
+    const my = cy + Math.sin(angle) * radius;
+    moneyParticles.push(new MoneyParticle(mx, my));
+  }
+
+  // "Sound familiar?" text fading in
+  const textAlpha = easeOut(Math.max(0, (t - 2.5) / 1));
+  if (textAlpha > 0) {
+    ctx.globalAlpha = textAlpha;
+    ctx.fillStyle = WHITE;
+    ctx.font = `600 ${28 * S}px Space Grotesk`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Sound familiar?', cx, cy + radius + 60 * S);
+    ctx.globalAlpha = 1;
+  }
+
+  // Cycle counter
+  const cycles = Math.floor(t * speed * 2);
+  if (cycles > 0 && t > 1) {
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = RED;
+    ctx.font = `500 ${14 * S}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.min(cycles, 8)} cycles...`, cx, cy - radius - 30 * S);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── PHASE 2: SEASON VIEW (4-8s) ──
+const months = [
+  { name: 'SEP', amount: 50 },
+  { name: 'OCT', amount: 50 },
+  { name: 'NOV', amount: 100 },
+  { name: 'DEC', amount: 50 },
+  { name: 'JAN', amount: 75 },
+  { name: 'FEB', amount: 50 },
+  { name: 'MAR', amount: 75 },
+  { name: 'APR', amount: 100 },
+  { name: 'MAY', amount: 50 },
+];
+
+function drawPhase2(t) {
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Small spinning wheel in corner
+  const miniR = 50 * S;
+  const miniCx = W - 90 * S;
+  const miniCy = 80 * S;
+  const miniRot = -t * 2;
+  const miniAlpha = 0.3;
+  drawWheel(miniCx, miniCy, miniR, miniRot, miniAlpha, 0.4);
+
+  // Monthly deposits rolling in
+  const visibleMonths = Math.min(months.length, Math.floor(t * 2.8) + 1);
+  let totalDeposited = 0;
+  const startY = cy - 130 * S;
+  const lineH = 28 * S;
+
+  for (let i = 0; i < visibleMonths; i++) {
+    totalDeposited += months[i].amount;
+    const entryT = easeOut(Math.min(1, (t * 2.8 - i) * 2));
+    const y = startY + i * lineH;
+
+    ctx.globalAlpha = entryT;
+
+    // Month name
+    ctx.fillStyle = DIM;
+    ctx.font = `500 ${13 * S}px JetBrains Mono`;
+    ctx.textAlign = 'right';
+    ctx.fillText(months[i].name + ':', cx - 30 * S, y);
+
+    // Deposit amount
+    ctx.fillStyle = RED;
+    ctx.font = `600 ${13 * S}px JetBrains Mono`;
+    ctx.textAlign = 'left';
+    ctx.fillText(`Deposit $${months[i].amount}`, cx - 10 * S, y);
+    ctx.globalAlpha = 1;
+  }
+
+  // Totals
+  const totalsT = easeOut(Math.max(0, (t - 2.2) / 1));
+  if (totalsT > 0) {
+    const totalY = startY + months.length * lineH + 30 * S;
+
+    ctx.globalAlpha = totalsT;
+
+    // Divider
+    ctx.strokeStyle = DIM;
+    ctx.lineWidth = 1 * S;
+    ctx.beginPath();
+    ctx.moveTo(cx - 120 * S, totalY - 15 * S);
+    ctx.lineTo(cx + 120 * S, totalY - 15 * S);
+    ctx.stroke();
+
+    // Total deposited
+    ctx.fillStyle = WHITE;
+    ctx.font = `600 ${15 * S}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Total deposited: $600', cx, totalY + 5 * S);
+
+    // Wins
+    const winsT = easeOut(Math.max(0, (t - 2.8) / 0.5));
+    if (winsT > 0) {
+      ctx.globalAlpha = winsT;
+      ctx.fillStyle = LIME;
+      ctx.font = `500 ${13 * S}px JetBrains Mono`;
+      ctx.fillText('Wins: $340', cx, totalY + 30 * S);
+
+      // Net
+      const netT = easeOut(Math.max(0, (t - 3.2) / 0.5));
+      if (netT > 0) {
+        ctx.globalAlpha = netT;
+        ctx.fillStyle = RED;
+        ctx.font = `700 ${20 * S}px JetBrains Mono`;
+        ctx.fillText('Net: -$260', cx, totalY + 58 * S);
+
+        // House wins text
+        const houseT = easeOut(Math.max(0, (t - 3.5) / 0.5));
+        ctx.globalAlpha = houseT;
+        ctx.fillStyle = DIM;
+        ctx.font = `500 ${14 * S}px Space Grotesk`;
+        ctx.fillText('The house always wins the war.', cx, totalY + 88 * S);
+      }
+    }
+
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── PHASE 3: WHEEL BREAKS (8-12s) ──
+let shatterTriggered = false;
+
+function triggerShatter() {
+  if (shatterTriggered) return;
+  shatterTriggered = true;
+  const cx = W / 2;
+  const cy = H / 2;
+  const radius = 140 * S;
+
+  // Create shatter pieces
+  for (let i = 0; i < 30; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * radius;
+    const x = cx + Math.cos(angle) * dist;
+    const y = cy + Math.sin(angle) * dist;
+    const vx = (Math.cos(angle)) * (200 + Math.random() * 300);
+    const vy = (Math.sin(angle)) * (200 + Math.random() * 300) - 100;
+    const w = (10 + Math.random() * 30) * S;
+    const h = (10 + Math.random() * 20) * S;
+    const color = [RED, DIM, WHITE][Math.floor(Math.random() * 3)];
+    shatterPieces.push(new ShatterPiece(x, y, w, h, color, vx, vy, (Math.random()-0.5)*10));
+  }
+
+  // Burst particles
+  for (let i = 0; i < 60; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 100 + Math.random() * 400;
+    particles.push(new Particle(cx, cy, RED,
+      Math.cos(angle) * speed, Math.sin(angle) * speed - 50,
+      1 + Math.random(), 3 * S));
+  }
+}
+
+function drawPhase3(t) {
+  const cx = W / 2;
+  const cy = H / 2;
+
+  if (t < 0.5) {
+    // Wheel still visible, shaking
+    const shake = Math.sin(t * 60) * t * 15 * S;
+    const radius = 140 * S;
+    const speed = 3 + t * 8;
+    const rotation = -t * speed * Math.PI;
+    drawWheel(cx + shake, cy, radius, rotation, 1 - t * 0.5, 1);
+  } else if (t < 0.7) {
+    // Shatter moment
+    triggerShatter();
+    // Flash
+    const flashT = 1 - (t - 0.5) / 0.2;
+    ctx.globalAlpha = flashT * 0.3;
+    ctx.fillStyle = WHITE;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+
+  // "What if you deposited ONCE?" text
+  if (t > 1) {
+    const textT = easeOut(Math.min(1, (t - 1) / 0.8));
+    ctx.globalAlpha = textT;
+    ctx.fillStyle = WHITE;
+    ctx.font = `700 ${32 * S}px Space Grotesk`;
+    ctx.textAlign = 'center';
+    ctx.fillText('What if you deposited', cx, cy - 40 * S);
+
+    // "ONCE" big emphasis
+    ctx.fillStyle = LIME;
+    ctx.font = `700 ${48 * S}px Space Grotesk`;
+    ctx.fillText('ONCE?', cx, cy + 20 * S);
+    ctx.globalAlpha = 1;
+  }
+
+  // Single deposit card
+  if (t > 2.2) {
+    const cardT = easeOut(Math.min(1, (t - 2.2) / 0.8));
+    const cardY = cy + 70 * S;
+    const cardW = 220 * S;
+    const cardH = 50 * S;
+
+    ctx.globalAlpha = cardT;
+    ctx.save();
+    ctx.translate(cx, cardY);
+
+    // Card bg
+    ctx.fillStyle = DIMMER;
+    roundRect(ctx, -cardW/2, -cardH/2, cardW, cardH, 8 * S);
+    ctx.fill();
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 1.5 * S;
+    roundRect(ctx, -cardW/2, -cardH/2, cardW, cardH, 8 * S);
+    ctx.stroke();
+
+    // Text
+    ctx.fillStyle = LIME;
+    ctx.font = `700 ${18 * S}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('$50', -30 * S, 0);
+
+    ctx.fillStyle = DIM;
+    ctx.font = `500 ${12 * S}px JetBrains Mono`;
+    ctx.fillText('Aug 1st', 40 * S, 0);
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // "That's it. No more deposits."
+  if (t > 3) {
+    const fadeT = easeOut(Math.min(1, (t - 3) / 0.7));
+    ctx.globalAlpha = fadeT;
+    ctx.fillStyle = DIM;
+    ctx.font = `500 ${14 * S}px Space Grotesk`;
+    ctx.textAlign = 'center';
+    ctx.fillText("That's it. No more deposits.", cx, cy + 120 * S);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── PHASE 4: NOTCH GROWTH (12-16s) ──
+const notchMonths = [
+  { name: 'AUG', val: 50 },
+  { name: 'SEP', val: 52 },
+  { name: 'OCT', val: 48 },
+  { name: 'NOV', val: 55 },
+  { name: 'DEC', val: 58 },
+  { name: 'JAN', val: 62 },
+  { name: 'FEB', val: 60 },
+  { name: 'MAR', val: 65 },
+  { name: 'APR', val: 69 },
+  { name: 'MAY', val: 73 },
+];
+
+function drawPhase4(t) {
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Header
+  const headerT = easeOut(Math.min(1, t / 0.6));
+  ctx.globalAlpha = headerT;
+  ctx.fillStyle = LIME;
+  ctx.font = `700 ${20 * S}px Space Grotesk`;
+  ctx.textAlign = 'center';
+  ctx.fillText('Your season on Notch', cx, cy - 180 * S);
+  ctx.globalAlpha = 1;
+
+  // Chart area
+  const chartL = cx - 160 * S;
+  const chartR = cx + 160 * S;
+  const chartT2 = cy - 130 * S;
+  const chartB = cy + 60 * S;
+  const chartW = chartR - chartL;
+  const chartH = chartB - chartT2;
+
+  // How many months visible
+  const revealProgress = Math.min(1, t / 3);
+  const visibleCount = Math.floor(revealProgress * notchMonths.length);
+  const partialProgress = (revealProgress * notchMonths.length) - visibleCount;
+
+  // Find value range
+  const minVal = 40;
+  const maxVal = 80;
+
+  // Draw grid lines
+  ctx.globalAlpha = 0.15;
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 1 * S;
+  for (let v = 40; v <= 80; v += 10) {
+    const yy = chartB - ((v - minVal) / (maxVal - minVal)) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(chartL, yy);
+    ctx.lineTo(chartR, yy);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // Draw line chart
+  if (visibleCount > 0) {
+    ctx.beginPath();
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 3 * S;
+    ctx.lineJoin = 'round';
+
+    for (let i = 0; i <= visibleCount && i < notchMonths.length; i++) {
+      const x = chartL + (i / (notchMonths.length - 1)) * chartW;
+      let val;
+      if (i < visibleCount) {
+        val = notchMonths[i].val;
+      } else if (i === visibleCount && i < notchMonths.length) {
+        const prev = notchMonths[i-1].val;
+        val = prev + (notchMonths[i].val - prev) * partialProgress;
+      } else break;
+
+      const y = chartB - ((val - minVal) / (maxVal - minVal)) * chartH;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Dots and labels
+    for (let i = 0; i < visibleCount && i < notchMonths.length; i++) {
+      const x = chartL + (i / (notchMonths.length - 1)) * chartW;
+      const y = chartB - ((notchMonths[i].val - minVal) / (maxVal - minVal)) * chartH;
+
+      // Dot
+      ctx.beginPath();
+      ctx.arc(x, y, 4 * S, 0, Math.PI * 2);
+      ctx.fillStyle = notchMonths[i].val < notchMonths[Math.max(0,i-1)].val ? RED : LIME;
+      ctx.fill();
+
+      // Value
+      ctx.fillStyle = WHITE;
+      ctx.font = `600 ${10 * S}px JetBrains Mono`;
+      ctx.textAlign = 'center';
+      ctx.fillText('$' + notchMonths[i].val, x, y - 12 * S);
+
+      // Month label
+      ctx.fillStyle = DIM;
+      ctx.font = `500 ${9 * S}px JetBrains Mono`;
+      ctx.fillText(notchMonths[i].name, x, chartB + 16 * S);
+    }
+
+    // Glow on the latest point
+    if (visibleCount > 0) {
+      const lastI = Math.min(visibleCount - 1, notchMonths.length - 1);
+      const lx = chartL + (lastI / (notchMonths.length - 1)) * chartW;
+      const ly = chartB - ((notchMonths[lastI].val - minVal) / (maxVal - minVal)) * chartH;
+      const glow = ctx.createRadialGradient(lx, ly, 0, lx, ly, 20 * S);
+      glow.addColorStop(0, 'rgba(178,237,104,0.4)');
+      glow.addColorStop(1, 'rgba(178,237,104,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(lx - 20*S, ly - 20*S, 40*S, 40*S);
+    }
+  }
+
+  // Summary stats
+  if (t > 3) {
+    const summT = easeOut(Math.min(1, (t - 3) / 0.8));
+    const summY = chartB + 50 * S;
+
+    ctx.globalAlpha = summT;
+
+    // One deposit line
+    ctx.fillStyle = DIM;
+    ctx.font = `500 ${13 * S}px Space Grotesk`;
+    ctx.textAlign = 'center';
+    ctx.fillText('One deposit. One position.', cx, summY);
+
+    // Big result
+    const resultT = easeOut(Math.max(0, (t - 3.4) / 0.6));
+    if (resultT > 0) {
+      ctx.globalAlpha = resultT;
+      ctx.fillStyle = WHITE;
+      ctx.font = `700 ${22 * S}px JetBrains Mono`;
+      ctx.fillText('$50 \u2192 $73', cx, summY + 35 * S);
+
+      ctx.fillStyle = LIME;
+      ctx.font = `700 ${26 * S}px JetBrains Mono`;
+      ctx.fillText('+46%', cx, summY + 68 * S);
+
+      // No reloading
+      const noT = easeOut(Math.max(0, (t - 3.7) / 0.3));
+      ctx.globalAlpha = noT;
+      ctx.fillStyle = DIM;
+      ctx.font = `500 ${13 * S}px Space Grotesk`;
+      ctx.fillText('No reloading. No grinding.', cx, summY + 95 * S);
+    }
+
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── PHASE 5: CTA (16-18s) ──
+function drawPhase5(t) {
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // "Break the loop."
+  const breakT = easeOut(Math.min(1, t / 0.6));
+  ctx.globalAlpha = breakT;
+  ctx.fillStyle = WHITE;
+  ctx.font = `700 ${42 * S}px Space Grotesk`;
+  ctx.textAlign = 'center';
+  ctx.fillText('Break the loop.', cx, cy - 30 * S);
+
+  // notch.win
+  const ctaT = easeOut(Math.max(0, (t - 0.5) / 0.6));
+  ctx.globalAlpha = ctaT;
+
+  // CTA glow
+  const glowR = 80 * S + Math.sin(t * 3) * 10 * S;
+  const glow = ctx.createRadialGradient(cx, cy + 40 * S, 0, cx, cy + 40 * S, glowR);
+  glow.addColorStop(0, 'rgba(178,237,104,0.15)');
+  glow.addColorStop(1, 'rgba(178,237,104,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(cx - glowR, cy + 40*S - glowR, glowR*2, glowR*2);
+
+  ctx.fillStyle = LIME;
+  ctx.font = `700 ${36 * S}px Space Grotesk`;
+  ctx.fillText('notch.win', cx, cy + 50 * S);
+
+  ctx.globalAlpha = 1;
+
+  // Show watch again
+  if (t > 1) {
+    watchBtn.classList.add('visible');
+  }
+}
+
+// ── MAIN LOOP ──
+let lastTime = 0;
+
+function animate(ts) {
+  if (!running) return;
+  if (!startTime) startTime = ts;
+  const dt = Math.min(0.05, (ts - lastTime) / 1000);
+  lastTime = ts;
+  animTime = (ts - startTime) / 1000;
+
+  // Clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Progress bar
+  const prog = Math.min(1, animTime / DURATION);
+  progressBar.style.width = (prog * 100) + '%';
+
+  // Determine phase
+  if (animTime < 4) {
+    drawPhase1(animTime);
+  } else if (animTime < 8) {
+    drawPhase2(animTime - 4);
+  } else if (animTime < 12) {
+    drawPhase3(animTime - 8);
+  } else if (animTime < 16) {
+    drawPhase4(animTime - 12);
+  } else if (animTime < DURATION) {
+    drawPhase5(animTime - 16);
+  } else {
+    drawPhase5(2);
+  }
+
+  // Update and draw particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update(dt);
+    particles[i].draw();
+    if (particles[i].life <= 0) particles.splice(i, 1);
+  }
+  for (let i = moneyParticles.length - 1; i >= 0; i--) {
+    moneyParticles[i].update(dt);
+    moneyParticles[i].draw();
+    if (moneyParticles[i].life <= 0) moneyParticles.splice(i, 1);
+  }
+  for (let i = shatterPieces.length - 1; i >= 0; i--) {
+    shatterPieces[i].update(dt);
+    shatterPieces[i].draw();
+    if (shatterPieces[i].life <= 0) shatterPieces.splice(i, 1);
+  }
+
+  // Subtle vignette
+  const vignette = ctx.createRadialGradient(W/2, H/2, W*0.25, W/2, H/2, W*0.7);
+  vignette.addColorStop(0, 'rgba(0,0,0,0)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, W, H);
+
+  requestAnimationFrame(animate);
+}
+
+// ── WATCH AGAIN ──
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  startTime = null;
+  animTime = 0;
+  shatterTriggered = false;
+  particles = [];
+  moneyParticles = [];
+  shatterPieces = [];
+});
+
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

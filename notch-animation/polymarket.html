@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — Polymarket vs Notch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const CYAN = '#22d3ee';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+const CARD_BG = '#12151c';
+const POLY_BLUE = '#4f8af7';
+
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 120 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnBurst(x, y, count, color) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (80 + Math.random() * 200) * S;
+    particles.push(new Particle(x, y, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.5 + Math.random() * 0.7, 2 + Math.random() * 3));
+  }
+}
+
+function spawnDissolve(x, y, w, h, count, color) {
+  for (let i = 0; i < count; i++) {
+    const px = x + Math.random() * w;
+    const py = y + Math.random() * h;
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 2;
+    const speed = (40 + Math.random() * 120) * S;
+    particles.push(new Particle(px, py, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.6 + Math.random() * 1.0, 1.5 + Math.random() * 2.5));
+  }
+}
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  S = Math.min(W / 800, H / 600);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── EASING ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// ── TEXT HELPERS ──
+function setFont(size, weight, family) {
+  ctx.font = `${weight || 600} ${Math.round(size * S)}px '${family || 'Space Grotesk'}', sans-serif`;
+}
+function setMono(size, weight) {
+  ctx.font = `${weight || 500} ${Math.round(size * S)}px 'JetBrains Mono', monospace`;
+}
+
+function drawTextCentered(text, x, y, color, size, weight, family) {
+  setFont(size, weight, family);
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+function drawTextLeft(text, x, y, color, size, weight, family) {
+  setFont(size, weight, family);
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+// ── CARD DRAWING ──
+function drawRoundedRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ── MATCH DATA ──
+const matches = [
+  'Arsenal vs Chelsea', 'Man City vs Arsenal', 'Arsenal vs Liverpool',
+  'Tottenham vs Arsenal', 'Arsenal vs Man Utd', 'Newcastle vs Arsenal',
+  'Arsenal vs Aston Villa', 'Brighton vs Arsenal', 'Arsenal vs West Ham',
+  'Everton vs Arsenal', 'Arsenal vs Wolves', 'Fulham vs Arsenal',
+  'Arsenal vs Burnley', 'Crystal Palace vs Arsenal', 'Arsenal vs Bournemouth',
+  'Nottm Forest vs Arsenal', 'Arsenal vs Brentford', 'Sheffield Utd vs Arsenal',
+  'Arsenal vs Luton', 'Arsenal vs Newcastle'
+];
+
+// Price chart data for Notch continuous position
+const chartPrices = [
+  618, 640, 635, 670, 690, 685, 720, 710, 745, 760,
+  755, 780, 800, 795, 830, 825, 860, 880, 870, 910
+];
+
+// ── PHASE 1: Polymarket Contract (0-3s) ──
+function drawPhase1(t) {
+  const fadeIn = easeOut(clamp01(t / 0.6));
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Header text
+  ctx.globalAlpha = fadeIn;
+  drawTextCentered('You use Polymarket.', cx, cy - 160 * S, WHITE, 28, 600);
+
+  // Contract card
+  const cw = 420 * S;
+  const ch = 180 * S;
+  const cardX = cx - cw / 2;
+  const cardY = cy - 60 * S;
+
+  const cardSlide = easeOut(clamp01((t - 0.2) / 0.6));
+  const cardAlpha = cardSlide;
+  ctx.globalAlpha = cardAlpha;
+
+  // Card background
+  ctx.fillStyle = CARD_BG;
+  drawRoundedRect(cardX, cardY, cw, ch, 12 * S);
+  ctx.fill();
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 1.5 * S;
+  drawRoundedRect(cardX, cardY, cw, ch, 12 * S);
+  ctx.stroke();
+
+  // Contract title
+  drawTextLeft('Arsenal to win vs Chelsea', cardX + 20 * S, cardY + 30 * S, WHITE, 16, 600);
+
+  // Match indicator
+  setMono(11, 400);
+  ctx.fillStyle = DIM;
+  ctx.textAlign = 'left';
+  ctx.fillText('Premier League  |  Match Day 12', cardX + 20 * S, cardY + 55 * S);
+
+  // YES / NO buttons
+  const btnW = 170 * S;
+  const btnH = 50 * S;
+  const btnY = cardY + 80 * S;
+
+  // YES button
+  ctx.fillStyle = 'rgba(178, 237, 104, 0.12)';
+  drawRoundedRect(cardX + 20 * S, btnY, btnW, btnH, 8 * S);
+  ctx.fill();
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 1.5 * S;
+  drawRoundedRect(cardX + 20 * S, btnY, btnW, btnH, 8 * S);
+  ctx.stroke();
+  drawTextCentered('YES', cardX + 20 * S + btnW / 2, btnY + 18 * S, LIME, 14, 700);
+  setMono(20, 700);
+  ctx.fillStyle = LIME;
+  ctx.textAlign = 'center';
+  ctx.fillText('$0.62', cardX + 20 * S + btnW / 2, btnY + 40 * S);
+
+  // NO button
+  ctx.fillStyle = 'rgba(255, 77, 77, 0.08)';
+  drawRoundedRect(cardX + 20 * S + btnW + 20 * S, btnY, btnW, btnH, 8 * S);
+  ctx.fill();
+  ctx.strokeStyle = '#553333';
+  ctx.lineWidth = 1.5 * S;
+  drawRoundedRect(cardX + 20 * S + btnW + 20 * S, btnY, btnW, btnH, 8 * S);
+  ctx.stroke();
+  drawTextCentered('NO', cardX + 20 * S + btnW + 20 * S + btnW / 2, btnY + 18 * S, RED, 14, 700);
+  setMono(20, 700);
+  ctx.fillStyle = RED;
+  ctx.textAlign = 'center';
+  ctx.fillText('$0.38', cardX + 20 * S + btnW + 20 * S + btnW / 2, btnY + 40 * S);
+
+  // Shares owned indicator
+  const sharesAlpha = easeOut(clamp01((t - 1.5) / 0.5));
+  if (sharesAlpha > 0) {
+    ctx.globalAlpha = sharesAlpha * cardAlpha;
+    setMono(12, 400);
+    ctx.fillStyle = LIME;
+    ctx.textAlign = 'left';
+    ctx.fillText('Position: 100 shares YES @ $0.62', cardX + 20 * S, cardY + ch - 20 * S);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── PHASE 2: Settlement (3-7s) ──
+let dissolveTriggered = false;
+function drawPhase2(t) {
+  const localT = t - 3;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  const cw = 420 * S;
+  const ch = 180 * S;
+  const cardX = cx - cw / 2;
+  const cardY = cy - 60 * S;
+
+  // "Match ends. Arsenal win."
+  const headerFade = easeOut(clamp01(localT / 0.5));
+  ctx.globalAlpha = headerFade;
+  drawTextCentered('Match ends. Arsenal win.', cx, cy - 160 * S, WHITE, 28, 600);
+
+  // Settlement animation on card
+  if (localT < 2.0) {
+    // Card still visible, price animating
+    const settleT = easeOut(clamp01(localT / 1.0));
+    const yesPrice = lerp(0.62, 1.00, settleT);
+    const noPrice = lerp(0.38, 0.00, settleT);
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = CARD_BG;
+    drawRoundedRect(cardX, cardY, cw, ch, 12 * S);
+    ctx.fill();
+    ctx.strokeStyle = settleT > 0.5 ? LIME : DIM;
+    ctx.lineWidth = 1.5 * S;
+    drawRoundedRect(cardX, cardY, cw, ch, 12 * S);
+    ctx.stroke();
+
+    drawTextLeft('Arsenal to win vs Chelsea', cardX + 20 * S, cardY + 30 * S, WHITE, 16, 600);
+
+    if (settleT >= 0.99) {
+      setMono(11, 600);
+      ctx.fillStyle = LIME;
+      ctx.textAlign = 'left';
+      ctx.fillText('SETTLED', cardX + 340 * S, cardY + 30 * S);
+    }
+
+    // YES
+    const btnW = 170 * S;
+    const btnH = 50 * S;
+    const btnY = cardY + 70 * S;
+
+    ctx.fillStyle = 'rgba(178, 237, 104, 0.12)';
+    drawRoundedRect(cardX + 20 * S, btnY, btnW, btnH, 8 * S);
+    ctx.fill();
+    setMono(24, 700);
+    ctx.fillStyle = LIME;
+    ctx.textAlign = 'center';
+    ctx.fillText('$' + yesPrice.toFixed(2), cardX + 20 * S + btnW / 2, btnY + 28 * S);
+
+    // Profit display
+    if (settleT > 0.7) {
+      const profitAlpha = easeOut(clamp01((settleT - 0.7) / 0.3));
+      ctx.globalAlpha = profitAlpha;
+      setMono(13, 600);
+      ctx.fillStyle = LIME;
+      ctx.textAlign = 'center';
+      ctx.fillText('Profit: +$0.38/share', cx, cardY + ch - 10 * S);
+      ctx.globalAlpha = 1;
+    }
+
+    // "Nice." text
+    if (localT > 1.2) {
+      const niceAlpha = easeOut(clamp01((localT - 1.2) / 0.3));
+      ctx.globalAlpha = niceAlpha;
+      drawTextCentered('Nice.', cx, cardY + ch + 30 * S, LIME, 20, 600);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Card dissolves
+  if (localT >= 2.0 && localT < 3.0) {
+    const dissolveT = clamp01((localT - 2.0) / 0.6);
+
+    if (!dissolveTriggered) {
+      spawnDissolve(cardX, cardY, cw, ch, 60, DIM);
+      dissolveTriggered = true;
+    }
+
+    ctx.globalAlpha = 1 - easeIn(dissolveT);
+    ctx.fillStyle = CARD_BG;
+    drawRoundedRect(cardX, cardY, cw, ch, 12 * S);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // "Contract closed. Position: GONE."
+    const closedAlpha = easeOut(clamp01((localT - 2.2) / 0.4));
+    ctx.globalAlpha = closedAlpha;
+    drawTextCentered('Contract closed. Position: GONE.', cx, cy - 20 * S, RED, 22, 600);
+    ctx.globalAlpha = 1;
+  }
+
+  // Cycle text
+  if (localT >= 3.0) {
+    const cycleAlpha = easeOut(clamp01((localT - 3.0) / 0.5));
+    ctx.globalAlpha = cycleAlpha;
+    drawTextCentered('Next match? Buy a NEW contract.', cx, cy - 30 * S, WHITE, 20, 500);
+    drawTextCentered('New spread. New fees.', cx, cy + 10 * S, DIM, 16, 400);
+
+    // Cycle arrows animation
+    const arrowT = clamp01((localT - 3.2) / 0.8);
+    const labels = ['BUY', 'SETTLE', 'BUY', 'SETTLE'];
+    const spacing = 100 * S;
+    const startX = cx - 1.5 * spacing;
+    for (let i = 0; i < 4; i++) {
+      const showT = clamp01((arrowT - i * 0.15) / 0.3);
+      if (showT <= 0) continue;
+      ctx.globalAlpha = cycleAlpha * easeOut(showT);
+      const bx = startX + i * spacing;
+      const by = cy + 70 * S;
+      setMono(13, 600);
+      ctx.fillStyle = i % 2 === 0 ? CYAN : LIME;
+      ctx.textAlign = 'center';
+      ctx.fillText(labels[i], bx, by);
+      if (i < 3) {
+        ctx.strokeStyle = DIM;
+        ctx.lineWidth = 1.5 * S;
+        ctx.beginPath();
+        ctx.moveTo(bx + 30 * S, by);
+        ctx.lineTo(bx + spacing - 30 * S, by);
+        ctx.stroke();
+        // arrowhead
+        ctx.beginPath();
+        ctx.moveTo(bx + spacing - 30 * S, by);
+        ctx.lineTo(bx + spacing - 38 * S, by - 5 * S);
+        ctx.lineTo(bx + spacing - 38 * S, by + 5 * S);
+        ctx.closePath();
+        ctx.fillStyle = DIM;
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── PHASE 3: 20 contracts (7-11s) ──
+function drawPhase3(t) {
+  const localT = t - 7;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Header
+  const headerFade = easeOut(clamp01(localT / 0.5));
+  ctx.globalAlpha = headerFade;
+  drawTextCentered('Every event is a NEW trade.', cx, cy - 200 * S, WHITE, 26, 600);
+  drawTextCentered('You\'re re-entering constantly.', cx, cy - 165 * S, DIM, 16, 400);
+
+  // 20 contract mini-cards in a grid
+  const cols = 5;
+  const rows = 4;
+  const cardW = 130 * S;
+  const cardH = 48 * S;
+  const gap = 8 * S;
+  const gridW = cols * cardW + (cols - 1) * gap;
+  const gridH = rows * cardH + (rows - 1) * gap;
+  const gridX = cx - gridW / 2;
+  const gridY = cy - 110 * S;
+
+  for (let i = 0; i < 20; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const delay = i * 0.08;
+    const showT = easeOut(clamp01((localT - 0.3 - delay) / 0.3));
+    if (showT <= 0) continue;
+
+    const mx = gridX + col * (cardW + gap);
+    const my = gridY + row * (cardH + gap);
+
+    ctx.globalAlpha = headerFade * showT;
+
+    // Mini card
+    ctx.fillStyle = CARD_BG;
+    drawRoundedRect(mx, my, cardW, cardH, 6 * S);
+    ctx.fill();
+    ctx.strokeStyle = DIM;
+    ctx.lineWidth = 1 * S;
+    drawRoundedRect(mx, my, cardW, cardH, 6 * S);
+    ctx.stroke();
+
+    // Match label
+    setMono(7.5, 400);
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'left';
+    ctx.fillText('GW ' + (i + 1), mx + 6 * S, my + 14 * S);
+
+    // Price
+    const price = (0.45 + Math.random() * 0.30).toFixed(2);
+    setMono(11, 600);
+    ctx.fillStyle = CYAN;
+    ctx.textAlign = 'left';
+    ctx.fillText('$' + price, mx + 6 * S, my + 32 * S);
+
+    // "BUY" tag
+    setMono(7, 600);
+    ctx.fillStyle = '#444';
+    ctx.textAlign = 'right';
+    ctx.fillText('BUY', mx + cardW - 8 * S, my + 14 * S);
+
+    // Fee indicator
+    setMono(7, 400);
+    ctx.fillStyle = RED;
+    ctx.textAlign = 'right';
+    ctx.fillText('-fee', mx + cardW - 8 * S, my + 32 * S);
+  }
+
+  // Summary at bottom
+  if (localT > 2.5) {
+    const sumAlpha = easeOut(clamp01((localT - 2.5) / 0.5));
+    ctx.globalAlpha = sumAlpha;
+
+    drawTextCentered('20 entries. 20 exits. 20 spreads paid.', cx, gridY + gridH + 35 * S, RED, 18, 600);
+
+    // Stacking fee bar
+    const barW = 300 * S;
+    const barH = 8 * S;
+    const barX = cx - barW / 2;
+    const barY = gridY + gridH + 60 * S;
+    ctx.fillStyle = DIMMER;
+    drawRoundedRect(barX, barY, barW, barH, 4 * S);
+    ctx.fill();
+
+    const fillT = easeOut(clamp01((localT - 2.8) / 0.7));
+    ctx.fillStyle = RED;
+    drawRoundedRect(barX, barY, barW * fillT, barH, 4 * S);
+    ctx.fill();
+
+    setMono(10, 400);
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('fees paid over season', cx, barY + barH + 14 * S);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── PHASE 4: Notch Continuous (11-15s) ──
+function drawPhase4(t) {
+  const localT = t - 11;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Flash transition
+  if (localT < 0.3) {
+    const flashAlpha = 1 - localT / 0.3;
+    ctx.globalAlpha = flashAlpha * 0.15;
+    ctx.fillStyle = LIME;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+
+  // Header
+  const headerFade = easeOut(clamp01(localT / 0.5));
+  ctx.globalAlpha = headerFade;
+  drawTextCentered('On Notch: One position. Continuous exposure.', cx, cy - 210 * S, LIME, 22, 600);
+
+  // Notch position card
+  const cw = 340 * S;
+  const ch = 90 * S;
+  const cardX = cx - cw / 2;
+  const cardY = cy - 180 * S;
+
+  const cardFade = easeOut(clamp01((localT - 0.3) / 0.5));
+  ctx.globalAlpha = cardFade;
+
+  ctx.fillStyle = CARD_BG;
+  drawRoundedRect(cardX, cardY, cw, ch, 10 * S);
+  ctx.fill();
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 1.5 * S;
+  drawRoundedRect(cardX, cardY, cw, ch, 10 * S);
+  ctx.stroke();
+
+  setMono(11, 600);
+  ctx.fillStyle = LIME;
+  ctx.textAlign = 'left';
+  ctx.fillText('LONG', cardX + 16 * S, cardY + 22 * S);
+
+  setFont(18, 700);
+  ctx.fillStyle = WHITE;
+  ctx.textAlign = 'left';
+  ctx.fillText('ARSENAL', cardX + 70 * S, cardY + 22 * S);
+
+  setMono(13, 400);
+  ctx.fillStyle = DIM;
+  ctx.textAlign = 'left';
+  ctx.fillText('Perpetual', cardX + 200 * S, cardY + 22 * S);
+
+  setMono(28, 700);
+  ctx.fillStyle = WHITE;
+  ctx.textAlign = 'left';
+  ctx.fillText('$618', cardX + 16 * S, cardY + 58 * S);
+
+  // PnL
+  const pnlT = easeOut(clamp01((localT - 0.8) / 0.4));
+  const pnlVal = lerp(0, 292, pnlT);
+  setMono(16, 600);
+  ctx.fillStyle = LIME;
+  ctx.textAlign = 'left';
+  ctx.fillText('+$' + Math.round(pnlVal) + ' (+47.2%)', cardX + 130 * S, cardY + 58 * S);
+
+  // Subtitle
+  ctx.globalAlpha = easeOut(clamp01((localT - 0.6) / 0.4));
+  drawTextCentered('Every match, every transfer, every event moves YOUR price.', cx, cardY + ch + 18 * S, DIM, 13, 400);
+
+  // Continuous price chart
+  const chartFade = easeOut(clamp01((localT - 1.0) / 0.6));
+  ctx.globalAlpha = chartFade;
+
+  const chartX = cx - 320 * S;
+  const chartY = cy - 30 * S;
+  const chartW = 640 * S;
+  const chartH = 180 * S;
+
+  // Chart background
+  ctx.fillStyle = '#0d0f15';
+  drawRoundedRect(chartX, chartY, chartW, chartH, 8 * S);
+  ctx.fill();
+
+  // Grid lines
+  ctx.strokeStyle = '#1a1d25';
+  ctx.lineWidth = 1 * S;
+  for (let i = 0; i < 5; i++) {
+    const gy = chartY + (chartH / 5) * (i + 0.5);
+    ctx.beginPath();
+    ctx.moveTo(chartX + 10 * S, gy);
+    ctx.lineTo(chartX + chartW - 10 * S, gy);
+    ctx.stroke();
+  }
+
+  // Draw price line progressively
+  const lineProgress = easeInOut(clamp01((localT - 1.2) / 2.0));
+  const pointCount = Math.floor(lineProgress * 20);
+  const minP = 600;
+  const maxP = 930;
+
+  if (pointCount >= 2) {
+    // Gradient under line
+    const grad = ctx.createLinearGradient(0, chartY, 0, chartY + chartH);
+    grad.addColorStop(0, 'rgba(178, 237, 104, 0.15)');
+    grad.addColorStop(1, 'rgba(178, 237, 104, 0.0)');
+
+    ctx.beginPath();
+    const firstX = chartX + 20 * S;
+    const stepW = (chartW - 40 * S) / 19;
+    const firstY = chartY + chartH - 15 * S - ((chartPrices[0] - minP) / (maxP - minP)) * (chartH - 30 * S);
+    ctx.moveTo(firstX, chartY + chartH);
+    ctx.lineTo(firstX, firstY);
+    for (let i = 1; i < pointCount; i++) {
+      const px = firstX + i * stepW;
+      const py = chartY + chartH - 15 * S - ((chartPrices[i] - minP) / (maxP - minP)) * (chartH - 30 * S);
+      ctx.lineTo(px, py);
+    }
+    const lastX = firstX + (pointCount - 1) * stepW;
+    ctx.lineTo(lastX, chartY + chartH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Price line
+    ctx.beginPath();
+    ctx.moveTo(firstX, firstY);
+    for (let i = 1; i < pointCount; i++) {
+      const px = firstX + i * stepW;
+      const py = chartY + chartH - 15 * S - ((chartPrices[i] - minP) / (maxP - minP)) * (chartH - 30 * S);
+      ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 2.5 * S;
+    ctx.stroke();
+
+    // Current price dot
+    const lastPi = pointCount - 1;
+    const dotX = firstX + lastPi * stepW;
+    const dotY = chartY + chartH - 15 * S - ((chartPrices[lastPi] - minP) / (maxP - minP)) * (chartH - 30 * S);
+
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 5 * S, 0, Math.PI * 2);
+    ctx.fillStyle = LIME;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 8 * S, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(178, 237, 104, 0.3)';
+    ctx.lineWidth = 2 * S;
+    ctx.stroke();
+
+    // Match event markers
+    for (let i = 0; i < pointCount; i++) {
+      const mx = firstX + i * stepW;
+      const my = chartY + chartH - 5 * S;
+      ctx.fillStyle = 'rgba(34, 211, 238, 0.5)';
+      ctx.beginPath();
+      ctx.arc(mx, my, 2.5 * S, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // "20 catalysts. 1 position."
+  if (localT > 3.0) {
+    const sumAlpha = easeOut(clamp01((localT - 3.0) / 0.5));
+    ctx.globalAlpha = sumAlpha;
+    drawTextCentered('20 catalysts. 1 position.', cx, chartY + chartH + 35 * S, LIME, 20, 700);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── PHASE 5: CTA (15-18s) ──
+function drawPhase5(t) {
+  const localT = t - 15;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Comparison
+  const fadeIn = easeOut(clamp01(localT / 0.6));
+  ctx.globalAlpha = fadeIn;
+
+  // Left side: Polymarket
+  const colW = 260 * S;
+  const leftX = cx - colW - 30 * S;
+  const rightX = cx + 30 * S;
+  const topY = cy - 100 * S;
+
+  // Polymarket column
+  ctx.fillStyle = '#0d0f15';
+  drawRoundedRect(leftX, topY, colW, 140 * S, 10 * S);
+  ctx.fill();
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 1 * S;
+  drawRoundedRect(leftX, topY, colW, 140 * S, 10 * S);
+  ctx.stroke();
+
+  drawTextCentered('Polymarket', leftX + colW / 2, topY + 25 * S, '#666', 14, 600);
+  setMono(11, 400);
+  ctx.fillStyle = '#555';
+  ctx.textAlign = 'center';
+  ctx.fillText('Event-by-event', leftX + colW / 2, topY + 50 * S);
+  ctx.fillText('Binary: $1 or $0', leftX + colW / 2, topY + 70 * S);
+  ctx.fillText('Contract ends, start over', leftX + colW / 2, topY + 90 * S);
+  ctx.fillText('20 entries per season', leftX + colW / 2, topY + 110 * S);
+
+  // Notch column
+  ctx.fillStyle = '#0d1510';
+  drawRoundedRect(rightX, topY, colW, 140 * S, 10 * S);
+  ctx.fill();
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 1.5 * S;
+  drawRoundedRect(rightX, topY, colW, 140 * S, 10 * S);
+  ctx.stroke();
+
+  drawTextCentered('Notch', rightX + colW / 2, topY + 25 * S, LIME, 14, 700);
+  setMono(11, 500);
+  ctx.fillStyle = LIME;
+  ctx.textAlign = 'center';
+  ctx.fillText('Team-forever', rightX + colW / 2, topY + 50 * S);
+  ctx.fillText('Continuous price exposure', rightX + colW / 2, topY + 70 * S);
+  ctx.fillText('One perpetual position', rightX + colW / 2, topY + 90 * S);
+  ctx.fillText('1 entry, infinite catalysts', rightX + colW / 2, topY + 110 * S);
+
+  // "vs" divider
+  ctx.globalAlpha = fadeIn * 0.5;
+  drawTextCentered('vs', cx, topY + 70 * S, DIM, 14, 400);
+
+  // "The upgrade is here."
+  ctx.globalAlpha = easeOut(clamp01((localT - 1.0) / 0.5));
+  drawTextCentered('The upgrade is here.', cx, topY + 170 * S, WHITE, 28, 700);
+
+  // CTA
+  if (localT > 1.5) {
+    const ctaAlpha = easeOut(clamp01((localT - 1.5) / 0.5));
+    ctx.globalAlpha = ctaAlpha;
+
+    // CTA button bg
+    const btnW = 220 * S;
+    const btnH = 56 * S;
+    const btnX = cx - btnW / 2;
+    const btnY = topY + 210 * S;
+
+    // Glow
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 25 * S;
+    ctx.fillStyle = LIME;
+    drawRoundedRect(btnX, btnY, btnW, btnH, 12 * S);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    setFont(22, 700);
+    ctx.fillStyle = '#0a0c10';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('notch.win', cx, btnY + btnH / 2);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── PROGRESS BAR ──
+function drawProgressBar(t) {
+  const barH = 3 * S;
+  const progress = t / DURATION;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(0, H - barH, W, barH);
+  ctx.fillStyle = LIME;
+  ctx.fillRect(0, H - barH, W * progress, barH);
+}
+
+// ── MAIN LOOP ──
+function draw(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const dt = Math.min((timestamp - (startTime + animTime * 1000)) / 1000, 0.05);
+
+  if (running) {
+    animTime = (timestamp - startTime) / 1000;
+    if (animTime >= DURATION) {
+      animTime = DURATION;
+      running = false;
+      watchBtn.classList.add('visible');
+    }
+  }
+
+  // Clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const t = animTime;
+
+  // Update particles
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => { p.update(dt); p.draw(); });
+
+  // Draw phases with overlapping transitions
+  if (t < 3.5) drawPhase1(t);
+  if (t >= 2.8 && t < 7.5) drawPhase2(t);
+  if (t >= 6.8 && t < 11.5) drawPhase3(t);
+  if (t >= 10.8 && t < 15.5) drawPhase4(t);
+  if (t >= 14.8) drawPhase5(t);
+
+  // Phase transition fades
+  if (t >= 2.8 && t < 3.5) {
+    const fadeOut = 1 - clamp01((t - 2.8) / 0.5);
+    ctx.globalAlpha = fadeOut;
+    // overlay to fade out phase 1
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+  // No extra overlay needed for phases that naturally appear/fade
+
+  drawProgressBar(t);
+
+  requestAnimationFrame(draw);
+}
+
+function restart() {
+  startTime = null;
+  animTime = 0;
+  running = true;
+  dissolveTriggered = false;
+  particles = [];
+  watchBtn.classList.remove('visible');
+}
+
+watchBtn.addEventListener('click', restart);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

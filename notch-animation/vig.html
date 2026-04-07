@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — The Vig</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+const DARKRED = '#991f1f';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 200 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnBurst(x, y, count, color, spread) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (80 + Math.random() * (spread || 200)) * S;
+    particles.push(new Particle(x, y, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.4 + Math.random() * 0.6, 1.5 + Math.random() * 3));
+  }
+}
+
+function spawnRedSlash(x, y) {
+  for (let i = 0; i < 30; i++) {
+    const angle = -Math.PI/2 + (Math.random() - 0.5) * 0.8;
+    const speed = (100 + Math.random() * 200) * S;
+    particles.push(new Particle(x, y, RED,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.3 + Math.random() * 0.5, 2 + Math.random() * 3));
+  }
+}
+
+function spawnMoneyDust(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (40 + Math.random() * 120) * S;
+    particles.push(new Particle(x, y, i % 2 === 0 ? '#2d8a2d' : RED,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.5 + Math.random() * 0.8, 1 + Math.random() * 2));
+  }
+}
+
+// ── SLASH EFFECTS ──
+let slashes = [];
+class Slash {
+  constructor(x, y, w, h, delay) {
+    this.x = x; this.y = y; this.w = w; this.h = h;
+    this.delay = delay || 0; this.born = animTime;
+    this.life = 0.6;
+  }
+  draw() {
+    const age = animTime - this.born - this.delay;
+    if (age < 0) return;
+    const t = Math.min(1, age / this.life);
+    const alpha = 1 - t;
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.strokeStyle = RED;
+    ctx.lineWidth = 3 * S;
+    ctx.shadowColor = RED;
+    ctx.shadowBlur = 20 * S;
+    // Diagonal slash
+    ctx.beginPath();
+    ctx.moveTo(this.x - this.w/2, this.y - this.h/2);
+    ctx.lineTo(this.x + this.w/2 * Math.min(1, age / 0.1), this.y + this.h/2 * Math.min(1, age / 0.1));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+  isDead() { return animTime - this.born - this.delay > this.life; }
+}
+
+// ── EASING ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+function easeElastic(t) {
+  if (t === 0 || t === 1) return t;
+  return Math.pow(2, -10*t) * Math.sin((t - 0.075) * (2*Math.PI) / 0.3) + 1;
+}
+function easeBounce(t) {
+  if (t < 1/2.75) return 7.5625*t*t;
+  if (t < 2/2.75) { t -= 1.5/2.75; return 7.5625*t*t + 0.75; }
+  if (t < 2.5/2.75) { t -= 2.25/2.75; return 7.5625*t*t + 0.9375; }
+  t -= 2.625/2.75; return 7.5625*t*t + 0.984375;
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+
+// ── TRIGGERED EVENTS ──
+let slashTriggered1 = false;
+let slashTriggered2 = false;
+let shrinkParticles = false;
+let flipTriggered = false;
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 900;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── DRAWING HELPERS ──
+function drawText(text, x, y, size, color, align, font, maxW) {
+  ctx.fillStyle = color;
+  ctx.font = `${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  if (maxW) ctx.fillText(text, x, y, maxW);
+  else ctx.fillText(text, x, y);
+}
+
+function drawMoney(x, y, w, h, alpha, cutPercent) {
+  // Draw a stylized bill
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const fullW = w;
+  const keepW = fullW * (1 - (cutPercent || 0));
+
+  // Main bill body (green)
+  ctx.fillStyle = '#1a5c1a';
+  ctx.strokeStyle = '#2d8a2d';
+  ctx.lineWidth = 2 * S;
+  roundRect(x - keepW/2, y - h/2, keepW, h, 6 * S);
+  ctx.fill();
+  ctx.stroke();
+
+  // Dollar sign
+  ctx.fillStyle = '#2d8a2d';
+  ctx.font = `bold ${Math.round(h * 0.6)}px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('$', x - (fullW - keepW)/2, y);
+
+  // Cut portion (red tint, moving away)
+  if (cutPercent > 0) {
+    const cutW = fullW * cutPercent;
+    const cutX = x + keepW/2;
+    ctx.fillStyle = 'rgba(255,77,77,0.3)';
+    ctx.strokeStyle = RED;
+    ctx.lineWidth = 2 * S;
+    roundRect(cutX + 4 * S, y - h/2, cutW, h, 6 * S);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawMoneyStack(x, y, w, h, count, shrinkFactor) {
+  const factor = shrinkFactor || 1;
+  for (let i = 0; i < count; i++) {
+    const offsetY = -i * 4 * S;
+    ctx.save();
+    ctx.globalAlpha = 0.3 + 0.7 * (i / count);
+    const sw = w * factor;
+    const sh = h;
+    ctx.fillStyle = i < count * (1 - factor + 0.01) ? DARKRED : '#1a5c1a';
+    ctx.strokeStyle = i < count * (1 - factor + 0.01) ? RED : '#2d8a2d';
+    ctx.lineWidth = 1.5 * S;
+    roundRect(x - sw/2, y - sh/2 + offsetY, sw, sh, 4 * S);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawProgressBar() {
+  const barH = 4 * S;
+  const y = H - barH;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(0, y, W, barH);
+  const progress = Math.min(1, animTime / DURATION);
+  const gradient = ctx.createLinearGradient(0, y, W * progress, y);
+  gradient.addColorStop(0, LIME);
+  gradient.addColorStop(1, '#8bc34a');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, y, W * progress, barH);
+}
+
+// ── COMPARISON BAR ──
+function drawComparisonBar(x, y, w, h, fillCount, totalCount, color, label) {
+  ctx.save();
+  // Background
+  ctx.fillStyle = DIMMER;
+  roundRect(x, y, w, h, 4 * S);
+  ctx.fill();
+  // Fill
+  const fillW = (fillCount / totalCount) * w;
+  ctx.fillStyle = color;
+  roundRect(x, y, fillW, h, 4 * S);
+  ctx.fill();
+  // Label
+  ctx.fillStyle = WHITE;
+  ctx.font = `bold ${Math.round(14 * S)}px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x + w/2, y + h/2);
+  ctx.restore();
+}
+
+// ── MAIN DRAW ──
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const t = animTime;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // ═══════════════════════════════════════
+  // PHASE 1: The Single Bet (0-3s)
+  // ═══════════════════════════════════════
+  if (t < 3) {
+    // "You bet $100."
+    const textIn = clamp01(t / 0.5);
+    const textAlpha = easeOut(textIn);
+
+    ctx.globalAlpha = textAlpha;
+    drawText('You bet $100.', cx, cy - 120 * S, 42, WHITE, 'center', 'Space Grotesk');
+    ctx.globalAlpha = 1;
+
+    // Big $100 display
+    if (t > 0.4) {
+      const billIn = easeElastic(clamp01((t - 0.4) / 0.6));
+      ctx.save();
+      ctx.translate(cx, cy + 10 * S);
+      ctx.scale(billIn, billIn);
+
+      // Big green amount
+      ctx.fillStyle = '#2d8a2d';
+      ctx.font = `bold ${Math.round(90 * S)}px 'JetBrains Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$100', 0, 0);
+
+      // Glow
+      ctx.shadowColor = '#2d8a2d';
+      ctx.shadowBlur = 30 * S;
+      ctx.fillText('$100', 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    // Slash and take at ~1.8s
+    if (t > 1.8) {
+      if (!slashTriggered1) {
+        slashTriggered1 = true;
+        slashes.push(new Slash(cx + 120 * S, cy + 10 * S, 200 * S, 120 * S));
+        spawnRedSlash(cx + 80 * S, cy + 10 * S);
+      }
+
+      const cutIn = easeOut(clamp01((t - 1.8) / 0.4));
+
+      // The stolen amount slides right
+      ctx.save();
+      ctx.translate(cx + 160 * S + cutIn * 40 * S, cy + 10 * S);
+      ctx.fillStyle = RED;
+      ctx.font = `bold ${Math.round(44 * S)}px 'JetBrains Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.globalAlpha = cutIn;
+      ctx.fillText('-$4.54', 0, 0);
+      ctx.shadowColor = RED;
+      ctx.shadowBlur = 15 * S;
+      ctx.fillText('-$4.54', 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+
+      // Red strike through the $100
+      ctx.save();
+      ctx.globalAlpha = cutIn * 0.6;
+      ctx.strokeStyle = RED;
+      ctx.lineWidth = 3 * S;
+      ctx.beginPath();
+      ctx.moveTo(cx - 100 * S, cy + 10 * S);
+      ctx.lineTo(cx + 100 * S * cutIn, cy + 10 * S);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Bottom text
+    if (t > 2.2) {
+      const subIn = easeOut(clamp01((t - 2.2) / 0.5));
+      ctx.globalAlpha = subIn;
+      drawText('The house takes $4.54.', cx, cy + 100 * S, 24, RED, 'center', 'Space Grotesk');
+      drawText('Every. Single. Bet.', cx, cy + 140 * S, 22, '#ff6b6b', 'center', 'JetBrains Mono');
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // PHASE 2: Scale Up (3-7s)
+  // ═══════════════════════════════════════
+  if (t >= 3 && t < 7) {
+    const pt = t - 3; // phase time 0-4
+
+    // Transition wipe
+    if (pt < 0.4) {
+      const wipe = easeOut(pt / 0.4);
+      ctx.fillStyle = BG;
+      ctx.globalAlpha = wipe;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+    }
+
+    // "100 bets. $10,000 wagered."
+    if (pt > 0.3) {
+      const headIn = easeOut(clamp01((pt - 0.3) / 0.5));
+      ctx.globalAlpha = headIn;
+      drawText('100 bets at $100 each.', cx, cy - 180 * S, 30, WHITE, 'center', 'Space Grotesk');
+      ctx.globalAlpha = 1;
+    }
+
+    // Big $10,000 counter
+    if (pt > 0.6) {
+      const numIn = easeElastic(clamp01((pt - 0.6) / 0.8));
+      ctx.save();
+      ctx.translate(cx, cy - 100 * S);
+      ctx.scale(numIn, numIn);
+      ctx.fillStyle = '#2d8a2d';
+      ctx.font = `bold ${Math.round(70 * S)}px 'JetBrains Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$10,000 wagered', 0, 0);
+      ctx.restore();
+    }
+
+    // Money stack shrinking
+    if (pt > 1.2) {
+      const shrinkT = clamp01((pt - 1.2) / 1.0);
+      const shrink = 1 - easeOut(shrinkT) * 0.045; // lose 4.54%
+
+      // Stack
+      const stackX = cx - 80 * S;
+      const stackY = cy + 40 * S;
+      drawMoneyStack(stackX, stackY, 160 * S, 24 * S, 12, shrink);
+
+      if (!slashTriggered2 && pt > 1.5) {
+        slashTriggered2 = true;
+        slashes.push(new Slash(stackX + 80 * S, stackY, 180 * S, 80 * S));
+        spawnMoneyDust(stackX, stackY, 25);
+      }
+
+      // "$454 gone" text
+      if (pt > 1.8) {
+        const goneIn = easeOut(clamp01((pt - 1.8) / 0.4));
+        ctx.globalAlpha = goneIn;
+        ctx.save();
+        ctx.fillStyle = RED;
+        ctx.font = `bold ${Math.round(40 * S)}px 'JetBrains Mono', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = RED;
+        ctx.shadowBlur = 20 * S;
+        ctx.fillText('$454 GONE', cx + 100 * S, cy + 40 * S);
+        ctx.shadowBlur = 0;
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // Breakeven text
+    if (pt > 2.5) {
+      const beIn = easeOut(clamp01((pt - 2.5) / 0.6));
+      ctx.globalAlpha = beIn;
+
+      // -110 odds → 52.38%
+      drawText('-110 odds = 52.38% breakeven', cx, cy + 110 * S, 22, DIM, 'center', 'JetBrains Mono');
+
+      ctx.globalAlpha = 1;
+    }
+
+    if (pt > 3.0) {
+      const winIn = easeOut(clamp01((pt - 3.0) / 0.6));
+      ctx.globalAlpha = winIn;
+      drawText('You need to win 53 out of 100 just to break even.', cx, cy + 160 * S, 24, WHITE, 'center', 'Space Grotesk');
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // PHASE 3: Escalating Vig (7-11s)
+  // ═══════════════════════════════════════
+  if (t >= 7 && t < 11) {
+    const pt = t - 7;
+
+    // Player props
+    if (pt < 2) {
+      const propIn = easeOut(clamp01(pt / 0.5));
+      ctx.globalAlpha = propIn;
+      drawText('Player Props?', cx, cy - 160 * S, 36, WHITE, 'center', 'Space Grotesk');
+
+      // Show 8-12% being carved
+      const vigW = 300 * S;
+      const vigH = 60 * S;
+      const vigX = cx - vigW/2;
+      const vigY = cy - 80 * S;
+
+      // Full bar
+      ctx.fillStyle = '#1a5c1a';
+      roundRect(vigX, vigY, vigW, vigH, 8 * S);
+      ctx.fill();
+
+      // Vig slice (growing)
+      const sliceGrow = easeOut(clamp01((pt - 0.3) / 0.6));
+      const sliceW = vigW * 0.10 * sliceGrow; // 10%
+      ctx.fillStyle = RED;
+      roundRect(vigX + vigW - sliceW, vigY, sliceW, vigH, 0);
+      ctx.fill();
+
+      // Label
+      if (pt > 0.6) {
+        const labelIn = easeOut(clamp01((pt - 0.6) / 0.3));
+        ctx.globalAlpha = labelIn;
+        ctx.fillStyle = RED;
+        ctx.font = `bold ${Math.round(48 * S)}px 'JetBrains Mono', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = RED;
+        ctx.shadowBlur = 15 * S;
+        ctx.fillText('8-12% VIG', cx, cy + 20 * S);
+        ctx.shadowBlur = 0;
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Parlays
+    if (pt >= 2) {
+      const parlayIn = easeOut(clamp01((pt - 2) / 0.5));
+      ctx.globalAlpha = parlayIn;
+      drawText('Parlays?', cx, cy - 160 * S, 36, WHITE, 'center', 'Space Grotesk');
+
+      const vigW = 300 * S;
+      const vigH = 60 * S;
+      const vigX = cx - vigW/2;
+      const vigY = cy - 80 * S;
+
+      // Full bar
+      ctx.fillStyle = '#1a5c1a';
+      roundRect(vigX, vigY, vigW, vigH, 8 * S);
+      ctx.fill();
+
+      // Bigger vig slice
+      const sliceGrow = easeOut(clamp01((pt - 2.2) / 0.6));
+      const sliceW = vigW * 0.20 * sliceGrow; // 20%!
+      ctx.fillStyle = RED;
+      roundRect(vigX + vigW - sliceW, vigY, sliceW, vigH, 0);
+      ctx.fill();
+
+      if (pt > 2.5) {
+        const labelIn = easeOut(clamp01((pt - 2.5) / 0.3));
+        ctx.globalAlpha = labelIn;
+        ctx.fillStyle = RED;
+        ctx.font = `bold ${Math.round(52 * S)}px 'JetBrains Mono', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = RED;
+        ctx.shadowBlur = 20 * S;
+        ctx.fillText('15%+ VIG', cx, cy + 20 * S);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // "Your bankroll is being eaten"
+    if (pt > 3) {
+      const eatIn = easeOut(clamp01((pt - 3) / 0.5));
+      ctx.globalAlpha = eatIn;
+
+      // Shrinking money stack visual
+      const stackCount = 10;
+      const shrinkAnim = easeOut(clamp01((pt - 3) / 0.8));
+      for (let i = 0; i < stackCount; i++) {
+        const alive = i < stackCount * (1 - shrinkAnim * 0.5);
+        ctx.save();
+        ctx.globalAlpha = alive ? eatIn * 0.8 : eatIn * 0.2;
+        ctx.fillStyle = alive ? '#1a5c1a' : DARKRED;
+        const bw = (120 - i * 2) * S;
+        const bh = 16 * S;
+        roundRect(cx - bw/2, cy + 90 * S - i * 8 * S, bw, bh, 3 * S);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      drawText("Watching your bankroll disappear.", cx, cy + 140 * S, 20, '#ff6b6b', 'center', 'Space Grotesk');
+
+      if (!shrinkParticles && pt > 3.2) {
+        shrinkParticles = true;
+        spawnMoneyDust(cx, cy + 60 * S, 40);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // PHASE 4: The Flip (11-14s)
+  // ═══════════════════════════════════════
+  if (t >= 11 && t < 14) {
+    const pt = t - 11;
+
+    // Flash white wipe
+    if (pt < 0.3) {
+      const flash = 1 - easeOut(pt / 0.3);
+      ctx.fillStyle = `rgba(255,255,255,${flash * 0.15})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // "What if the house edge was 0%?"
+    if (pt > 0.2 && pt < 1.8) {
+      const qIn = easeOut(clamp01((pt - 0.2) / 0.6));
+      ctx.globalAlpha = qIn;
+      drawText('What if the house edge was', cx, cy - 60 * S, 32, WHITE, 'center', 'Space Grotesk');
+
+      // Big 0% with glow
+      const zeroScale = easeElastic(clamp01((pt - 0.5) / 0.8));
+      ctx.save();
+      ctx.translate(cx, cy + 30 * S);
+      ctx.scale(zeroScale, zeroScale);
+      ctx.fillStyle = LIME;
+      ctx.font = `bold ${Math.round(100 * S)}px 'JetBrains Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = LIME;
+      ctx.shadowBlur = 40 * S;
+      ctx.fillText('0%', 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    // Notch card appears
+    if (pt > 1.5) {
+      if (!flipTriggered) {
+        flipTriggered = true;
+        spawnBurst(cx, cy, 50, LIME, 300);
+      }
+
+      const cardIn = easeElastic(clamp01((pt - 1.5) / 1.0));
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(cardIn, cardIn);
+
+      // Card bg
+      const cardW = 420 * S;
+      const cardH = 200 * S;
+      ctx.fillStyle = '#111418';
+      ctx.strokeStyle = LIME;
+      ctx.lineWidth = 2 * S;
+      ctx.shadowColor = LIME;
+      ctx.shadowBlur = 30 * S;
+      roundRect(-cardW/2, -cardH/2, cardW, cardH, 16 * S);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // "NOTCH" title
+      ctx.fillStyle = WHITE;
+      ctx.font = `bold ${Math.round(36 * S)}px 'Space Grotesk', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('NOTCH', 0, -50 * S);
+
+      // "0% HOUSE EDGE"
+      ctx.fillStyle = LIME;
+      ctx.font = `bold ${Math.round(44 * S)}px 'JetBrains Mono', monospace`;
+      ctx.fillText('0% HOUSE EDGE', 0, 10 * S);
+
+      // "You keep everything you earn."
+      ctx.fillStyle = '#aaa';
+      ctx.font = `${Math.round(18 * S)}px 'Space Grotesk', sans-serif`;
+      ctx.fillText('You keep everything you earn.', 0, 60 * S);
+
+      ctx.restore();
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // PHASE 5: Side Comparison + CTA (14-18s)
+  // ═══════════════════════════════════════
+  if (t >= 14) {
+    const pt = t - 14;
+    const fadeIn = easeOut(clamp01(pt / 0.6));
+
+    // Two columns
+    const colW = 320 * S;
+    const gap = 40 * S;
+    const leftX = cx - colW - gap/2;
+    const rightX = cx + gap/2;
+    const topY = cy - 160 * S;
+
+    // LEFT: Sportsbook (red)
+    ctx.globalAlpha = fadeIn;
+
+    // Left card
+    ctx.fillStyle = '#1a1115';
+    ctx.strokeStyle = RED;
+    ctx.lineWidth = 2 * S;
+    roundRect(leftX, topY, colW, 240 * S, 12 * S);
+    ctx.fill();
+    ctx.stroke();
+
+    drawText('SPORTSBOOK', leftX + colW/2, topY + 35 * S, 22, RED, 'center', 'JetBrains Mono');
+
+    // Win bar
+    const leftBarY = topY + 70 * S;
+    const barW = colW - 40 * S;
+    const barH = 36 * S;
+    const barX = leftX + 20 * S;
+
+    // 53/100 fill
+    ctx.fillStyle = DIMMER;
+    roundRect(barX, leftBarY, barW, barH, 4 * S);
+    ctx.fill();
+
+    const leftFill = easeOut(clamp01((pt - 0.3) / 0.8));
+    ctx.fillStyle = RED;
+    roundRect(barX, leftBarY, barW * 0.53 * leftFill, barH, 4 * S);
+    ctx.fill();
+
+    drawText('Win 53/100', leftX + colW/2, leftBarY + barH/2, 16, WHITE, 'center', 'JetBrains Mono');
+    drawText('just to BREAK EVEN', leftX + colW/2, leftBarY + barH + 24 * S, 18, '#ff6b6b', 'center', 'Space Grotesk');
+
+    // Vig line
+    drawText('~4.5% vig on every bet', leftX + colW/2, leftBarY + barH + 58 * S, 15, DIM, 'center', 'JetBrains Mono');
+    drawText('You pay to play.', leftX + colW/2, topY + 200 * S, 18, '#ff6b6b', 'center', 'Space Grotesk');
+
+    // RIGHT: Notch (green)
+    ctx.fillStyle = '#111a11';
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 2 * S;
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 15 * S;
+    roundRect(rightX, topY, colW, 240 * S, 12 * S);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    drawText('NOTCH', rightX + colW/2, topY + 35 * S, 22, LIME, 'center', 'JetBrains Mono');
+
+    // 51/100 fill
+    const rightBarY = topY + 70 * S;
+    ctx.fillStyle = DIMMER;
+    roundRect(rightX + 20 * S, rightBarY, barW, barH, 4 * S);
+    ctx.fill();
+
+    const rightFill = easeOut(clamp01((pt - 0.5) / 0.8));
+    ctx.fillStyle = LIME;
+    roundRect(rightX + 20 * S, rightBarY, barW * 0.51 * rightFill, barH, 4 * S);
+    ctx.fill();
+
+    drawText('Win 51/100', rightX + colW/2, rightBarY + barH/2, 16, '#0a0c10', 'center', 'JetBrains Mono');
+    drawText("and you're PROFITABLE", rightX + colW/2, rightBarY + barH + 24 * S, 18, LIME, 'center', 'Space Grotesk');
+
+    drawText('0% house edge', rightX + colW/2, rightBarY + barH + 58 * S, 15, '#5a8a3a', 'center', 'JetBrains Mono');
+    drawText('You keep what you earn.', rightX + colW/2, topY + 200 * S, 18, LIME, 'center', 'Space Grotesk');
+
+    ctx.globalAlpha = 1;
+
+    // Bottom tagline
+    if (pt > 1.2) {
+      const tagIn = easeOut(clamp01((pt - 1.2) / 0.5));
+      ctx.globalAlpha = tagIn;
+      drawText('Stop paying to play.', cx, cy + 130 * S, 30, WHITE, 'center', 'Space Grotesk');
+      ctx.globalAlpha = 1;
+    }
+
+    // CTA: notch.win
+    if (pt > 2.0) {
+      const ctaIn = easeElastic(clamp01((pt - 2.0) / 1.0));
+      ctx.save();
+      ctx.translate(cx, cy + 200 * S);
+      ctx.scale(ctaIn, ctaIn);
+
+      // Glow pulse
+      const pulse = 0.7 + 0.3 * Math.sin(t * 3);
+      ctx.shadowColor = LIME;
+      ctx.shadowBlur = (25 + 15 * pulse) * S;
+      ctx.fillStyle = LIME;
+      ctx.font = `bold ${Math.round(42 * S)}px 'Space Grotesk', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('notch.win', 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    // Show watch again
+    if (pt > 3) {
+      watchBtn.classList.add('visible');
+    }
+  }
+
+  // ── Draw slash effects ──
+  slashes.forEach(s => s.draw());
+  slashes = slashes.filter(s => !s.isDead());
+
+  // ── Draw particles ──
+  particles.forEach(p => p.draw());
+
+  // ── Progress bar ──
+  drawProgressBar();
+}
+
+// ── ANIMATION LOOP ──
+function loop(ts) {
+  if (!startTime) startTime = ts;
+  const dt = Math.min(0.05, (ts - (startTime + animTime * 1000)) / 1000);
+
+  if (running) {
+    animTime = (ts - startTime) / 1000;
+
+    // Update particles
+    particles.forEach(p => p.update(dt));
+    particles = particles.filter(p => p.life > 0);
+
+    if (animTime >= DURATION + 1) {
+      running = false;
+    }
+  }
+
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ── RESTART ──
+function restart() {
+  startTime = null;
+  animTime = 0;
+  running = true;
+  particles = [];
+  slashes = [];
+  slashTriggered1 = false;
+  slashTriggered2 = false;
+  shrinkParticles = false;
+  flipTriggered = false;
+  watchBtn.classList.remove('visible');
+}
+
+watchBtn.addEventListener('click', restart);
+
+// ── START ──
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

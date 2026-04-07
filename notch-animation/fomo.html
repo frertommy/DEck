@@ -699,9 +699,7 @@ function loop(ts) {
   const dt = Math.min(elapsed - animTime, 0.05);
   animTime = elapsed;
 
-  if (animTime <= DURATION + 2) {
-    render(dt);
-  }
+  render(dt);
 
   if (running) requestAnimationFrame(loop);
 }

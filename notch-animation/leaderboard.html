@@ -56,7 +56,9 @@ let W, H, S;
 function resize() {
   W = canvas.width = window.innerWidth;
   H = canvas.height = window.innerHeight;
-  S = Math.min(W / 1080, H / 1920) * (W > H ? 1.1 : 1);
+  S = W > H
+    ? Math.min(W / 1280, H / 800)
+    : Math.min(W / 1080, H / 1920);
 }
 resize();
 window.addEventListener('resize', resize);

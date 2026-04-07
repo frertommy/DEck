@@ -707,9 +707,9 @@ function animate(timestamp) {
       ctx.fillRect(PHONE_X, hdrOffset + 90*SCALE, PHONE_W, PHONE_H - 90*SCALE);
 
       // Determine current phase
-      const phase = t < 9 ? 1 : t < 14 ? 2 : t < 19 ? 3 : t < 24 ? 4 : 5;
+      const phase = t < 4 ? 0 : t < 9 ? 1 : t < 14 ? 2 : t < 19 ? 3 : t < 24 ? 4 : 5;
 
-      // --- PHASE 1: Chat messages (0-9s) ---
+      // --- PHASE 1: Chat messages appearing (4-9s) ---
       if (phase === 1) {
         messages.forEach(msg => {
           const msgP = clamp01((t - msg.time) / 0.5);
@@ -719,9 +719,9 @@ function animate(timestamp) {
         });
       }
 
-      // --- PHASE 2: Chat + Leaderboard (9-14s) ---
+      // --- PHASE 2: Chat messages + Leaderboard slides in (9-14s) ---
       if (phase === 2) {
-        // Show messages already visible
+        // Show all chat messages (fully visible)
         messages.forEach(msg => {
           cursorY += drawBubble(msg, PHONE_X, cursorY, 1, false);
         });

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — Binary Prison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+// ── SETUP ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+const GOLD = '#f5c842';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 120 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnBurst(x, y, count, color) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (80 + Math.random() * 200) * S;
+    particles.push(new Particle(x, y, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.5 + Math.random() * 0.7, 2 + Math.random() * 3));
+  }
+}
+
+// ── FLOATING PARTICLES (background) ──
+let bgParticles = [];
+function initBgParticles() {
+  bgParticles = [];
+  for (let i = 0; i < 40; i++) {
+    bgParticles.push({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 20 * S, vy: -10 * S - Math.random() * 20 * S,
+      size: (1 + Math.random() * 2) * S, alpha: 0.1 + Math.random() * 0.2,
+      color: Math.random() > 0.5 ? LIME : RED
+    });
+  }
+}
+
+function updateBgParticles(dt) {
+  for (const p of bgParticles) {
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+    if (p.x < -10) p.x = W + 10;
+    if (p.x > W + 10) p.x = -10;
+  }
+}
+
+function drawBgParticles() {
+  for (const p of bgParticles) {
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 900;
+  initBgParticles();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── HELPERS ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+function fadeIn(t, start, dur) { return Math.max(0, Math.min(1, (t - start) / dur)); }
+function fadeOut(t, start, dur) { return Math.max(0, 1 - (t - start) / dur); }
+
+function drawText(text, x, y, size, color, align, font, maxW) {
+  ctx.fillStyle = color;
+  ctx.font = `${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  if (maxW) ctx.fillText(text, x, y, maxW);
+  else ctx.fillText(text, x, y);
+}
+
+function drawBoldText(text, x, y, size, color, align, font) {
+  ctx.fillStyle = color;
+  ctx.font = `700 ${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+function drawRoundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.roundRect(x - w/2, y - h/2, w, h, r * S);
+  ctx.closePath();
+}
+
+// ── PROGRESS BAR ──
+function drawProgressBar(t) {
+  const barH = 4 * S;
+  const prog = t / DURATION;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(0, H - barH, W, barH);
+  const grad = ctx.createLinearGradient(0, 0, W * prog, 0);
+  grad.addColorStop(0, LIME);
+  grad.addColorStop(1, '#8fd94e');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, H - barH, W * prog, barH);
+}
+
+// ── SCENE 1: BINARY DOORS (0-3s) ──
+function drawScene1(t) {
+  const cx = W / 2, cy = H / 2;
+
+  // Title fade in
+  const titleA = fadeIn(t, 0, 0.6);
+  ctx.globalAlpha = titleA;
+  drawText('Your sportsbook bet.', cx, cy - 200 * S, 22, DIM, 'center', 'JetBrains Mono');
+  ctx.globalAlpha = 1;
+
+  // Two doors
+  const doorW = 180 * S, doorH = 260 * S, gap = 40 * S;
+  const doorLX = cx - doorW / 2 - gap / 2 - doorW / 2;
+  const doorRX = cx + doorW / 2 + gap / 2 + doorW / 2;
+
+  // Doors slide in from sides
+  const slideT = easeOut(fadeIn(t, 0.2, 0.8));
+  const doorLXAnim = lerp(cx - 400 * S, doorLX, slideT);
+  const doorRXAnim = lerp(cx + 400 * S, doorRX, slideT);
+
+  // WIN door
+  ctx.globalAlpha = slideT;
+  drawRoundRect(doorLXAnim, cy + 20 * S, doorW, doorH, 16);
+  ctx.fillStyle = 'rgba(178, 237, 104, 0.08)';
+  ctx.fill();
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2.5 * S;
+  ctx.stroke();
+  drawBoldText('WIN', doorLXAnim, cy - 10 * S, 36, LIME);
+  drawText('\u2705', doorLXAnim, cy + 50 * S, 48, LIME);
+
+  // LOSE door
+  drawRoundRect(doorRXAnim, cy + 20 * S, doorW, doorH, 16);
+  ctx.fillStyle = 'rgba(255, 77, 77, 0.08)';
+  ctx.fill();
+  ctx.strokeStyle = RED;
+  ctx.lineWidth = 2.5 * S;
+  ctx.stroke();
+  drawBoldText('LOSE', doorRXAnim, cy - 10 * S, 36, RED);
+  drawText('\u274C', doorRXAnim, cy + 50 * S, 48, RED);
+  ctx.globalAlpha = 1;
+
+  // "Only two outcomes" text
+  const subA = fadeIn(t, 1.2, 0.5);
+  ctx.globalAlpha = subA;
+  drawBoldText('Only two outcomes.', cx, cy + 190 * S, 26, WHITE);
+  ctx.globalAlpha = 1;
+
+  // Doors slam shut (bars come down)
+  if (t > 2.0) {
+    const slamT = easeIn(fadeIn(t, 2.0, 0.4));
+    const barCount = 5;
+    ctx.globalAlpha = slamT;
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 3 * S;
+    for (let i = 0; i < barCount; i++) {
+      const bx = doorLXAnim - doorW/2 + (doorW / (barCount - 1)) * i;
+      ctx.beginPath(); ctx.moveTo(bx, cy + 20*S - doorH/2); ctx.lineTo(bx, cy + 20*S - doorH/2 + doorH * slamT); ctx.stroke();
+      const bx2 = doorRXAnim - doorW/2 + (doorW / (barCount - 1)) * i;
+      ctx.beginPath(); ctx.moveTo(bx2, cy + 20*S - doorH/2); ctx.lineTo(bx2, cy + 20*S - doorH/2 + doorH * slamT); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // "You're trapped."
+    const trapA = fadeIn(t, 2.5, 0.4);
+    ctx.globalAlpha = trapA;
+    drawBoldText("You're trapped.", cx, cy + 230 * S, 20, RED, 'center', 'JetBrains Mono');
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SCENE 2: ARSENAL MATCH (3-7s) ──
+function drawScene2(t) {
+  const lt = t - 3; // local time 0-4
+  const cx = W / 2, cy = H / 2;
+
+  // Fade scene 1 out handled by clearing
+
+  // Scoreboard
+  const scoreA = fadeIn(lt, 0, 0.5);
+  ctx.globalAlpha = scoreA;
+
+  // Score box
+  const sbW = 360 * S, sbH = 80 * S;
+  drawRoundRect(cx, cy - 140 * S, sbW, sbH, 12);
+  ctx.fillStyle = DIMMER;
+  ctx.fill();
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+
+  // Match evolves over time
+  let homeGoals = 0, awayGoals = 0, minute = 0;
+  if (lt < 0.8) { homeGoals = 0; awayGoals = 0; minute = Math.floor(lerp(0, 25, lt / 0.8)); }
+  else if (lt < 1.4) { homeGoals = 1; awayGoals = 0; minute = Math.floor(lerp(25, 55, (lt - 0.8) / 0.6)); }
+  else if (lt < 2.0) { homeGoals = 2; awayGoals = 0; minute = Math.floor(lerp(55, 75, (lt - 1.4) / 0.6)); }
+  else if (lt < 2.6) { homeGoals = 2; awayGoals = 1; minute = Math.floor(lerp(75, 85, (lt - 2.0) / 0.6)); }
+  else if (lt < 3.2) { homeGoals = 2; awayGoals = 2; minute = Math.floor(lerp(85, 90, (lt - 2.6) / 0.6)); }
+  else { homeGoals = 2; awayGoals = 2; minute = 90; }
+
+  drawBoldText('ARS', cx - 100 * S, cy - 140 * S, 22, WHITE);
+  drawBoldText(`${homeGoals} - ${awayGoals}`, cx, cy - 140 * S, 30, WHITE);
+  drawBoldText('CHE', cx + 100 * S, cy - 140 * S, 22, WHITE);
+  drawText(`${minute}'`, cx + 150 * S, cy - 140 * S, 16, DIM, 'center', 'JetBrains Mono');
+
+  // Bet status indicator
+  let betColor = LIME, betText = 'YOUR BET: WINNING';
+  if (lt >= 2.6) { betColor = RED; betText = 'YOUR BET: LOSING'; }
+
+  const betBoxW = 280 * S, betBoxH = 44 * S;
+  drawRoundRect(cx, cy - 70 * S, betBoxW, betBoxH, 8);
+  ctx.fillStyle = betColor === LIME ? 'rgba(178,237,104,0.1)' : 'rgba(255,77,77,0.1)';
+  ctx.fill();
+  ctx.strokeStyle = betColor;
+  ctx.lineWidth = 1.5 * S;
+  ctx.stroke();
+  drawText(betText, cx, cy - 70 * S, 15, betColor, 'center', 'JetBrains Mono');
+
+  // Commentary text
+  let commentary = '';
+  if (lt < 0.8) commentary = 'Match kicks off...';
+  else if (lt < 1.4) commentary = 'GOAL! Arsenal 1-0! You\'re winning!';
+  else if (lt < 2.0) commentary = 'GOAL! Arsenal 2-0! Looking great!';
+  else if (lt < 2.6) commentary = 'Chelsea pull one back... 2-1';
+  else if (lt < 3.2) commentary = '90th min equalizer... 2-2. DRAW.';
+  else commentary = 'Full time. Draw. You LOSE.';
+
+  const commentA = 1;
+  ctx.globalAlpha = commentA;
+  drawText(commentary, cx, cy + 10 * S, 18, lt >= 2.6 ? RED : WHITE, 'center', 'Space Grotesk');
+
+  // "You were winning for 80 minutes."
+  if (lt > 2.8) {
+    const msgA = fadeIn(lt, 2.8, 0.5);
+    ctx.globalAlpha = msgA;
+    drawBoldText('You were winning for 80 minutes.', cx, cy + 70 * S, 22, GOLD);
+  }
+
+  // Money animation
+  if (lt > 3.2) {
+    const lossA = fadeIn(lt, 3.2, 0.5);
+    ctx.globalAlpha = lossA;
+
+    // $100 -> $0
+    drawText('$100', cx - 80 * S, cy + 130 * S, 32, WHITE, 'center', 'JetBrains Mono');
+    drawBoldText('\u2192', cx, cy + 130 * S, 32, RED);
+    drawText('$0', cx + 80 * S, cy + 130 * S, 32, RED, 'center', 'JetBrains Mono');
+
+    drawText('Binary = all or nothing.', cx, cy + 190 * S, 18, RED, 'center', 'JetBrains Mono');
+
+    if (lt > 3.3 && lt < 3.5) spawnBurst(cx + 80 * S, cy + 130 * S, 2, RED);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 3: NOTCH ALTERNATIVE (7-11s) ──
+function drawScene3(t) {
+  const lt = t - 7; // local 0-4
+  const cx = W / 2, cy = H / 2;
+
+  // Headline
+  const headA = fadeIn(lt, 0, 0.5);
+  ctx.globalAlpha = headA;
+  drawBoldText('What if you could EXIT at any time?', cx, cy - 220 * S, 24, LIME);
+  ctx.globalAlpha = 1;
+
+  // Price chart
+  if (lt > 0.4) {
+    const chartA = fadeIn(lt, 0.4, 0.6);
+    ctx.globalAlpha = chartA;
+
+    const chartL = cx - 200 * S, chartR = cx + 200 * S;
+    const chartT = cy - 160 * S, chartB = cy + 60 * S;
+    const chartW = chartR - chartL, chartH = chartB - chartT;
+
+    // Chart background
+    drawRoundRect(cx, (chartT + chartB) / 2, chartW + 30 * S, chartH + 30 * S, 12);
+    ctx.fillStyle = 'rgba(42, 46, 56, 0.3)';
+    ctx.fill();
+    ctx.strokeStyle = DIM;
+    ctx.lineWidth = 1 * S;
+    ctx.stroke();
+
+    // Price data: rises for 80 min, drops at end
+    const pricePoints = [];
+    const totalPts = 90;
+    const drawPts = Math.min(totalPts, Math.floor(lerp(0, totalPts, fadeIn(lt, 0.4, 2.0))));
+    for (let i = 0; i <= drawPts; i++) {
+      const min = (i / totalPts) * 90;
+      let price;
+      if (min <= 25) price = 1.0 + (min / 25) * 0.05;
+      else if (min <= 55) price = 1.05 + ((min - 25) / 30) * 0.08;
+      else if (min <= 75) price = 1.13 + ((min - 55) / 20) * 0.05;
+      else if (min <= 80) price = 1.18 - ((min - 75) / 5) * 0.02;
+      else price = 1.16 - ((min - 80) / 10) * 0.16;
+      // Add tiny noise
+      price += Math.sin(i * 2.7) * 0.005 + Math.sin(i * 7.3) * 0.003;
+      pricePoints.push({ x: chartL + (i / totalPts) * chartW, y: chartB - ((price - 0.95) / 0.3) * chartH });
+    }
+
+    // Draw line
+    if (pricePoints.length > 1) {
+      ctx.beginPath();
+      ctx.moveTo(pricePoints[0].x, pricePoints[0].y);
+      for (let i = 1; i < pricePoints.length; i++) {
+        ctx.lineTo(pricePoints[i].x, pricePoints[i].y);
+      }
+      ctx.strokeStyle = LIME;
+      ctx.lineWidth = 2.5 * S;
+      ctx.stroke();
+
+      // Gradient fill
+      const fillGrad = ctx.createLinearGradient(0, chartT, 0, chartB);
+      fillGrad.addColorStop(0, 'rgba(178,237,104,0.2)');
+      fillGrad.addColorStop(1, 'rgba(178,237,104,0)');
+      ctx.lineTo(pricePoints[pricePoints.length - 1].x, chartB);
+      ctx.lineTo(pricePoints[0].x, chartB);
+      ctx.closePath();
+      ctx.fillStyle = fillGrad;
+      ctx.fill();
+    }
+
+    // Minute labels
+    drawText("0'", chartL, chartB + 18 * S, 11, DIM, 'center', 'JetBrains Mono');
+    drawText("45'", cx, chartB + 18 * S, 11, DIM, 'center', 'JetBrains Mono');
+    drawText("90'", chartR, chartB + 18 * S, 11, DIM, 'center', 'JetBrains Mono');
+
+    // Peak marker and "CLOSE POSITION" button at minute 60
+    if (lt > 2.0) {
+      const btnA = fadeIn(lt, 2.0, 0.5);
+      ctx.globalAlpha = btnA;
+
+      // Peak dot at ~min 60 area
+      const peakX = chartL + (60 / 90) * chartW;
+      const peakPrice = 1.13 + ((60 - 55) / 20) * 0.05;
+      const peakY = chartB - ((peakPrice - 0.95) / 0.3) * chartH;
+
+      // Glowing dot
+      ctx.beginPath();
+      ctx.arc(peakX, peakY, 6 * S, 0, Math.PI * 2);
+      ctx.fillStyle = LIME;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(peakX, peakY, 12 * S, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(178,237,104,0.3)';
+      ctx.fill();
+
+      // Line to button
+      const btnY = peakY - 50 * S;
+      ctx.beginPath();
+      ctx.setLineDash([4 * S, 4 * S]);
+      ctx.moveTo(peakX, peakY - 14 * S);
+      ctx.lineTo(peakX, btnY + 18 * S);
+      ctx.strokeStyle = LIME;
+      ctx.lineWidth = 1.5 * S;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // CLOSE POSITION button
+      const cbW = 180 * S, cbH = 36 * S;
+      drawRoundRect(peakX, btnY, cbW, cbH, 8);
+      ctx.fillStyle = LIME;
+      ctx.fill();
+      drawBoldText('CLOSE POSITION', peakX, btnY, 13, '#0a0c10', 'center', 'JetBrains Mono');
+
+      // Minute 60 label
+      drawText("60'", peakX, chartB + 18 * S, 11, LIME, 'center', 'JetBrains Mono');
+    }
+
+    ctx.globalAlpha = 1;
+  }
+
+  // "On Notch, you could have sold at +15%"
+  if (lt > 2.5) {
+    const txtA = fadeIn(lt, 2.5, 0.5);
+    ctx.globalAlpha = txtA;
+    drawText('On Notch, you could have sold at', cx, cy + 110 * S, 18, WHITE);
+    drawBoldText('+15%', cx + 170 * S, cy + 110 * S, 18, LIME, 'center', 'JetBrains Mono');
+    drawText("during minute 60.", cx + 50 * S, cy + 110 * S, 18, WHITE);
+    // Redo as single line
+    ctx.globalAlpha = 0; // clear above
+  }
+
+  if (lt > 2.5) {
+    const txtA = fadeIn(lt, 2.5, 0.5);
+    ctx.globalAlpha = txtA;
+    const line = "On Notch, you could have sold at +15% during minute 60.";
+    ctx.font = `${Math.round(17 * S)}px 'Space Grotesk', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Draw with highlight
+    const metrics = ctx.measureText(line);
+    const baseX = cx - metrics.width / 2;
+    const lineY = cy + 110 * S;
+
+    const parts = [
+      { text: 'On Notch, you could have sold at ', color: WHITE },
+      { text: '+15%', color: LIME, bold: true },
+      { text: ' during minute 60.', color: WHITE }
+    ];
+    let curX = cx;
+    // Center the whole line
+    let totalW = 0;
+    for (const p of parts) {
+      ctx.font = `${p.bold ? '700 ' : ''}${Math.round(17 * S)}px 'Space Grotesk', sans-serif`;
+      totalW += ctx.measureText(p.text).width;
+    }
+    curX = cx - totalW / 2;
+    for (const p of parts) {
+      ctx.font = `${p.bold ? '700 ' : ''}${Math.round(17 * S)}px 'Space Grotesk', sans-serif`;
+      ctx.fillStyle = p.color;
+      ctx.textAlign = 'left';
+      ctx.fillText(p.text, curX, lineY);
+      curX += ctx.measureText(p.text).width;
+    }
+    ctx.textAlign = 'center';
+  }
+
+  // $100 -> $115
+  if (lt > 3.0) {
+    const monA = fadeIn(lt, 3.0, 0.5);
+    ctx.globalAlpha = monA;
+    drawText('$100', cx - 80 * S, cy + 160 * S, 30, WHITE, 'center', 'JetBrains Mono');
+    drawBoldText('\u2192', cx, cy + 160 * S, 30, LIME);
+    drawText('$115', cx + 80 * S, cy + 160 * S, 30, LIME, 'center', 'JetBrains Mono');
+    drawText('Profit banked.', cx, cy + 210 * S, 18, LIME, 'center', 'JetBrains Mono');
+
+    if (lt > 3.1 && lt < 3.3) spawnBurst(cx + 80 * S, cy + 160 * S, 2, LIME);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 4: CAPABILITY CARDS (11-15s) ──
+function drawScene4(t) {
+  const lt = t - 11; // 0-4
+  const cx = W / 2, cy = H / 2;
+
+  const capabilities = [
+    { icon: '\ud83d\udcb0', text: 'Take partial profit', desc: 'Sell half, ride the rest' },
+    { icon: '\ud83d\udee1\ufe0f', text: 'Set a stop-loss', desc: 'Limit your downside' },
+    { icon: '\u2795', text: 'Add to your position', desc: 'Double down when confident' },
+    { icon: '\ud83d\udd04', text: 'Exit anytime', desc: 'No lock-in, ever' }
+  ];
+
+  // Header
+  const headA = fadeIn(lt, 0, 0.4);
+  ctx.globalAlpha = headA;
+  drawBoldText('Things you CAN\'T do with a binary bet', cx, cy - 210 * S, 20, RED, 'center', 'JetBrains Mono');
+  drawBoldText('but CAN do on Notch:', cx, cy - 180 * S, 20, LIME, 'center', 'JetBrains Mono');
+  ctx.globalAlpha = 1;
+
+  // Cards stagger in
+  const cardW = 320 * S, cardH = 70 * S, gap = 12 * S;
+  const startY = cy - 120 * S;
+
+  for (let i = 0; i < capabilities.length; i++) {
+    const delay = 0.3 + i * 0.5;
+    const cardA = fadeIn(lt, delay, 0.4);
+    const slideX = lerp(60 * S, 0, easeOut(cardA));
+
+    if (cardA <= 0) continue;
+    ctx.globalAlpha = cardA;
+
+    const y = startY + i * (cardH + gap);
+
+    // Card bg
+    drawRoundRect(cx + slideX, y, cardW, cardH, 12);
+    ctx.fillStyle = 'rgba(42, 46, 56, 0.4)';
+    ctx.fill();
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 1.5 * S;
+    ctx.stroke();
+
+    // Lime dot indicator
+    ctx.beginPath();
+    ctx.arc(cx + slideX - cardW / 2 + 25 * S, y, 5 * S, 0, Math.PI * 2);
+    ctx.fillStyle = LIME;
+    ctx.fill();
+
+    // Text
+    drawBoldText(capabilities[i].text, cx + slideX - cardW / 2 + 55 * S, y - 10 * S, 17, WHITE, 'left');
+    drawText(capabilities[i].desc, cx + slideX - cardW / 2 + 55 * S, y + 14 * S, 13, DIM, 'left', 'JetBrains Mono');
+  }
+
+  // "Binary bets" crossed out vs Notch
+  if (lt > 2.5) {
+    const cmpA = fadeIn(lt, 2.5, 0.5);
+    ctx.globalAlpha = cmpA;
+
+    const bottomY = startY + 4 * (cardH + gap) + 20 * S;
+    // Binary side
+    drawText('Binary bet:', cx - 100 * S, bottomY, 15, RED, 'center', 'JetBrains Mono');
+    drawText('Locked in. No control.', cx - 100 * S, bottomY + 24 * S, 13, '#666', 'center');
+    // Strike through
+    ctx.beginPath();
+    ctx.moveTo(cx - 200 * S, bottomY); ctx.lineTo(cx, bottomY);
+    ctx.strokeStyle = RED; ctx.lineWidth = 1.5 * S; ctx.stroke();
+
+    // Notch side
+    drawText('Notch:', cx + 120 * S, bottomY, 15, LIME, 'center', 'JetBrains Mono');
+    drawText('Full control. Always.', cx + 120 * S, bottomY + 24 * S, 13, LIME, 'center');
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 5: CTA (15-18s) ──
+function drawScene5(t) {
+  const lt = t - 15; // 0-3
+  const cx = W / 2, cy = H / 2;
+
+  // "Stop gambling. Start trading."
+  const tagA = fadeIn(lt, 0, 0.6);
+  ctx.globalAlpha = tagA;
+
+  const tagScale = lerp(0.8, 1, easeOut(fadeIn(lt, 0, 0.6)));
+  ctx.save();
+  ctx.translate(cx, cy - 60 * S);
+  ctx.scale(tagScale, tagScale);
+  drawBoldText('Stop gambling.', 0, -30 * S, 36, WHITE);
+  drawBoldText('Start trading.', 0, 30 * S, 36, LIME);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+
+  // Logo / Notch text
+  if (lt > 0.8) {
+    const logoA = fadeIn(lt, 0.8, 0.5);
+    ctx.globalAlpha = logoA;
+
+    // Notch logo mark - simple N mark
+    const logoY = cy + 60 * S;
+    const logoSize = 40 * S;
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 3.5 * S;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - logoSize / 2, logoY + logoSize / 3);
+    ctx.lineTo(cx - logoSize / 2, logoY - logoSize / 3);
+    ctx.lineTo(cx + logoSize / 2, logoY + logoSize / 3);
+    ctx.lineTo(cx + logoSize / 2, logoY - logoSize / 3);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+  }
+
+  // notch.win CTA
+  if (lt > 1.2) {
+    const ctaA = fadeIn(lt, 1.2, 0.5);
+    ctx.globalAlpha = ctaA;
+
+    const ctaY = cy + 130 * S;
+    const ctaW = 200 * S, ctaH = 52 * S;
+    drawRoundRect(cx, ctaY, ctaW, ctaH, 10);
+    ctx.fillStyle = LIME;
+    ctx.fill();
+    drawBoldText('notch.win', cx, ctaY, 22, '#0a0c10', 'center', 'JetBrains Mono');
+
+    // Glow
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 20 * S;
+    drawRoundRect(cx, ctaY, ctaW, ctaH, 10);
+    ctx.fillStyle = 'rgba(178,237,104,0.05)';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Pulse
+    const pulse = 1 + Math.sin(lt * 4) * 0.02;
+    ctx.save();
+    ctx.translate(cx, ctaY);
+    ctx.scale(pulse, pulse);
+    drawRoundRect(0, 0, ctaW + 8 * S, ctaH + 8 * S, 12);
+    ctx.strokeStyle = 'rgba(178,237,104,0.3)';
+    ctx.lineWidth = 1.5 * S;
+    ctx.stroke();
+    ctx.restore();
+
+    if (lt > 1.4 && lt < 1.6) spawnBurst(cx, ctaY, 20, LIME);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── MAIN DRAW LOOP ──
+let lastTime = 0;
+function draw(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const dt = Math.min((timestamp - (lastTime || timestamp)) / 1000, 0.05);
+  lastTime = timestamp;
+
+  if (running) animTime += dt;
+  const t = Math.min(animTime, DURATION);
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Background particles
+  updateBgParticles(dt);
+  drawBgParticles();
+
+  // Scenes with crossfade
+  if (t < 3.3) {
+    if (t > 2.8) ctx.globalAlpha = fadeOut(t, 2.8, 0.5);
+    drawScene1(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 2.8 && t < 7.3) {
+    if (t < 3.3) ctx.globalAlpha = fadeIn(t, 2.8, 0.5);
+    else if (t > 6.8) ctx.globalAlpha = fadeOut(t, 6.8, 0.5);
+    else ctx.globalAlpha = 1;
+    drawScene2(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 6.8 && t < 11.3) {
+    if (t < 7.3) ctx.globalAlpha = fadeIn(t, 6.8, 0.5);
+    else if (t > 10.8) ctx.globalAlpha = fadeOut(t, 10.8, 0.5);
+    else ctx.globalAlpha = 1;
+    drawScene3(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 10.8 && t < 15.3) {
+    if (t < 11.3) ctx.globalAlpha = fadeIn(t, 10.8, 0.5);
+    else if (t > 14.8) ctx.globalAlpha = fadeOut(t, 14.8, 0.5);
+    else ctx.globalAlpha = 1;
+    drawScene4(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 14.8) {
+    if (t < 15.3) ctx.globalAlpha = fadeIn(t, 14.8, 0.5);
+    else ctx.globalAlpha = 1;
+    drawScene5(t);
+    ctx.globalAlpha = 1;
+  }
+
+  // Update particles
+  particles = particles.filter(p => p.life > 0);
+  for (const p of particles) { p.update(dt); p.draw(); }
+
+  // Progress bar
+  drawProgressBar(t);
+
+  // Watch again button
+  if (t >= DURATION) {
+    watchBtn.classList.add('visible');
+    running = false;
+  }
+
+  requestAnimationFrame(draw);
+}
+
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  animTime = 0;
+  startTime = null;
+  lastTime = 0;
+  running = true;
+  particles = [];
+});
+
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

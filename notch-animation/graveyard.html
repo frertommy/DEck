@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — Bet Graveyard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+// ── SETUP ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const GRAY = '#555555';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+
+// ── TOMBSTONE DATA ──
+const tombstones = [
+  { team1: 'ARS', team2: 'CHE', date: 'Oct 5', odds: '+120' },
+  { team1: 'LIV', team2: 'MCI', date: 'Nov 12', odds: '-110' },
+  { team1: 'BAR', team2: 'RMA', date: 'Dec 3', odds: '+150' },
+  { team1: 'MUN', team2: 'TOT', date: 'Jan 18', odds: '-130' },
+  { team1: 'PSG', team2: 'MAR', date: 'Feb 2', odds: '+105' },
+  { team1: 'JUV', team2: 'ACM', date: 'Feb 22', odds: '+140' },
+  { team1: 'BVB', team2: 'BAY', date: 'Mar 8', odds: '+210' },
+  { team1: 'ARS', team2: 'LIV', date: 'Mar 22', odds: '-105' },
+  { team1: 'RMA', team2: 'ATL', date: 'Apr 5', odds: '+115' },
+  { team1: 'MCI', team2: 'CHE', date: 'Apr 19', odds: '-140' },
+];
+
+// Tombstone animation state
+let tombstoneStates = [];
+function initTombstones() {
+  tombstoneStates = tombstones.map((t, i) => ({
+    ...t,
+    riseProgress: 0,
+    crumbleProgress: 0,
+    x: 0, y: 0, w: 0, h: 0,
+    delay: i * 0.35,
+  }));
+}
+
+// ── FOG / DUST PARTICLES ──
+let fogParticles = [];
+function initFog() {
+  fogParticles = [];
+  for (let i = 0; i < 80; i++) {
+    fogParticles.push({
+      x: Math.random() * 2000,
+      y: Math.random() * 2000,
+      size: 20 + Math.random() * 60,
+      speed: 5 + Math.random() * 15,
+      alpha: 0.02 + Math.random() * 0.06,
+      drift: (Math.random() - 0.5) * 3,
+    });
+  }
+}
+
+// ── GLOW PARTICLES (for green section) ──
+let glowParticles = [];
+function initGlow() {
+  glowParticles = [];
+  for (let i = 0; i < 30; i++) {
+    glowParticles.push({
+      x: Math.random(),
+      y: Math.random(),
+      size: 2 + Math.random() * 4,
+      speed: 0.2 + Math.random() * 0.5,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
+// ── PRICE CHART DATA ──
+function generatePriceChart() {
+  const points = [];
+  let price = 1.00;
+  for (let i = 0; i <= 60; i++) {
+    price += (Math.random() - 0.35) * 0.08;
+    price = Math.max(0.8, Math.min(2.8, price));
+    points.push(price);
+  }
+  // Ensure upward trend
+  const scale = 2.4 / points[points.length - 1];
+  return points.map(p => p * scale * 0.9 + 0.2);
+}
+const chartData = generatePriceChart();
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 800;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── UTILS ──
+function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+
+function fillText(text, x, y, font, color, align, maxW) {
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  if (maxW) ctx.fillText(text, x, y, maxW);
+  else ctx.fillText(text, x, y);
+}
+
+// ── DRAW TOMBSTONE ──
+function drawTombstone(x, y, w, h, data, alpha, crumble) {
+  ctx.save();
+  ctx.globalAlpha = alpha * (1 - crumble);
+
+  // Crumble effect: shift pieces
+  if (crumble > 0) {
+    const shake = crumble * 6 * S;
+    ctx.translate((Math.random() - 0.5) * shake, crumble * 40 * S);
+  }
+
+  const r = 12 * S;
+  // Tombstone shape (rounded top)
+  ctx.beginPath();
+  ctx.moveTo(x - w/2, y + h/2);
+  ctx.lineTo(x - w/2, y - h/2 + r);
+  ctx.arc(x - w/2 + r, y - h/2 + r, r, Math.PI, Math.PI * 1.5);
+  ctx.lineTo(x + w/2 - r, y - h/2);
+  ctx.arc(x + w/2 - r, y - h/2 + r, r, -Math.PI / 2, 0);
+  ctx.lineTo(x + w/2, y + h/2);
+  ctx.closePath();
+
+  // Fill
+  const grad = ctx.createLinearGradient(x, y - h/2, x, y + h/2);
+  grad.addColorStop(0, '#2a2d35');
+  grad.addColorStop(1, '#1a1d24');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Border
+  ctx.strokeStyle = '#3a3d45';
+  ctx.lineWidth = 1.5 * S;
+  ctx.stroke();
+
+  // Cross at top
+  const crossY = y - h/2 + 22 * S;
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2 * S;
+  ctx.beginPath();
+  ctx.moveTo(x, crossY - 8 * S);
+  ctx.lineTo(x, crossY + 8 * S);
+  ctx.moveTo(x - 6 * S, crossY - 1 * S);
+  ctx.lineTo(x + 6 * S, crossY - 1 * S);
+  ctx.stroke();
+
+  // Text
+  const fs = Math.max(10, 13 * S);
+  const fsSmall = Math.max(8, 10 * S);
+  fillText(`${data.team1} vs ${data.team2}`, x, y - h/2 + 44 * S, `600 ${fs}px 'Space Grotesk'`, '#ccc', 'center');
+  fillText(data.date, x, y - h/2 + 62 * S, `400 ${fsSmall}px 'JetBrains Mono'`, '#777', 'center');
+  fillText('EXPIRED', x, y - h/2 + 84 * S, `700 ${fs}px 'JetBrains Mono'`, RED, 'center');
+
+  ctx.restore();
+}
+
+// ── DRAW NOTCH CARD ──
+function drawNotchCard(x, y, w, h, alpha, pulse) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Glow
+  const glowSize = 20 * S + pulse * 8 * S;
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, Math.max(w, h) / 2 + glowSize);
+  glow.addColorStop(0, 'rgba(178, 237, 104, 0.15)');
+  glow.addColorStop(1, 'rgba(178, 237, 104, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - w, y - h, w * 2, h * 2);
+
+  // Card body
+  const r = 14 * S;
+  ctx.beginPath();
+  ctx.roundRect(x - w/2, y - h/2, w, h, r);
+  const cardGrad = ctx.createLinearGradient(x - w/2, y - h/2, x + w/2, y + h/2);
+  cardGrad.addColorStop(0, '#1a2a15');
+  cardGrad.addColorStop(1, '#0d1a0a');
+  ctx.fillStyle = cardGrad;
+  ctx.fill();
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+
+  // Header
+  const fs = Math.max(11, 14 * S);
+  const fsBig = Math.max(13, 17 * S);
+  const fsSmall = Math.max(9, 11 * S);
+  fillText('LONG ARSENAL', x, y - h/2 + 28 * S, `700 ${fsBig}px 'Space Grotesk'`, LIME, 'center');
+  fillText('Opened Aug 12 · STILL ALIVE', x, y - h/2 + 50 * S, `400 ${fsSmall}px 'JetBrains Mono'`, '#8fbc5a', 'center');
+
+  // "ALIVE" pulse dot
+  const dotX = x - w/2 + 20 * S;
+  const dotY = y - h/2 + 28 * S;
+  ctx.beginPath();
+  ctx.arc(dotX, dotY, (3 + pulse * 2) * S, 0, Math.PI * 2);
+  ctx.fillStyle = LIME;
+  ctx.fill();
+
+  // Mini price chart
+  const chartX = x - w/2 + 20 * S;
+  const chartY = y - h/2 + 68 * S;
+  const chartW = w - 40 * S;
+  const chartH = h - 100 * S;
+  drawMiniChart(chartX, chartY, chartW, chartH, 1);
+
+  // Bottom text
+  fillText('+142%', x, y + h/2 - 22 * S, `700 ${fsBig}px 'JetBrains Mono'`, LIME, 'center');
+
+  ctx.restore();
+}
+
+function drawMiniChart(x, y, w, h, progress) {
+  const pts = chartData;
+  const count = Math.floor(pts.length * progress);
+  if (count < 2) return;
+
+  const minP = Math.min(...pts);
+  const maxP = Math.max(...pts);
+
+  ctx.beginPath();
+  for (let i = 0; i < count; i++) {
+    const px = x + (i / (pts.length - 1)) * w;
+    const py = y + h - ((pts[i] - minP) / (maxP - minP)) * h;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+
+  // Fill under
+  const lastX = x + ((count - 1) / (pts.length - 1)) * w;
+  const lastY = y + h - ((pts[count - 1] - minP) / (maxP - minP)) * h;
+  ctx.lineTo(lastX, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.closePath();
+  const fillGrad = ctx.createLinearGradient(x, y, x, y + h);
+  fillGrad.addColorStop(0, 'rgba(178, 237, 104, 0.25)');
+  fillGrad.addColorStop(1, 'rgba(178, 237, 104, 0.02)');
+  ctx.fillStyle = fillGrad;
+  ctx.fill();
+}
+
+// ── DRAW FOG ──
+function drawFog(t, alphaMultiplier) {
+  for (const p of fogParticles) {
+    const px = ((p.x + p.speed * t * 10) % (W + p.size * 2 * S)) - p.size * S;
+    const py = p.y / 2000 * H + Math.sin(t * 0.5 + p.drift) * 20 * S;
+    ctx.beginPath();
+    ctx.arc(px, py, p.size * S, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(100, 110, 130, ${p.alpha * (alphaMultiplier || 1)})`;
+    ctx.fill();
+  }
+}
+
+// ── PROGRESS BAR ──
+function drawProgress(t) {
+  const barH = 3 * S;
+  const y = H - barH;
+  ctx.fillStyle = '#1a1d24';
+  ctx.fillRect(0, y, W, barH);
+  const progress = t / DURATION;
+  const grad = ctx.createLinearGradient(0, y, W * progress, y);
+  grad.addColorStop(0, LIME);
+  grad.addColorStop(1, '#8fbc5a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, y, W * progress, barH);
+}
+
+// ── MAIN PHASES ──
+
+function drawPhase1(t) {
+  // 0-4s: Tombstones rise, eerie scene
+  drawFog(t, 1);
+
+  // Skull emoji floating
+  const skullY = H * 0.08 + Math.sin(t * 1.5) * 15 * S;
+  const skullAlpha = clamp01(t / 1);
+  fillText('\u2620\uFE0F', W / 2, skullY, `${Math.max(28, 40 * S)}px serif`, `rgba(255,255,255,${skullAlpha})`, 'center');
+
+  // Arrange tombstones in two rows
+  const cols = 5;
+  const rows = 2;
+  const tsW = Math.min(130 * S, W / (cols + 1));
+  const tsH = tsW * 1.15;
+  const gap = tsW * 0.25;
+  const totalW = cols * tsW + (cols - 1) * gap;
+  const startX = (W - totalW) / 2 + tsW / 2;
+  const startY1 = H * 0.35;
+  const startY2 = H * 0.65;
+
+  for (let i = 0; i < tombstoneStates.length; i++) {
+    const ts = tombstoneStates[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    ts.x = startX + col * (tsW + gap);
+    ts.y = row === 0 ? startY1 : startY2;
+    ts.w = tsW;
+    ts.h = tsH;
+
+    // Rise animation
+    const riseStart = ts.delay;
+    const riseEnd = riseStart + 0.8;
+    ts.riseProgress = clamp01((t - riseStart) / (riseEnd - riseStart));
+
+    if (ts.riseProgress > 0) {
+      const riseEased = easeOut(ts.riseProgress);
+      const drawY = ts.y + (1 - riseEased) * tsH * 1.5;
+      drawTombstone(ts.x, drawY, ts.w, ts.h, ts, riseEased, 0);
+    }
+  }
+
+  // Ground line
+  const groundAlpha = clamp01(t / 2);
+  ctx.strokeStyle = `rgba(60, 65, 75, ${groundAlpha})`;
+  ctx.lineWidth = 1 * S;
+  const groundY1 = startY1 + tsH / 2 + 5 * S;
+  const groundY2 = startY2 + tsH / 2 + 5 * S;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.1, groundY1);
+  ctx.lineTo(W * 0.9, groundY1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(W * 0.1, groundY2);
+  ctx.lineTo(W * 0.9, groundY2);
+  ctx.stroke();
+}
+
+function drawPhase2(t) {
+  // 4-8s: Zoom into bet lifecycle, crumble
+  const pt = t - 4; // 0-4 within phase
+
+  drawFog(t, Math.max(0, 1 - pt * 0.2));
+
+  const centerX = W / 2;
+  const centerY = H / 2;
+
+  if (pt < 2) {
+    // Show the bet story
+    const storyAlpha = clamp01(pt / 0.5);
+    const fs = Math.max(13, 18 * S);
+    const fsBig = Math.max(16, 24 * S);
+    const fsSmall = Math.max(11, 14 * S);
+    const lineH = 38 * S;
+
+    fillText('You bet Arsenal to win.', centerX, centerY - lineH * 2.5, `600 ${fs}px 'Space Grotesk'`, `rgba(255,255,255,${storyAlpha})`, 'center');
+
+    const line2Alpha = clamp01((pt - 0.4) / 0.5);
+    fillText('They won 3-1. You collected $95.', centerX, centerY - lineH * 1.5, `600 ${fs}px 'Space Grotesk'`, `rgba(178,237,104,${line2Alpha})`, 'center');
+
+    const line3Alpha = clamp01((pt - 0.8) / 0.5);
+    fillText('Then the bet DIED.', centerX, centerY - lineH * 0.3, `700 ${fsBig}px 'Space Grotesk'`, `rgba(255,77,77,${line3Alpha})`, 'center');
+
+    const line4Alpha = clamp01((pt - 1.3) / 0.5);
+    fillText('Next match: you bet again. Another $50.', centerX, centerY + lineH * 0.8, `400 ${fsSmall}px 'JetBrains Mono'`, `rgba(170,170,170,${line4Alpha})`, 'center');
+  }
+
+  if (pt >= 2) {
+    // Cycle visualization and crumble
+    const cycleT = pt - 2; // 0-2
+    const cycleAlpha = clamp01(cycleT / 0.3);
+
+    // Show cycle arrows: BET → RESULT → DEAD → BET → ...
+    const steps = ['BET', 'RESULT', 'DEAD', 'BET', 'RESULT', 'DEAD'];
+    const stepColors = [WHITE, LIME, RED, WHITE, LIME, RED];
+    const stepW = Math.min(100 * S, W / 8);
+    const totalStepW = steps.length * stepW;
+    const stepStartX = (W - totalStepW) / 2 + stepW / 2;
+    const stepY = centerY - 30 * S;
+    const fs = Math.max(10, 13 * S);
+
+    for (let i = 0; i < steps.length; i++) {
+      const stepDelay = i * 0.15;
+      const stepAlpha = clamp01((cycleT - stepDelay) / 0.3) * cycleAlpha;
+      const sx = stepStartX + i * stepW;
+      fillText(steps[i], sx, stepY, `700 ${fs}px 'JetBrains Mono'`, stepColors[i], 'center');
+      ctx.globalAlpha = stepAlpha;
+
+      // Arrow between steps
+      if (i < steps.length - 1) {
+        ctx.strokeStyle = GRAY;
+        ctx.lineWidth = 1.5 * S;
+        const arrowX = sx + stepW * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, stepY);
+        ctx.lineTo(arrowX + 12 * S, stepY);
+        ctx.lineTo(arrowX + 8 * S, stepY - 4 * S);
+        ctx.moveTo(arrowX + 12 * S, stepY);
+        ctx.lineTo(arrowX + 8 * S, stepY + 4 * S);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Counter
+    const countAlpha = clamp01((cycleT - 1) / 0.5);
+    const fsBig = Math.max(16, 24 * S);
+    fillText('This season: 42 bets placed. 42 bets dead.', centerX, centerY + 50 * S, `700 ${fsBig}px 'Space Grotesk'`, `rgba(255,77,77,${countAlpha})`, 'center');
+  }
+}
+
+function drawPhase3(t) {
+  // 8-12s: FLIP to green, Notch card
+  const pt = t - 8; // 0-4
+
+  // Green flash transition
+  const flashAlpha = pt < 0.5 ? clamp01(pt / 0.3) * 0.3 : Math.max(0, 0.3 - (pt - 0.5) * 0.6);
+  if (flashAlpha > 0) {
+    ctx.fillStyle = `rgba(178, 237, 104, ${flashAlpha})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Glow particles
+  const particleAlpha = clamp01((pt - 0.5) / 1);
+  for (const gp of glowParticles) {
+    const px = gp.x * W;
+    const py = gp.y * H + Math.sin(t * gp.speed + gp.phase) * 30 * S;
+    ctx.beginPath();
+    ctx.arc(px, py, gp.size * S, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(178, 237, 104, ${0.15 * particleAlpha})`;
+    ctx.fill();
+  }
+
+  // Headline
+  const headAlpha = clamp01((pt - 0.3) / 0.7);
+  const fsBig = Math.max(14, 20 * S);
+  fillText('What if ONE position captured the WHOLE season?', W / 2, H * 0.12, `700 ${fsBig}px 'Space Grotesk'`, `rgba(255,255,255,${headAlpha})`, 'center');
+
+  // Notch card
+  const cardAlpha = clamp01((pt - 0.8) / 0.8);
+  const pulse = Math.sin(t * 3) * 0.5 + 0.5;
+  const cardW = Math.min(320 * S, W * 0.6);
+  const cardH = cardW * 1.1;
+  drawNotchCard(W / 2, H * 0.48, cardW, cardH, cardAlpha, pulse);
+
+  // Bottom text
+  const btmAlpha = clamp01((pt - 2) / 0.8);
+  const fsM = Math.max(11, 14 * S);
+  fillText('Every win, every transfer, every result \u2014 captured.', W / 2, H * 0.85, `500 ${fsM}px 'Space Grotesk'`, `rgba(178, 237, 104, ${btmAlpha})`, 'center');
+}
+
+function drawPhase4(t) {
+  // 12-15s: Split comparison
+  const pt = t - 12; // 0-3
+  const splitAlpha = clamp01(pt / 0.8);
+
+  const midX = W / 2;
+  const dividerX = midX;
+
+  // Left side: Graveyard (gray)
+  ctx.save();
+  ctx.globalAlpha = splitAlpha;
+
+  // Left bg tint
+  ctx.fillStyle = 'rgba(20, 15, 15, 0.5)';
+  ctx.fillRect(0, 0, midX, H);
+
+  // Right bg tint
+  ctx.fillStyle = 'rgba(15, 25, 15, 0.3)';
+  ctx.fillRect(midX, 0, midX, H);
+
+  // Divider
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2 * S;
+  ctx.setLineDash([8 * S, 8 * S]);
+  ctx.beginPath();
+  ctx.moveTo(dividerX, H * 0.05);
+  ctx.lineTo(dividerX, H * 0.95);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // Left: mini tombstones
+  const leftCenterX = midX / 2;
+  const miniW = Math.min(50 * S, midX / 5);
+  const miniH = miniW * 1.1;
+  const miniGap = miniW * 0.15;
+
+  const miniCols = 6;
+  const miniRows = 7;
+  const miniTotalW = miniCols * miniW + (miniCols - 1) * miniGap;
+  const miniStartX = leftCenterX - miniTotalW / 2 + miniW / 2;
+  const miniStartY = H * 0.2;
+  const miniRowH = miniH + miniGap;
+
+  for (let i = 0; i < 42; i++) {
+    const col = i % miniCols;
+    const row = Math.floor(i / miniCols);
+    const mx = miniStartX + col * (miniW + miniGap);
+    const my = miniStartY + row * miniRowH;
+    const delay = i * 0.02;
+    const mAlpha = clamp01((pt - delay) / 0.4) * splitAlpha;
+
+    ctx.save();
+    ctx.globalAlpha = mAlpha * 0.6;
+    const r = 4 * S;
+    ctx.beginPath();
+    ctx.moveTo(mx - miniW/2, my + miniH/2);
+    ctx.lineTo(mx - miniW/2, my - miniH/2 + r);
+    ctx.arc(mx - miniW/2 + r, my - miniH/2 + r, r, Math.PI, Math.PI * 1.5);
+    ctx.lineTo(mx + miniW/2 - r, my - miniH/2);
+    ctx.arc(mx + miniW/2 - r, my - miniH/2 + r, r, -Math.PI / 2, 0);
+    ctx.lineTo(mx + miniW/2, my + miniH/2);
+    ctx.closePath();
+    ctx.fillStyle = '#1e2028';
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 0.8 * S;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Left label
+  const lblAlpha = clamp01((pt - 0.5) / 0.5) * splitAlpha;
+  const fsBig = Math.max(14, 20 * S);
+  const fsM = Math.max(12, 16 * S);
+  fillText('42 bets', leftCenterX, H * 0.88, `700 ${fsBig}px 'Space Grotesk'`, `rgba(255,77,77,${lblAlpha})`, 'center');
+  fillText('42 deaths', leftCenterX, H * 0.93, `500 ${fsM}px 'JetBrains Mono'`, `rgba(150,150,150,${lblAlpha})`, 'center');
+
+  // Right: single Notch card
+  const rightCenterX = midX + midX / 2;
+  const cardAlpha = clamp01((pt - 0.6) / 0.8) * splitAlpha;
+  const pulse = Math.sin(t * 3) * 0.5 + 0.5;
+  const cardW = Math.min(260 * S, midX * 0.7);
+  const cardH = cardW * 1.1;
+
+  drawNotchCard(rightCenterX, H * 0.48, cardW, cardH, cardAlpha, pulse);
+
+  fillText('1 position', rightCenterX, H * 0.88, `700 ${fsBig}px 'Space Grotesk'`, `rgba(178,237,104,${lblAlpha})`, 'center');
+  fillText('0 deaths', rightCenterX, H * 0.93, `500 ${fsM}px 'JetBrains Mono'`, `rgba(178,237,104,${lblAlpha * 0.7})`, 'center');
+
+  // VS badge
+  const vsAlpha = clamp01((pt - 1) / 0.5) * splitAlpha;
+  ctx.save();
+  ctx.globalAlpha = vsAlpha;
+  ctx.beginPath();
+  ctx.arc(dividerX, H / 2, 22 * S, 0, Math.PI * 2);
+  ctx.fillStyle = '#0a0c10';
+  ctx.fill();
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+  fillText('VS', dividerX, H / 2, `700 ${Math.max(11, 14 * S)}px 'Space Grotesk'`, WHITE, 'center');
+  ctx.restore();
+}
+
+function drawPhase5(t) {
+  // 15-18s: CTA
+  const pt = t - 15; // 0-3
+
+  // Glow particles
+  for (const gp of glowParticles) {
+    const px = gp.x * W;
+    const py = gp.y * H + Math.sin(t * gp.speed + gp.phase) * 20 * S;
+    ctx.beginPath();
+    ctx.arc(px, py, gp.size * S * 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(178, 237, 104, 0.08)`;
+    ctx.fill();
+  }
+
+  const centerX = W / 2;
+  const centerY = H / 2;
+
+  // Main tagline
+  const tagAlpha = clamp01(pt / 0.8);
+  const fsBig = Math.max(18, 28 * S);
+  fillText("Your conviction doesn\u2019t die", centerX, centerY - 40 * S, `700 ${fsBig}px 'Space Grotesk'`, `rgba(255,255,255,${tagAlpha})`, 'center');
+  fillText('after 90 minutes.', centerX, centerY + 10 * S, `700 ${fsBig}px 'Space Grotesk'`, `rgba(178,237,104,${tagAlpha})`, 'center');
+
+  // CTA
+  const ctaAlpha = clamp01((pt - 1) / 0.6);
+  const ctaY = centerY + 80 * S;
+  const ctaW = 220 * S;
+  const ctaH = 52 * S;
+  const pulse = Math.sin(t * 2.5) * 0.5 + 0.5;
+
+  ctx.save();
+  ctx.globalAlpha = ctaAlpha;
+
+  // CTA glow
+  const ctaGlow = ctx.createRadialGradient(centerX, ctaY, 0, centerX, ctaY, ctaW);
+  ctaGlow.addColorStop(0, `rgba(178, 237, 104, ${0.1 + pulse * 0.05})`);
+  ctaGlow.addColorStop(1, 'rgba(178, 237, 104, 0)');
+  ctx.fillStyle = ctaGlow;
+  ctx.fillRect(centerX - ctaW, ctaY - ctaH, ctaW * 2, ctaH * 2);
+
+  // CTA button
+  ctx.beginPath();
+  ctx.roundRect(centerX - ctaW / 2, ctaY - ctaH / 2, ctaW, ctaH, 10 * S);
+  ctx.fillStyle = LIME;
+  ctx.fill();
+
+  const fsCta = Math.max(14, 20 * S);
+  fillText('notch.win', centerX, ctaY, `700 ${fsCta}px 'Space Grotesk'`, '#0a0c10', 'center');
+  ctx.restore();
+
+  // Show Watch Again button
+  if (pt > 2) {
+    watchBtn.classList.add('visible');
+  }
+}
+
+// ── MAIN LOOP ──
+function draw(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const rawT = (timestamp - startTime) / 1000;
+  animTime = Math.min(rawT, DURATION);
+
+  // Clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const t = animTime;
+
+  // Phase routing
+  if (t < 4) {
+    drawPhase1(t);
+  } else if (t < 8) {
+    // Transition: fade out phase 1
+    const fadeOut = 1 - clamp01((t - 4) / 0.5);
+    if (fadeOut > 0) {
+      ctx.globalAlpha = fadeOut;
+      drawPhase1(Math.min(t, 4));
+      ctx.globalAlpha = 1;
+    }
+    drawPhase2(t);
+  } else if (t < 12) {
+    drawPhase3(t);
+  } else if (t < 15) {
+    drawPhase4(t);
+  } else {
+    // Transition: fade out phase 4
+    const fadeOut = 1 - clamp01((t - 15) / 0.6);
+    if (fadeOut > 0) {
+      ctx.globalAlpha = fadeOut;
+      drawPhase4(Math.min(t, 15));
+      ctx.globalAlpha = 1;
+    }
+    drawPhase5(t);
+  }
+
+  // Progress bar
+  drawProgress(t);
+
+  if (running && animTime < DURATION) {
+    requestAnimationFrame(draw);
+  }
+}
+
+// ── INIT & RESTART ──
+function init() {
+  watchBtn.classList.remove('visible');
+  running = true;
+  startTime = null;
+  animTime = 0;
+  initTombstones();
+  initFog();
+  initGlow();
+  requestAnimationFrame(draw);
+}
+
+watchBtn.addEventListener('click', init);
+init();
+</script>
+</body>
+</html>

@@ -72,7 +72,7 @@ function spawnParticles(x, y, color, count) {
   for (let i = 0; i < count; i++) {
     particles.push({
       x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6 - 2,
-      life: 1, decay: 0.01 + Math.random() * 0.02, size: 2 + Math.random() * 3, color
+      life: 1, decay: 0.02 + Math.random() * 0.04, size: 2 + Math.random() * 3, color
     });
   }
 }
@@ -198,6 +198,7 @@ let startTime = 0;
 let running = true;
 let slotParticlesSpawned = [false,false,false,false,false];
 let confettiSpawned = false;
+let particlesClearedAt9 = false;
 
 function restart() {
   frame = 0;
@@ -207,6 +208,7 @@ function restart() {
   confetti = [];
   slotParticlesSpawned = [false,false,false,false,false];
   confettiSpawned = false;
+  particlesClearedAt9 = false;
   watchBtn.style.display = 'none';
   requestAnimationFrame(loop);
 }
@@ -480,6 +482,12 @@ function loop() {
   // Ambient glow
   drawGlow(W * 0.3, H * 0.3, 300 * scale, 'rgba(178,237,104,0.03)', 1);
   drawGlow(W * 0.7, H * 0.6, 250 * scale, 'rgba(239,1,7,0.02)', 1);
+
+  // Clear slot particles before chart phase
+  if (t >= 9.5 && !particlesClearedAt9) {
+    particlesClearedAt9 = true;
+    particles = [];
+  }
 
   // ============ PHASE 1: 0-4s — Title + empty slots ============
   if (t < 10) {

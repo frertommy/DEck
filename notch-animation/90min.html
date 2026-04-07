@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — 90 Minutes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+// ── SETUP ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy;
+    this.life = life; this.maxLife = life;
+    this.size = size;
+  }
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.vy += 20 * dt; // gravity
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a * 0.7;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnDust(cx, cy, count, color) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 30 + Math.random() * 120;
+    particles.push(new Particle(
+      cx + (Math.random()-0.5)*60, cy + (Math.random()-0.5)*30,
+      color || DIM,
+      Math.cos(angle)*speed, Math.sin(angle)*speed - 40,
+      1.5 + Math.random()*1.5,
+      2 + Math.random()*4
+    ));
+  }
+}
+
+let dustSpawned = false;
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 800;
+  ctx.setTransform(1,0,0,1,0,0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── HELPERS ──
+function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+function fadeIn(t, start, dur) { return Math.max(0, Math.min(1, (t - start) / dur)); }
+function fadeOut(t, start, dur) { return Math.max(0, Math.min(1, 1 - (t - start) / dur)); }
+function fadeInOut(t, inStart, inDur, outStart, outDur) {
+  return Math.min(fadeIn(t, inStart, inDur), fadeOut(t, outStart, outDur));
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function drawText(text, x, y, size, color, font, align, alpha) {
+  ctx.globalAlpha = alpha !== undefined ? alpha : 1;
+  ctx.fillStyle = color || WHITE;
+  ctx.font = `${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+  ctx.globalAlpha = 1;
+}
+
+function drawTextBold(text, x, y, size, color, font, align, alpha) {
+  ctx.globalAlpha = alpha !== undefined ? alpha : 1;
+  ctx.fillStyle = color || WHITE;
+  ctx.font = `700 ${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+  ctx.globalAlpha = 1;
+}
+
+// ── HEARTBEAT ──
+function drawHeartbeatLine(cx, cy, width, t, alive, flatlineProgress) {
+  const h = 40 * S;
+  ctx.lineWidth = 3 * S;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Draw the trace
+  const steps = 200;
+  const traceLen = width;
+  ctx.beginPath();
+
+  for (let i = 0; i <= steps; i++) {
+    const frac = i / steps;
+    const x = cx - traceLen/2 + frac * traceLen;
+
+    let y = cy;
+    if (alive) {
+      // Heartbeat pattern
+      const phase = (frac * 4 + t * 2) % 1;
+      if (phase > 0.35 && phase < 0.40) {
+        y = cy - h * 0.3;
+      } else if (phase > 0.40 && phase < 0.45) {
+        y = cy + h * 0.8;
+      } else if (phase > 0.45 && phase < 0.50) {
+        y = cy - h * 1.0;
+      } else if (phase > 0.50 && phase < 0.55) {
+        y = cy + h * 0.4;
+      } else if (phase > 0.55 && phase < 0.60) {
+        y = cy - h * 0.15;
+      }
+    } else {
+      // Flatline with diminishing noise
+      const noise = (1 - flatlineProgress) * h * 0.1 * Math.sin(frac * 50 + t * 10);
+      y = cy + noise;
+    }
+
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+
+  const color = alive ? LIME : RED;
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = 0.9;
+  ctx.stroke();
+
+  // Glow
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 15 * S;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+}
+
+// ── PROGRESS BAR ──
+function drawProgressBar(t) {
+  const barW = W * 0.6;
+  const barH = 4 * S;
+  const x = (W - barW) / 2;
+  const y = H - 30 * S;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(x, y, barW, barH);
+  ctx.fillStyle = LIME;
+  ctx.fillRect(x, y, barW * Math.min(1, t / DURATION), barH);
+}
+
+// ── SCENE 1: Countdown + Heartbeat (0-4s) ──
+function drawScene1(t) {
+  const alpha = fadeInOut(t, 0, 0.5, 3.5, 0.5);
+  if (alpha <= 0) return;
+
+  // Clock ticking fast: 90:00 down to 00:00 over 4 seconds
+  const progress = Math.min(1, t / 4);
+  const eased = ease(progress);
+  const totalSeconds = 90 * 60; // 5400
+  const remaining = totalSeconds * (1 - eased);
+  const clockStr = formatTime(remaining);
+
+  // Giant clock
+  const clockY = H * 0.35;
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = WHITE;
+  ctx.font = `700 ${Math.round(120 * S)}px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(clockStr, W/2, clockY);
+
+  // Glow on clock
+  if (remaining < 600) {
+    ctx.shadowColor = RED;
+    ctx.shadowBlur = 20 * S;
+    ctx.fillStyle = RED;
+    ctx.fillText(clockStr, W/2, clockY);
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.globalAlpha = 1;
+
+  // Subtitle
+  drawText('The lifespan of your bet.', W/2, clockY + 90*S, 22, DIM, 'Space Grotesk', 'center', alpha * fadeIn(t, 0.5, 0.5));
+
+  // Heartbeat line
+  const hbAlpha = alpha;
+  ctx.globalAlpha = hbAlpha;
+  drawHeartbeatLine(W/2, H * 0.62, W * 0.5, t, true, 0);
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 2: Flatline + Death (4-8s) ──
+function drawScene2(t) {
+  const localT = t - 4;
+  if (localT < 0 || localT > 4) return;
+
+  const alpha = fadeInOut(t, 4, 0.3, 7.5, 0.5);
+  if (alpha <= 0) return;
+
+  // Clock stuck at 00:00
+  const clockY = H * 0.28;
+  ctx.globalAlpha = alpha;
+
+  // Flash effect at start
+  if (localT < 0.3) {
+    ctx.fillStyle = RED;
+    ctx.globalAlpha = alpha * (1 - localT/0.3) * 0.15;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = alpha;
+  }
+
+  // 00:00 in red
+  const clockAlpha = alpha * (0.3 + 0.7 * Math.max(0, 1 - localT * 0.3));
+  ctx.fillStyle = RED;
+  ctx.font = `700 ${Math.round(120 * S)}px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.globalAlpha = clockAlpha;
+  ctx.shadowColor = RED;
+  ctx.shadowBlur = 30 * S;
+  ctx.fillText('00:00', W/2, clockY);
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = alpha;
+
+  // Skull emoji fading in
+  if (localT > 0.5) {
+    const skullAlpha = alpha * fadeIn(t, 4.5, 0.4);
+    drawTextBold('DEAD.', W/2, clockY + 90*S, 36, RED, 'Space Grotesk', 'center', skullAlpha);
+  }
+
+  // Flatline
+  const flatProgress = Math.min(1, localT / 1.5);
+  drawHeartbeatLine(W/2, H * 0.55, W * 0.5, t, false, flatProgress);
+
+  // "Full time" text
+  if (localT > 1.5) {
+    const ftAlpha = alpha * fadeIn(t, 5.5, 0.5);
+    drawText('Full time. Your bet doesn\'t exist anymore.', W/2, H * 0.72, 20, DIM, 'Space Grotesk', 'center', ftAlpha);
+  }
+
+  // Bet card crumbling effect
+  if (localT > 0.8 && localT < 3.5) {
+    const cardAlpha = alpha * Math.max(0, 1 - (localT - 0.8) / 1.5);
+    const cardW = 180 * S;
+    const cardH = 80 * S;
+    const cardX = W/2 - cardW/2;
+    const cardY = H * 0.82;
+
+    // Gray card
+    ctx.globalAlpha = cardAlpha;
+    ctx.fillStyle = '#333';
+    const r = 8 * S;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, r);
+    ctx.fill();
+    ctx.fillStyle = '#555';
+    ctx.font = `${Math.round(14*S)}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText('ARS 2-1 CHE', W/2, cardY + cardH * 0.4);
+    ctx.fillStyle = '#444';
+    ctx.font = `${Math.round(11*S)}px 'Space Grotesk', sans-serif`;
+    ctx.fillText('EXPIRED', W/2, cardY + cardH * 0.7);
+    ctx.globalAlpha = 1;
+
+    // Spawn dust
+    if (!dustSpawned && localT > 1.8) {
+      spawnDust(W/2, cardY + cardH/2, 40, '#555');
+      dustSpawned = true;
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 3: Season Timeline - Tiny Bet (8-12s) ──
+function drawScene3(t) {
+  const localT = t - 8;
+  if (localT < 0 || localT > 4) return;
+
+  const alpha = fadeInOut(t, 8, 0.5, 11.5, 0.5);
+  if (alpha <= 0) return;
+
+  // Text lines
+  const line1Alpha = alpha * fadeIn(t, 8, 0.4);
+  const line2Alpha = alpha * fadeIn(t, 8.6, 0.4);
+  const line3Alpha = alpha * fadeIn(t, 9.2, 0.4);
+
+  drawText('You knew Arsenal would win the league in August.', W/2, H*0.18, 20, DIM, 'Space Grotesk', 'center', line1Alpha);
+  drawTextBold('You were RIGHT.', W/2, H*0.24, 26, LIME, 'Space Grotesk', 'center', line2Alpha);
+  drawText('But your bet only lived for 90 minutes.', W/2, H*0.30, 20, DIM, 'Space Grotesk', 'center', line3Alpha);
+
+  // Timeline
+  const tlAlpha = alpha * fadeIn(t, 9.5, 0.5);
+  if (tlAlpha <= 0) return;
+
+  const tlY = H * 0.50;
+  const tlLeft = W * 0.12;
+  const tlRight = W * 0.88;
+  const tlW = tlRight - tlLeft;
+
+  ctx.globalAlpha = tlAlpha;
+
+  // Full season green arrow
+  const months = ['AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
+  const arrowGrow = ease(Math.min(1, (localT - 1.5) / 1.0));
+
+  // Green arrow background
+  ctx.fillStyle = LIME;
+  ctx.globalAlpha = tlAlpha * 0.15;
+  const arrowW = tlW * arrowGrow;
+  ctx.fillRect(tlLeft, tlY - 16*S, arrowW, 32*S);
+  ctx.globalAlpha = tlAlpha;
+
+  // Arrow line
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2 * S;
+  ctx.globalAlpha = tlAlpha * 0.4;
+  ctx.beginPath();
+  ctx.moveTo(tlLeft, tlY);
+  ctx.lineTo(tlLeft + arrowW, tlY);
+  ctx.stroke();
+
+  // Arrow head
+  if (arrowGrow > 0.9) {
+    ctx.beginPath();
+    ctx.moveTo(tlRight - 10*S, tlY - 8*S);
+    ctx.lineTo(tlRight, tlY);
+    ctx.lineTo(tlRight - 10*S, tlY + 8*S);
+    ctx.strokeStyle = LIME;
+    ctx.stroke();
+  }
+  ctx.globalAlpha = tlAlpha;
+
+  // Month labels
+  for (let i = 0; i < months.length; i++) {
+    const x = tlLeft + (i / (months.length - 1)) * tlW;
+    ctx.fillStyle = DIM;
+    ctx.font = `${Math.round(11*S)}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(months[i], x, tlY + 35*S);
+
+    // Tick marks
+    ctx.fillRect(x - 0.5*S, tlY - 6*S, 1*S, 12*S);
+  }
+
+  // Tiny red sliver for the bet
+  const sliverAlpha = tlAlpha * fadeIn(t, 10.2, 0.4);
+  if (sliverAlpha > 0) {
+    ctx.globalAlpha = sliverAlpha;
+    const sliverW = Math.max(4*S, tlW * 0.008); // tiny
+    ctx.fillStyle = RED;
+    ctx.fillRect(tlLeft + tlW * 0.02, tlY - 20*S, sliverW, 40*S);
+
+    // Red glow
+    ctx.shadowColor = RED;
+    ctx.shadowBlur = 10*S;
+    ctx.fillRect(tlLeft + tlW * 0.02, tlY - 20*S, sliverW, 40*S);
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.fillStyle = RED;
+    ctx.font = `600 ${Math.round(12*S)}px 'Space Grotesk', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('YOUR BET', tlLeft + tlW * 0.02 + sliverW/2, tlY - 32*S);
+  }
+
+  // Bottom text
+  const btmAlpha = alpha * fadeIn(t, 10.5, 0.5);
+  drawText('You captured 90 minutes of a 10-month story.', W/2, H * 0.72, 20, WHITE, 'Space Grotesk', 'center', btmAlpha * 0.8);
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 4: Notch Position - Full Season (12-16s) ──
+function drawScene4(t) {
+  const localT = t - 12;
+  if (localT < 0 || localT > 4) return;
+
+  const alpha = fadeInOut(t, 12, 0.5, 15.5, 0.5);
+  if (alpha <= 0) return;
+
+  // Header
+  const hAlpha = alpha * fadeIn(t, 12, 0.4);
+  drawTextBold('On Notch, your position lives as long as you want.', W/2, H*0.16, 24, LIME, 'Space Grotesk', 'center', hAlpha);
+
+  // Timeline
+  const tlY = H * 0.42;
+  const tlLeft = W * 0.12;
+  const tlRight = W * 0.88;
+  const tlW = tlRight - tlLeft;
+
+  const months = ['AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
+
+  ctx.globalAlpha = alpha;
+
+  // Month labels + ticks
+  for (let i = 0; i < months.length; i++) {
+    const x = tlLeft + (i / (months.length - 1)) * tlW;
+    ctx.fillStyle = DIM;
+    ctx.font = `${Math.round(11*S)}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(months[i], x, tlY + 35*S);
+    ctx.fillRect(x - 0.5*S, tlY - 6*S, 1*S, 12*S);
+  }
+
+  // Green bar growing across the ENTIRE timeline
+  const barGrow = ease(Math.min(1, localT / 2.0));
+  const barW = tlW * barGrow;
+  const barH = 36 * S;
+
+  // Bar fill
+  const grad = ctx.createLinearGradient(tlLeft, 0, tlLeft + barW, 0);
+  grad.addColorStop(0, LIME);
+  grad.addColorStop(1, '#8ed44e');
+  ctx.fillStyle = grad;
+  ctx.globalAlpha = alpha * 0.25;
+  ctx.fillRect(tlLeft, tlY - barH/2, barW, barH);
+
+  // Bar border
+  ctx.globalAlpha = alpha * 0.9;
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2.5 * S;
+  ctx.strokeRect(tlLeft, tlY - barH/2, barW, barH);
+
+  // Glow
+  ctx.shadowColor = LIME;
+  ctx.shadowBlur = 20 * S;
+  ctx.strokeRect(tlLeft, tlY - barH/2, barW, barH);
+  ctx.shadowBlur = 0;
+
+  // Label on bar
+  if (barGrow > 0.5) {
+    ctx.globalAlpha = alpha * Math.min(1, (barGrow - 0.5) * 4);
+    ctx.fillStyle = LIME;
+    ctx.font = `700 ${Math.round(14*S)}px 'Space Grotesk', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('YOUR POSITION', tlLeft + barW * 0.5, tlY);
+  }
+
+  ctx.globalAlpha = alpha;
+
+  // Event dots along the timeline as it fills
+  const events = [
+    { pos: 0.05, label: 'Transfer window' },
+    { pos: 0.20, label: 'Derby win' },
+    { pos: 0.45, label: 'Jan signings' },
+    { pos: 0.65, label: 'Title race heats up' },
+    { pos: 0.90, label: 'Champions!' },
+  ];
+
+  for (const ev of events) {
+    if (barGrow >= ev.pos) {
+      const evAlpha = alpha * Math.min(1, (barGrow - ev.pos) * 10);
+      const x = tlLeft + ev.pos * tlW;
+      ctx.globalAlpha = evAlpha;
+      ctx.fillStyle = WHITE;
+      ctx.beginPath();
+      ctx.arc(x, tlY, 4*S, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#aaa';
+      ctx.font = `${Math.round(10*S)}px 'Space Grotesk', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(ev.label, x, tlY - 28*S);
+    }
+  }
+
+  // Subtexts
+  const sub1Alpha = alpha * fadeIn(t, 13.5, 0.5);
+  drawText('August to May. One position. Every result.', W/2, H*0.62, 19, WHITE, 'Space Grotesk', 'center', sub1Alpha * 0.8);
+
+  const sub2Alpha = alpha * fadeIn(t, 14, 0.5);
+  drawText('Every transfer. Every moment. The full story.', W/2, H*0.68, 19, WHITE, 'Space Grotesk', 'center', sub2Alpha * 0.8);
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 5: CTA (16-18s) ──
+function drawScene5(t) {
+  const localT = t - 16;
+  if (localT < 0) return;
+
+  const alpha = fadeIn(t, 16, 0.6);
+  if (alpha <= 0) return;
+
+  // Tagline
+  const tagAlpha = alpha * fadeIn(t, 16, 0.5);
+  drawTextBold('Stop renting 90 minutes.', W/2, H*0.34, 30, WHITE, 'Space Grotesk', 'center', tagAlpha);
+
+  const tag2Alpha = alpha * fadeIn(t, 16.5, 0.5);
+  drawTextBold('Own the whole season.', W/2, H*0.42, 30, LIME, 'Space Grotesk', 'center', tag2Alpha);
+
+  // notch.win
+  const ctaAlpha = alpha * fadeIn(t, 17, 0.4);
+  ctx.globalAlpha = ctaAlpha;
+
+  // CTA box
+  const boxW = 220 * S;
+  const boxH = 56 * S;
+  const boxX = W/2 - boxW/2;
+  const boxY = H*0.54;
+  const r = 10 * S;
+
+  ctx.fillStyle = LIME;
+  ctx.shadowColor = LIME;
+  ctx.shadowBlur = 30 * S;
+  ctx.beginPath();
+  ctx.roundRect(boxX, boxY, boxW, boxH, r);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#0a0c10';
+  ctx.font = `700 ${Math.round(24*S)}px 'Space Grotesk', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('notch.win', W/2, boxY + boxH/2);
+
+  ctx.globalAlpha = 1;
+
+  // Show watch again button
+  if (localT > 1.2) {
+    watchBtn.classList.add('visible');
+  }
+}
+
+// ── MAIN LOOP ──
+let lastTime = 0;
+function frame(ts) {
+  if (!startTime) startTime = ts;
+  const dt = Math.min(0.05, (ts - lastTime) / 1000);
+  lastTime = ts;
+
+  if (running) {
+    animTime = (ts - startTime) / 1000;
+    if (animTime > DURATION) {
+      animTime = DURATION;
+      running = false;
+    }
+  }
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Scenes
+  drawScene1(animTime);
+  drawScene2(animTime);
+  drawScene3(animTime);
+  drawScene4(animTime);
+  drawScene5(animTime);
+
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update(dt);
+    particles[i].draw();
+    if (particles[i].life <= 0) particles.splice(i, 1);
+  }
+
+  // Progress bar
+  drawProgressBar(animTime);
+
+  requestAnimationFrame(frame);
+}
+
+// ── WATCH AGAIN ──
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  startTime = null;
+  lastTime = 0;
+  animTime = 0;
+  running = true;
+  particles = [];
+  dustSpawned = false;
+});
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -6,1226 +6,492 @@
 <title>Notch — Match Day Pulse</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0c10; overflow: hidden; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; }
-  canvas { display: block; }
-  #watchAgain {
-    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
-    background: #b2ed68; color: #0a0c10; border: none; padding: 14px 36px;
-    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px;
-    border-radius: 8px; cursor: pointer; opacity: 0; pointer-events: none;
-    transition: opacity 0.4s, transform 0.2s; z-index: 10;
-  }
-  #watchAgain:hover { transform: translateX(-50%) scale(1.05); }
-  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0c10;overflow:hidden;width:100vw;height:100vh}
+canvas{display:block;width:100%;height:100%}
+#watchAgain{
+  position:fixed;bottom:48px;left:50%;transform:translateX(-50%);
+  background:#b2ed68;color:#0a0c10;border:none;padding:14px 36px;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+  border-radius:8px;cursor:pointer;opacity:0;pointer-events:none;
+  transition:opacity .4s,transform .2s;z-index:10;
+}
+#watchAgain:hover{transform:translateX(-50%) scale(1.05)}
+#watchAgain.visible{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <button id="watchAgain" onclick="restart()">Watch Again</button>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
+const C = document.getElementById('c');
+const X = C.getContext('2d');
 const btn = document.getElementById('watchAgain');
 
-// Colors
-const BG = '#0a0c10';
-const ARSENAL = '#EF0107';
-const CHELSEA = '#034694';
-const LIME = '#b2ed68';
-const RED = '#ff4d4d';
-const WHITE = '#ffffff';
-const DIM = '#6b7280';
-const CARD_BG = '#12151c';
-const CARD_BORDER = '#1e2230';
+// --- COLORS ---
+const BG='#0a0c10', ARS='#EF0107', CHE='#034694', LIME='#b2ed68',
+  RED='#ff4d4d', WHT='#ffffff', DIM='#6b7280', DIM2='#4b5060',
+  CARD='#13161e', BORDER='#252a36';
 
-// Timing (ms)
-const PHASE_DUR = 4000;
+// --- TIMING ---
 const TOTAL = 32000;
 
-// State
-let W, H, scale, startTime, animFrame;
-let particles = [];
-let confetti = [];
-let shakeX = 0, shakeY = 0, shakeDecay = 0;
-let chartPoints = [];
-let phase = -1;
+// --- STATE ---
+let W, H, SC, t0, raf;
+let parts=[], conf=[], shkX=0, shkY=0, shkD=0;
+let triggers = new Set();
 
-// Price data keyed by time
-const priceTimeline = [
-  { t: 0, p: 618 },
-  { t: 4000, p: 618 },
-  { t: 5500, p: 634 },
-  { t: 8000, p: 634 },
-  { t: 9500, p: 630 },
-  { t: 12000, p: 630 },
-  { t: 13500, p: 652 },
-  { t: 16000, p: 652 },
-  { t: 17500, p: 642 },
-  { t: 20000, p: 642 },
-  { t: 22000, p: 648 },
-  { t: 32000, p: 648 },
+// --- PRICE ---
+const PT=[
+  {t:0,p:618},{t:4000,p:618},{t:5500,p:634},{t:8000,p:634},
+  {t:9500,p:630},{t:12000,p:630},{t:13500,p:652},{t:16000,p:652},
+  {t:17500,p:642},{t:20000,p:642},{t:22000,p:648},{t:32000,p:648}
 ];
-
-function getPrice(t) {
-  for (let i = priceTimeline.length - 1; i >= 0; i--) {
-    if (t >= priceTimeline[i].t) {
-      if (i === priceTimeline.length - 1) return priceTimeline[i].p;
-      const a = priceTimeline[i], b = priceTimeline[i + 1];
-      const frac = Math.min(1, (t - a.t) / (b.t - a.t));
-      const eased = 1 - Math.pow(1 - frac, 3);
-      return a.p + (b.p - a.p) * eased;
+function price(t){
+  for(let i=PT.length-1;i>=0;i--){
+    if(t>=PT[i].t){
+      if(i===PT.length-1)return PT[i].p;
+      const a=PT[i],b=PT[i+1],f=Math.min(1,(t-a.t)/(b.t-a.t));
+      return a.p+(b.p-a.p)*(1-Math.pow(1-f,3));
     }
   }
   return 618;
 }
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-  scale = Math.min(W / 1080, H / 1920) * (W > H ? Math.min(W / 1080, H / 600) : 1);
-  if (W > H) scale = Math.min(W / 1200, H / 700);
+// --- RESIZE ---
+function resize(){
+  const dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  C.width = W * dpr; C.height = H * dpr;
+  C.style.width = W+'px'; C.style.height = H+'px';
+  X.setTransform(dpr,0,0,dpr,0,0);
+  SC = W > H ? Math.min(W/880, H/500) : Math.min(W/440, H/800);
 }
 window.addEventListener('resize', resize);
 resize();
 
-// Easing
-function easeOutElastic(t) {
-  if (t === 0 || t === 1) return t;
-  return Math.pow(2, -10 * t) * Math.sin((t - 0.075) * (2 * Math.PI) / 0.3) + 1;
-}
-function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-function easeOutBounce(t) {
-  if (t < 1/2.75) return 7.5625*t*t;
-  if (t < 2/2.75) return 7.5625*(t-=1.5/2.75)*t+.75;
-  if (t < 2.5/2.75) return 7.5625*(t-=2.25/2.75)*t+.9375;
-  return 7.5625*(t-=2.625/2.75)*t+.984375;
-}
-function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+// --- EASING ---
+function eOC(t){return 1-Math.pow(1-t,3)}
+function eOE(t){if(!t||t===1)return t;return Math.pow(2,-10*t)*Math.sin((t-.075)*20.944)+1}
+function eOB(t){const n=7.5625;if(t<.3636)return n*t*t;if(t<.7272)return n*(t-=.5454)*t+.75;if(t<.9090)return n*(t-=.8181)*t+.9375;return n*(t-=.9545)*t+.984375}
 
-// Particles
-function spawnParticles(x, y, color, count) {
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 2 + Math.random() * 6;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1,
-      decay: 0.01 + Math.random() * 0.02,
-      size: 2 + Math.random() * 4,
-      color,
-    });
+// --- HELPERS ---
+function s(v){return v*SC}
+function font(sz,wt,fam){X.font=`${wt||400} ${s(sz)}px '${fam||'Space Grotesk'}',sans-serif`}
+function rr(x,y,w,h,r){X.beginPath();X.moveTo(x+r,y);X.lineTo(x+w-r,y);X.quadraticCurveTo(x+w,y,x+w,y+r);X.lineTo(x+w,y+h-r);X.quadraticCurveTo(x+w,y+h,x+w-r,y+h);X.lineTo(x+r,y+h);X.quadraticCurveTo(x,y+h,x,y+h-r);X.lineTo(x,y+r);X.quadraticCurveTo(x,y,x+r,y);X.closePath()}
+function glow(x,y,r,c){const g=X.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c+'44');g.addColorStop(.5,c+'18');g.addColorStop(1,c+'00');X.fillStyle=g;X.fillRect(x-r,y-r,r*2,r*2)}
+
+// --- PARTICLES ---
+function spawn(x,y,c,n){for(let i=0;i<n;i++){const a=Math.random()*6.283,sp=2+Math.random()*6;parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,d:.012+Math.random()*.02,s:2+Math.random()*4,c})}}
+function confetti(x,y,n){const cs=[ARS,LIME,'#ffd700',WHT,'#ff6b9d'];for(let i=0;i<n;i++)conf.push({x:x+(Math.random()-.5)*200,y:y-Math.random()*80,vx:(Math.random()-.5)*8,vy:-3-Math.random()*6,r:Math.random()*6.283,rs:(Math.random()-.5)*.3,w:4+Math.random()*6,h:8+Math.random()*10,c:cs[i%5],l:1,d:.006+Math.random()*.008})}
+function shake(i){shkD=i}
+function updParts(){
+  parts=parts.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.1;p.l-=p.d;return p.l>0});
+  conf=conf.filter(c=>{c.x+=c.vx;c.vy+=.15;c.y+=c.vy;c.r+=c.rs;c.vx*=.99;c.l-=c.d;return c.l>0});
+  if(shkD>.1){shkX=(Math.random()-.5)*shkD;shkY=(Math.random()-.5)*shkD;shkD*=.9}else shkX=shkY=shkD=0;
+}
+function drawParts(){
+  parts.forEach(p=>{X.globalAlpha=p.l;X.fillStyle=p.c;X.beginPath();X.arc(p.x,p.y,p.s,0,6.283);X.fill()});
+  conf.forEach(c=>{X.globalAlpha=c.l;X.save();X.translate(c.x,c.y);X.rotate(c.r);X.fillStyle=c.c;X.fillRect(-c.w/2,-c.h/2,c.w,c.h);X.restore()});
+  X.globalAlpha=1;
+}
+
+// --- CHART ---
+function drawChart(el, cx, cy, cw, ch){
+  const maxT=Math.min(el,24000);
+  if(maxT<500)return;
+  const pts=[];
+  for(let t=0;t<=maxT;t+=250){
+    const p=price(t), x=cx+(t/24000)*cw;
+    const y=cy+ch-((p-608)/(660-608))*ch;
+    pts.push({x,y,p});
   }
-}
-
-function spawnConfetti(x, y, count) {
-  const colors = [ARSENAL, LIME, '#ffd700', WHITE, '#ff6b9d'];
-  for (let i = 0; i < count; i++) {
-    confetti.push({
-      x: x + (Math.random() - 0.5) * 200,
-      y: y - Math.random() * 100,
-      vx: (Math.random() - 0.5) * 8,
-      vy: -4 - Math.random() * 6,
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.3,
-      w: 4 + Math.random() * 6,
-      h: 8 + Math.random() * 10,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      life: 1,
-      decay: 0.005 + Math.random() * 0.008,
-      gravity: 0.15,
-    });
-  }
-}
-
-function triggerShake(intensity) {
-  shakeDecay = intensity;
-}
-
-function updateParticles() {
-  particles = particles.filter(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.1;
-    p.life -= p.decay;
-    return p.life > 0;
-  });
-  confetti = confetti.filter(c => {
-    c.x += c.vx;
-    c.vy += c.gravity;
-    c.y += c.vy;
-    c.rotation += c.rotSpeed;
-    c.vx *= 0.99;
-    c.life -= c.decay;
-    return c.life > 0;
-  });
-  if (shakeDecay > 0.1) {
-    shakeX = (Math.random() - 0.5) * shakeDecay;
-    shakeY = (Math.random() - 0.5) * shakeDecay;
-    shakeDecay *= 0.9;
-  } else {
-    shakeX = shakeY = 0;
-    shakeDecay = 0;
-  }
-}
-
-function drawParticles() {
-  particles.forEach(p => {
-    ctx.globalAlpha = p.life;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  confetti.forEach(c => {
-    ctx.globalAlpha = c.life;
-    ctx.save();
-    ctx.translate(c.x, c.y);
-    ctx.rotate(c.rotation);
-    ctx.fillStyle = c.color;
-    ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
-    ctx.restore();
-  });
-  ctx.globalAlpha = 1;
-}
-
-// Drawing helpers
-function s(v) { return v * scale; }
-
-function drawRoundedRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-function setFont(size, weight, family) {
-  ctx.font = `${weight || '400'} ${s(size)}px '${family || 'Space Grotesk'}', sans-serif`;
-}
-
-function drawGlow(x, y, radius, color) {
-  const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  grad.addColorStop(0, color + '40');
-  grad.addColorStop(0.5, color + '15');
-  grad.addColorStop(1, color + '00');
-  ctx.fillStyle = grad;
-  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-}
-
-// Build chart data up to a given time
-function buildChart(elapsed, cx, cy, cw, ch) {
-  const points = [];
-  const step = 300;
-  const maxT = Math.min(elapsed, 24000);
-  for (let t = 0; t <= maxT; t += step) {
-    const price = getPrice(t);
-    const x = cx + (t / 24000) * cw;
-    const minP = 610, maxP = 660;
-    const y = cy + ch - ((price - minP) / (maxP - minP)) * ch;
-    points.push({ x, y, t, price });
-  }
-  return points;
-}
-
-function drawChart(elapsed, cx, cy, cw, ch) {
-  const points = buildChart(elapsed, cx, cy, cw, ch);
-  if (points.length < 2) return;
-
-  // Grid lines
-  ctx.strokeStyle = '#1e223040';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = cy + (ch / 4) * i;
-    ctx.beginPath();
-    ctx.moveTo(cx, y);
-    ctx.lineTo(cx + cw, y);
-    ctx.stroke();
-  }
-
+  // Grid
+  X.strokeStyle='#1e223030';X.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=cy+(ch/4)*i;X.beginPath();X.moveTo(cx,y);X.lineTo(cx+cw,y);X.stroke()}
   // Price labels
-  setFont(9, '400', 'JetBrains Mono');
-  ctx.fillStyle = DIM;
-  const labels = [660, 648, 635, 622, 610];
-  for (let i = 0; i < labels.length; i++) {
-    ctx.fillText('$' + labels[i], cx - s(38), cy + (ch / 4) * i + s(3));
-  }
-
-  // Line gradient
-  const lastPoint = points[points.length - 1];
-  const lineColor = lastPoint.price >= 618 ? LIME : RED;
-
-  // Area fill
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, cy + ch);
-  points.forEach(p => ctx.lineTo(p.x, p.y));
-  ctx.lineTo(lastPoint.x, cy + ch);
-  ctx.closePath();
-  const areaGrad = ctx.createLinearGradient(0, cy, 0, cy + ch);
-  areaGrad.addColorStop(0, lineColor + '30');
-  areaGrad.addColorStop(1, lineColor + '00');
-  ctx.fillStyle = areaGrad;
-  ctx.fill();
-
+  font(8,'400','JetBrains Mono');X.fillStyle=DIM2;X.textAlign='right';
+  [660,647,634,621,608].forEach((v,i)=>{X.fillText('$'+v,cx-s(6),cy+(ch/4)*i+s(3))});
+  X.textAlign='left';
+  // Area
+  const lp=pts[pts.length-1], lc=lp.p>=618?LIME:RED;
+  X.beginPath();X.moveTo(pts[0].x,cy+ch);pts.forEach(p=>X.lineTo(p.x,p.y));X.lineTo(lp.x,cy+ch);X.closePath();
+  const ag=X.createLinearGradient(0,cy,0,cy+ch);ag.addColorStop(0,lc+'30');ag.addColorStop(1,lc+'00');X.fillStyle=ag;X.fill();
   // Line
-  ctx.beginPath();
-  points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = s(2.5);
-  ctx.lineJoin = 'round';
-  ctx.stroke();
-
-  // Glow dot at end
-  drawGlow(lastPoint.x, lastPoint.y, s(20), lineColor);
-  ctx.fillStyle = lineColor;
-  ctx.beginPath();
-  ctx.arc(lastPoint.x, lastPoint.y, s(4), 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = WHITE;
-  ctx.beginPath();
-  ctx.arc(lastPoint.x, lastPoint.y, s(1.5), 0, Math.PI * 2);
-  ctx.fill();
+  X.beginPath();pts.forEach((p,i)=>i?X.lineTo(p.x,p.y):X.moveTo(p.x,p.y));X.strokeStyle=lc;X.lineWidth=s(2);X.lineJoin='round';X.stroke();
+  // Dot
+  glow(lp.x,lp.y,s(18),lc);
+  X.fillStyle=lc;X.beginPath();X.arc(lp.x,lp.y,s(3.5),0,6.283);X.fill();
+  X.fillStyle=WHT;X.beginPath();X.arc(lp.x,lp.y,s(1.5),0,6.283);X.fill();
 }
 
-// Event labels on chart
-function drawChartLabels(elapsed, cx, cy, cw, ch) {
-  const events = [
-    { t: 5500, label: "23' GOAL", color: LIME },
-    { t: 9500, label: "38' YC", color: '#ffd700' },
-    { t: 13500, label: "52' GOAL", color: LIME },
-    { t: 17500, label: "71' GOAL", color: RED },
-    { t: 22000, label: "FT", color: WHITE },
-  ];
-  events.forEach(ev => {
-    if (elapsed < ev.t + 500) return;
-    const x = cx + (ev.t / 24000) * cw;
-    const price = getPrice(ev.t);
-    const minP = 610, maxP = 660;
-    const y = cy + ch - ((price - minP) / (maxP - minP)) * ch;
-    const alpha = Math.min(1, (elapsed - ev.t - 500) / 800);
-    ctx.globalAlpha = alpha * 0.7;
-    ctx.strokeStyle = ev.color + '60';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, cy - s(5));
-    ctx.stroke();
-    ctx.setLineDash([]);
-    setFont(8, '600', 'JetBrains Mono');
-    ctx.fillStyle = ev.color;
-    ctx.textAlign = 'center';
-    ctx.fillText(ev.label, x, cy - s(8));
-    ctx.textAlign = 'left';
-    ctx.globalAlpha = 1;
+function drawChartLabels(el, cx, cy, cw, ch){
+  const evts=[{t:5500,l:"23'",c:LIME},{t:9500,l:"38'",c:'#ffd700'},{t:13500,l:"52'",c:LIME},{t:17500,l:"71'",c:RED},{t:22000,l:"FT",c:WHT}];
+  evts.forEach(e=>{
+    if(el<e.t+800)return;
+    const x=cx+(e.t/24000)*cw, p=price(e.t);
+    const y=cy+ch-((p-608)/(660-608))*ch;
+    const a=Math.min(1,(el-e.t-800)/600);
+    X.globalAlpha=a*.6;X.strokeStyle=e.c+'50';X.lineWidth=1;X.setLineDash([3,3]);
+    X.beginPath();X.moveTo(x,y-s(3));X.lineTo(x,cy-s(4));X.stroke();X.setLineDash([]);
+    font(7,'600','JetBrains Mono');X.fillStyle=e.c;X.textAlign='center';X.fillText(e.l,x,cy-s(7));
+    X.textAlign='left';X.globalAlpha=1;
   });
 }
 
-// Live indicator
-function drawLive(x, y, elapsed) {
-  const pulse = 0.5 + 0.5 * Math.sin(elapsed / 300);
-  ctx.fillStyle = `rgba(239,1,7,${0.3 + 0.3 * pulse})`;
-  ctx.beginPath();
-  ctx.arc(x, y, s(6 + pulse * 3), 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = ARSENAL;
-  ctx.beginPath();
-  ctx.arc(x, y, s(4), 0, Math.PI * 2);
-  ctx.fill();
-  setFont(11, '700');
-  ctx.fillStyle = WHITE;
-  ctx.fillText('LIVE', x + s(10), y + s(4));
+// --- LIVE DOT ---
+function drawLive(x,y,el){
+  const p=.5+.5*Math.sin(el/300);
+  X.fillStyle=`rgba(239,1,7,${.3+.3*p})`;X.beginPath();X.arc(x,y,s(5+p*2),0,6.283);X.fill();
+  X.fillStyle=ARS;X.beginPath();X.arc(x,y,s(3.5),0,6.283);X.fill();
+  font(11,'700');X.fillStyle=WHT;X.textAlign='left';X.fillText('LIVE',x+s(9),y+s(4));
 }
 
-// Progress bar
-function drawProgress(elapsed) {
-  const frac = Math.min(1, elapsed / TOTAL);
-  const barH = s(3);
-  const y = H - barH;
-  ctx.fillStyle = '#1e2230';
-  ctx.fillRect(0, y, W, barH);
-  const grad = ctx.createLinearGradient(0, 0, W * frac, 0);
-  grad.addColorStop(0, LIME);
-  grad.addColorStop(1, '#7acc3a');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, y, W * frac, barH);
+// --- PROGRESS ---
+function drawProgress(el){
+  const f=Math.min(1,el/TOTAL), bh=s(2.5), y=H-bh;
+  X.fillStyle='#1e2230';X.fillRect(0,y,W,bh);
+  const g=X.createLinearGradient(0,0,W*f,0);g.addColorStop(0,LIME);g.addColorStop(1,'#7acc3a');
+  X.fillStyle=g;X.fillRect(0,y,W*f,bh);
 }
 
-// Phase triggers
-let triggered = new Set();
-function triggerOnce(key, fn) {
-  if (!triggered.has(key)) {
-    triggered.add(key);
-    fn();
-  }
+// --- TRIGGER ONCE ---
+function once(k,fn){if(!triggers.has(k)){triggers.add(k);fn()}}
+
+// --- SHARED CARD HEADER ---
+function drawHeader(cx,cy,cardW,score,minute,minColor,el){
+  // Match info
+  font(13,'600');X.fillStyle=DIM;X.textAlign='center';
+  X.fillText('PREMIER LEAGUE',cx+cardW/2,cy+s(48));
+  // Teams
+  font(26,'700');X.fillStyle=ARS;X.textAlign='right';
+  X.fillText('ARSENAL',cx+cardW/2-s(28),cy+s(82));
+  font(18,'400');X.fillStyle=DIM2;X.textAlign='center';
+  X.fillText('vs',cx+cardW/2,cy+s(80));
+  font(26,'700');X.fillStyle=CHE;X.textAlign='left';
+  X.fillText('CHELSEA',cx+cardW/2+s(28),cy+s(82));
+  // Score
+  font(44,'700','JetBrains Mono');X.fillStyle=WHT;X.textAlign='center';
+  X.fillText(score,cx+cardW/2,cy+s(125));
+  // Minute
+  if(minute){font(11,'600','JetBrains Mono');X.fillStyle=minColor||LIME;X.textAlign='right';X.fillText(minute,cx+cardW-s(18),cy+s(25))}
+  X.textAlign='left';
 }
 
-// Main render
-function render(timestamp) {
-  if (!startTime) startTime = timestamp;
-  const elapsed = timestamp - startTime;
+// ===================== MAIN RENDER =====================
+function render(ts){
+  if(!t0) t0=ts;
+  const el=ts-t0;
+  X.setTransform(window.devicePixelRatio||1,0,0,window.devicePixelRatio||1,0,0);
+  X.clearRect(0,0,W,H);
+  X.fillStyle=BG;X.fillRect(0,0,W,H);
+  updParts();
+  X.save();X.translate(shkX,shkY);
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = BG;
-  ctx.fillRect(0, 0, W, H);
+  const cx=W/2, cy=H/2;
+  // Card dimensions
+  const cW=Math.min(s(480),W*.9), cH=Math.min(s(360),H*.88);
+  const cX=cx-cW/2, cY=cy-cH/2;
+  // Chart area within card
+  const chX=cX+s(46), chW=cW-s(76), chY=cY+s(230), chH=cH-s(255);
 
-  updateParticles();
-  ctx.save();
-  ctx.translate(shakeX, shakeY);
-
-  const curPhase = Math.floor(elapsed / PHASE_DUR);
-  const phaseT = (elapsed % PHASE_DUR) / PHASE_DUR;
-  const centerX = W / 2;
-  const centerY = H / 2;
-
-  // Layout dimensions
-  const cardW = Math.min(s(500), W * 0.92);
-  const cardH = Math.min(s(380), H * 0.85);
-  const cardX = centerX - cardW / 2;
-  const cardY = centerY - cardH / 2 - s(10);
-
-  // ===================== PHASE 0: Match card appears (0-4s) =====================
-  if (elapsed < 4000) {
-    const intro = easeOutCubic(Math.min(1, elapsed / 1200));
-    ctx.globalAlpha = intro;
-
-    // Card
-    drawRoundedRect(cardX, cardY, cardW, cardH, s(12));
-    ctx.fillStyle = CARD_BG;
-    ctx.fill();
-    ctx.strokeStyle = CARD_BORDER;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Live indicator
-    drawLive(cardX + s(20), cardY + s(24), elapsed);
-
-    // Match title
-    setFont(14, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('PREMIER LEAGUE', centerX, cardY + s(55));
-
-    // Team names with colors
-    setFont(28, '700');
-    ctx.fillStyle = ARSENAL;
-    ctx.textAlign = 'right';
-    ctx.fillText('ARSENAL', centerX - s(30), cardY + s(95));
-    setFont(20, '400');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('vs', centerX, cardY + s(93));
-    setFont(28, '700');
-    ctx.fillStyle = CHELSEA;
-    ctx.textAlign = 'left';
-    ctx.fillText('CHELSEA', centerX + s(30), cardY + s(95));
-
-    // Score
-    const scoreAlpha = easeOutCubic(Math.min(1, Math.max(0, (elapsed - 600) / 800)));
-    ctx.globalAlpha = scoreAlpha * intro;
-    setFont(48, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    ctx.fillText('0 - 0', centerX, cardY + s(145));
-
-    // Position info
-    ctx.globalAlpha = easeOutCubic(Math.min(1, Math.max(0, (elapsed - 1200) / 800)));
-    drawRoundedRect(cardX + s(20), cardY + s(170), cardW - s(40), s(55), s(8));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-    ctx.strokeStyle = LIME + '40';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    setFont(11, '600');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'left';
-    ctx.fillText('YOUR POSITION', cardX + s(35), cardY + s(190));
-    setFont(15, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.fillText('LONG ARS @ $618', cardX + s(35), cardY + s(212));
-    setFont(12, '500', 'JetBrains Mono');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'right';
-    ctx.fillText('5x leverage', cardX + cardW - s(35), cardY + s(192));
-    ctx.fillStyle = LIME + 'cc';
-    ctx.fillText('$50 stake', cardX + cardW - s(35), cardY + s(212));
-
-    // Chart area
-    const chartAlpha = easeOutCubic(Math.min(1, Math.max(0, (elapsed - 2000) / 1000)));
-    ctx.globalAlpha = chartAlpha;
-    const chartX = cardX + s(50);
-    const chartY = cardY + s(245);
-    const chartW = cardW - s(80);
-    const chartH = s(100);
-    drawChart(elapsed, chartX, chartY, chartW, chartH);
-
+  // ===== PHASE 0: Match card (0-4s) =====
+  if(el<4000){
+    const intro=eOC(Math.min(1,el/1000));
+    X.globalAlpha=intro;
+    // Card bg
+    rr(cX,cY,cW,cH,s(10));X.fillStyle=CARD;X.fill();X.strokeStyle=BORDER;X.lineWidth=1;X.stroke();
+    // Live
+    drawLive(cX+s(18),cY+s(22),el);
+    // Header
+    drawHeader(cX,cY,cW,'0 - 0',null,null,el);
+    // Position box
+    const posA=eOC(Math.min(1,Math.max(0,(el-1000)/800)));
+    X.globalAlpha=intro*posA;
+    rr(cX+s(16),cY+s(148),cW-s(32),s(55),s(7));X.fillStyle='#0c0f16';X.fill();
+    X.strokeStyle=LIME+'30';X.lineWidth=1;X.stroke();
+    font(10,'600');X.fillStyle=LIME;X.textAlign='left';
+    X.fillText('YOUR POSITION',cX+s(28),cY+s(167));
+    font(14,'700','JetBrains Mono');X.fillStyle=WHT;
+    X.fillText('LONG ARS @ $618',cX+s(28),cY+s(188));
+    font(11,'500','JetBrains Mono');X.fillStyle=DIM;X.textAlign='right';
+    X.fillText('5x leverage',cX+cW-s(28),cY+s(170));
+    X.fillStyle=LIME+'cc';X.fillText('$50 stake',cX+cW-s(28),cY+s(188));
+    X.textAlign='left';
+    // Chart
+    const chA=eOC(Math.min(1,Math.max(0,(el-1800)/1000)));
+    X.globalAlpha=intro*chA;
+    drawChart(el,chX,chY,chW,chH);
     // PnL
-    setFont(12, '600', 'JetBrains Mono');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'left';
-    ctx.fillText('PnL: $0.00 (0.0%)', cardX + s(50), cardY + s(365));
-
-    ctx.globalAlpha = 1;
-    ctx.textAlign = 'left';
+    font(11,'600','JetBrains Mono');X.fillStyle=DIM;X.textAlign='left';
+    X.fillText('PnL: $0.00 (0.0%)',cX+s(46),cY+cH-s(12));
+    X.globalAlpha=1;
   }
 
-  // ===================== PHASE 1: Saka goal (4-8s) =====================
-  else if (elapsed < 8000) {
-    const t = (elapsed - 4000) / 4000;
-
-    triggerOnce('goal1', () => {
-      triggerShake(15);
-      spawnParticles(centerX, centerY - s(30), LIME, 40);
-      spawnParticles(centerX, centerY - s(30), ARSENAL, 25);
-      spawnConfetti(centerX, centerY - s(50), 30);
-    });
-
+  // ===== PHASE 1: Saka goal (4-8s) =====
+  else if(el<8000){
+    const t=(el-4000)/4000;
+    once('g1',()=>{shake(16);spawn(cx,cy-s(40),LIME,45);spawn(cx,cy-s(40),ARS,25);confetti(cx,cy-s(60),35)});
+    // Green flash
+    const fl=Math.max(0,1-t*2.5);
+    if(fl>0){X.globalAlpha=fl*.15;X.fillStyle=LIME;X.fillRect(0,0,W,H);X.globalAlpha=1}
     // Card
-    drawRoundedRect(cardX, cardY, cardW, cardH, s(12));
-    ctx.fillStyle = CARD_BG;
-    ctx.fill();
-    const glowIntensity = Math.max(0, 1 - t * 2);
-    ctx.strokeStyle = `rgba(178,237,104,${0.3 + glowIntensity * 0.5})`;
-    ctx.lineWidth = 1 + glowIntensity * 2;
-    ctx.stroke();
-
-    // Live indicator
-    drawLive(cardX + s(20), cardY + s(24), elapsed);
-
-    // Match minute
-    setFont(12, '600', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'right';
-    ctx.fillText("23'", cardX + cardW - s(20), cardY + s(27));
-
-    // Goal flash
-    const goalFlash = easeOutElastic(Math.min(1, t * 3));
-    const flashAlpha = Math.max(0, 1 - t * 2.5);
-    if (flashAlpha > 0) {
-      ctx.globalAlpha = flashAlpha * 0.15;
-      ctx.fillStyle = LIME;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalAlpha = 1;
-    }
-
-    setFont(14, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('PREMIER LEAGUE', centerX, cardY + s(55));
-
-    // Score update
-    setFont(28, '700');
-    ctx.fillStyle = ARSENAL;
-    ctx.textAlign = 'right';
-    ctx.fillText('ARSENAL', centerX - s(30), cardY + s(85));
-    setFont(20, '400');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('vs', centerX, cardY + s(83));
-    setFont(28, '700');
-    ctx.fillStyle = CHELSEA;
-    ctx.textAlign = 'left';
-    ctx.fillText('CHELSEA', centerX + s(30), cardY + s(85));
-
-    setFont(48, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    const scoreScale = 1 + (easeOutElastic(Math.min(1, t * 4)) - 1) * 0.1;
-    ctx.save();
-    ctx.translate(centerX, cardY + s(130));
-    ctx.scale(scoreScale, scoreScale);
-    ctx.fillText('1 - 0', 0, 0);
-    ctx.restore();
-
-    // Goal event text
-    const eventAlpha = easeOutCubic(Math.min(1, t * 3));
-    ctx.globalAlpha = eventAlpha;
-    setFont(16, '700');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'center';
-    ctx.fillText('GOAL! Saka scores!', centerX, cardY + s(158));
-    ctx.globalAlpha = 1;
-
-    // Position card
-    drawRoundedRect(cardX + s(20), cardY + s(175), cardW - s(40), s(50), s(8));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-    ctx.strokeStyle = LIME + '60';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    const curPrice = getPrice(elapsed);
-    const pnl = ((curPrice - 618) / 618 * 100);
-    const pnlDollar = ((curPrice - 618) / 618 * 50);
-
-    setFont(13, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'left';
-    ctx.fillText(`$${curPrice.toFixed(0)}`, cardX + s(35), cardY + s(198));
-    setFont(11, '600', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.fillText(`$618 -> $${curPrice.toFixed(0)}`, cardX + s(35), cardY + s(215));
-
-    ctx.textAlign = 'right';
-    setFont(14, '700', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.fillText(`+$${pnlDollar.toFixed(2)} (+${pnl.toFixed(1)}%)`, cardX + cardW - s(35), cardY + s(207));
-
+    rr(cX,cY,cW,cH,s(10));X.fillStyle=CARD;X.fill();
+    X.strokeStyle=`rgba(178,237,104,${.3+Math.max(0,1-t*2)*.5})`;X.lineWidth=1+Math.max(0,1-t*2)*2;X.stroke();
+    drawLive(cX+s(18),cY+s(22),el);
+    // Score with bounce
+    drawHeader(cX,cY,cW,'1 - 0',"23'",LIME,el);
+    // Goal text
+    const ga=eOC(Math.min(1,t*3));
+    X.globalAlpha=ga;font(15,'700');X.fillStyle=LIME;X.textAlign='center';
+    X.fillText('GOAL! Saka scores!',cx,cY+s(148));
+    X.globalAlpha=1;
+    // Position box
+    rr(cX+s(16),cY+s(164),cW-s(32),s(45),s(7));X.fillStyle='#0c0f16';X.fill();
+    X.strokeStyle=LIME+'50';X.lineWidth=1;X.stroke();
+    const cp=price(el),pnl=((cp-618)/618*100),pnl$=((cp-618)/618*50);
+    font(12,'700','JetBrains Mono');X.fillStyle=WHT;X.textAlign='left';
+    X.fillText('$'+cp.toFixed(0),cX+s(28),cY+s(183));
+    font(10,'600','JetBrains Mono');X.fillStyle=LIME;
+    X.fillText('$618 -> $'+cp.toFixed(0),cX+s(28),cY+s(199));
+    X.textAlign='right';font(13,'700','JetBrains Mono');X.fillStyle=LIME;
+    X.fillText('+$'+pnl$.toFixed(2)+' (+'+pnl.toFixed(1)+'%)',cX+cW-s(28),cY+s(192));
+    X.textAlign='left';
     // Chart
-    const chartX = cardX + s(50);
-    const chartY2 = cardY + s(240);
-    const chartW = cardW - s(80);
-    const chartH = s(100);
-    drawChart(elapsed, chartX, chartY2, chartW, chartH);
-    drawChartLabels(elapsed, chartX, chartY2, chartW, chartH);
-
-    ctx.textAlign = 'left';
+    drawChart(el,chX,chY-s(8),chW,chH);
+    drawChartLabels(el,chX,chY-s(8),chW,chH);
   }
 
-  // ===================== PHASE 2: Yellow card (8-12s) =====================
-  else if (elapsed < 12000) {
-    const t = (elapsed - 8000) / 4000;
-
-    triggerOnce('yc', () => {
-      spawnParticles(centerX, centerY - s(20), '#ffd700', 20);
-      triggerShake(6);
-    });
-
-    drawRoundedRect(cardX, cardY, cardW, cardH, s(12));
-    ctx.fillStyle = CARD_BG;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(255,215,0,${Math.max(0, 0.5 - t)})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    drawLive(cardX + s(20), cardY + s(24), elapsed);
-
-    setFont(12, '600', 'JetBrains Mono');
-    ctx.fillStyle = '#ffd700';
-    ctx.textAlign = 'right';
-    ctx.fillText("38'", cardX + cardW - s(20), cardY + s(27));
-
-    setFont(14, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('PREMIER LEAGUE', centerX, cardY + s(55));
-
-    setFont(28, '700');
-    ctx.fillStyle = ARSENAL;
-    ctx.textAlign = 'right';
-    ctx.fillText('ARSENAL', centerX - s(30), cardY + s(85));
-    setFont(20, '400');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('vs', centerX, cardY + s(83));
-    setFont(28, '700');
-    ctx.fillStyle = CHELSEA;
-    ctx.textAlign = 'left';
-    ctx.fillText('CHELSEA', centerX + s(30), cardY + s(85));
-
-    setFont(48, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    ctx.fillText('1 - 0', centerX, cardY + s(130));
-
-    // Yellow card event
-    const evAlpha = easeOutCubic(Math.min(1, t * 3));
-    ctx.globalAlpha = evAlpha;
-    setFont(15, '600');
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText('Yellow Card. Arsenal defender.', centerX, cardY + s(158));
-
-    setFont(12, '500');
-    ctx.fillStyle = DIM;
-    ctx.fillText('Market adjusts...', centerX, cardY + s(178));
-    ctx.globalAlpha = 1;
-
+  // ===== PHASE 2: Yellow card (8-12s) =====
+  else if(el<12000){
+    const t=(el-8000)/4000;
+    once('yc',()=>{spawn(cx,cy-s(20),'#ffd700',20);shake(6)});
+    // Card
+    rr(cX,cY,cW,cH,s(10));X.fillStyle=CARD;X.fill();
+    X.strokeStyle=`rgba(255,215,0,${Math.max(0,.4-t*.8)})`;X.lineWidth=1;X.stroke();
+    drawLive(cX+s(18),cY+s(22),el);
+    drawHeader(cX,cY,cW,'1 - 0',"38'",'#ffd700',el);
+    // Event text
+    const ea=eOC(Math.min(1,t*3));
+    X.globalAlpha=ea;font(14,'600');X.fillStyle='#ffd700';X.textAlign='center';
+    X.fillText('Yellow Card. Arsenal defender.',cx,cY+s(148));
+    font(11,'500');X.fillStyle=DIM;X.fillText('Market adjusts...',cx,cY+s(166));
+    X.globalAlpha=1;
     // Position
-    drawRoundedRect(cardX + s(20), cardY + s(192), cardW - s(40), s(42), s(8));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-
-    const curPrice = getPrice(elapsed);
-    const pnl = ((curPrice - 618) / 618 * 100);
-    const pnlDollar = ((curPrice - 618) / 618 * 50);
-
-    setFont(13, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'left';
-    ctx.fillText(`$${curPrice.toFixed(0)}`, cardX + s(35), cardY + s(218));
-    ctx.textAlign = 'right';
-    setFont(13, '700', 'JetBrains Mono');
-    ctx.fillStyle = pnl >= 0 ? LIME : RED;
-    ctx.fillText(`+$${pnlDollar.toFixed(2)} (+${pnl.toFixed(1)}%)`, cardX + cardW - s(35), cardY + s(218));
-
+    rr(cX+s(16),cY+s(178),cW-s(32),s(38),s(7));X.fillStyle='#0c0f16';X.fill();
+    const cp=price(el),pnl=((cp-618)/618*100),pnl$=((cp-618)/618*50);
+    font(12,'700','JetBrains Mono');X.fillStyle=WHT;X.textAlign='left';
+    X.fillText('$'+cp.toFixed(0),cX+s(28),cY+s(202));
+    X.textAlign='right';font(12,'700','JetBrains Mono');X.fillStyle=pnl>=0?LIME:RED;
+    X.fillText('+$'+pnl$.toFixed(2)+' (+'+pnl.toFixed(1)+'%)',cX+cW-s(28),cY+s(202));
+    X.textAlign='left';
     // Chart
-    const chartX = cardX + s(50);
-    const chartY2 = cardY + s(248);
-    const chartW = cardW - s(80);
-    const chartH = s(100);
-    drawChart(elapsed, chartX, chartY2, chartW, chartH);
-    drawChartLabels(elapsed, chartX, chartY2, chartW, chartH);
-
-    ctx.textAlign = 'left';
+    drawChart(el,chX,chY,chW,chH);
+    drawChartLabels(el,chX,chY,chW,chH);
   }
 
-  // ===================== PHASE 3: Havertz goal (12-16s) =====================
-  else if (elapsed < 16000) {
-    const t = (elapsed - 12000) / 4000;
-
-    triggerOnce('goal2', () => {
-      triggerShake(22);
-      spawnParticles(centerX, centerY - s(40), LIME, 60);
-      spawnParticles(centerX, centerY - s(40), ARSENAL, 40);
-      spawnConfetti(centerX, centerY - s(60), 50);
-    });
-
-    drawRoundedRect(cardX, cardY, cardW, cardH, s(12));
-    ctx.fillStyle = CARD_BG;
-    ctx.fill();
-    const glowI = Math.max(0, 1 - t * 2);
-    ctx.strokeStyle = `rgba(178,237,104,${0.4 + glowI * 0.6})`;
-    ctx.lineWidth = 1 + glowI * 3;
-    ctx.stroke();
-
-    drawLive(cardX + s(20), cardY + s(24), elapsed);
-    setFont(12, '600', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'right';
-    ctx.fillText("52'", cardX + cardW - s(20), cardY + s(27));
-
-    // Flash
-    const flashA = Math.max(0, 1 - t * 2);
-    if (flashA > 0) {
-      ctx.globalAlpha = flashA * 0.2;
-      ctx.fillStyle = LIME;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalAlpha = 1;
-    }
-
-    setFont(14, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('PREMIER LEAGUE', centerX, cardY + s(55));
-
-    setFont(28, '700');
-    ctx.fillStyle = ARSENAL;
-    ctx.textAlign = 'right';
-    ctx.fillText('ARSENAL', centerX - s(30), cardY + s(85));
-    setFont(20, '400');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('vs', centerX, cardY + s(83));
-    setFont(28, '700');
-    ctx.fillStyle = CHELSEA;
-    ctx.textAlign = 'left';
-    ctx.fillText('CHELSEA', centerX + s(30), cardY + s(85));
-
-    setFont(48, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    const ss = 1 + (easeOutElastic(Math.min(1, t * 4)) - 1) * 0.12;
-    ctx.save();
-    ctx.translate(centerX, cardY + s(130));
-    ctx.scale(ss, ss);
-    ctx.fillText('2 - 0', 0, 0);
-    ctx.restore();
-
-    const evA = easeOutCubic(Math.min(1, t * 3));
-    ctx.globalAlpha = evA;
-    setFont(16, '700');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'center';
-    ctx.fillText('GOAL! Havertz doubles it!', centerX, cardY + s(158));
-    ctx.globalAlpha = 1;
-
-    drawRoundedRect(cardX + s(20), cardY + s(175), cardW - s(40), s(50), s(8));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-    ctx.strokeStyle = LIME + '80';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    const curPrice = getPrice(elapsed);
-    const pnl = ((curPrice - 618) / 618 * 100);
-    const pnlDollar = ((curPrice - 618) / 618 * 50);
-
-    setFont(11, '600');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'left';
-    ctx.fillText('POSITION SURGING', cardX + s(35), cardY + s(192));
-    setFont(14, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.fillText(`$${curPrice.toFixed(0)}`, cardX + s(35), cardY + s(213));
-    ctx.textAlign = 'right';
-    setFont(14, '700', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.fillText(`+$${pnlDollar.toFixed(2)} (+${pnl.toFixed(1)}%)`, cardX + cardW - s(35), cardY + s(207));
-
-    const chartX = cardX + s(50);
-    const chartY2 = cardY + s(240);
-    const chartW = cardW - s(80);
-    const chartH = s(100);
-    drawChart(elapsed, chartX, chartY2, chartW, chartH);
-    drawChartLabels(elapsed, chartX, chartY2, chartW, chartH);
-
-    ctx.textAlign = 'left';
+  // ===== PHASE 3: Havertz doubles it (12-16s) =====
+  else if(el<16000){
+    const t=(el-12000)/4000;
+    once('g2',()=>{shake(24);spawn(cx,cy-s(50),LIME,65);spawn(cx,cy-s(50),ARS,40);confetti(cx,cy-s(70),55)});
+    const fl=Math.max(0,1-t*2);
+    if(fl>0){X.globalAlpha=fl*.2;X.fillStyle=LIME;X.fillRect(0,0,W,H);X.globalAlpha=1}
+    rr(cX,cY,cW,cH,s(10));X.fillStyle=CARD;X.fill();
+    X.strokeStyle=`rgba(178,237,104,${.4+Math.max(0,1-t*2)*.6})`;X.lineWidth=1+Math.max(0,1-t*2)*3;X.stroke();
+    drawLive(cX+s(18),cY+s(22),el);
+    drawHeader(cX,cY,cW,'2 - 0',"52'",LIME,el);
+    // Goal text
+    const ga=eOC(Math.min(1,t*3));
+    X.globalAlpha=ga;font(15,'700');X.fillStyle=LIME;X.textAlign='center';
+    X.fillText('GOAL! Havertz doubles it!',cx,cY+s(148));
+    X.globalAlpha=1;
+    // Position
+    rr(cX+s(16),cY+s(162),cW-s(32),s(48),s(7));X.fillStyle='#0c0f16';X.fill();
+    X.strokeStyle=LIME+'70';X.lineWidth=1;X.stroke();
+    font(10,'600');X.fillStyle=LIME;X.textAlign='left';
+    X.fillText('POSITION SURGING',cX+s(28),cY+s(178));
+    const cp=price(el),pnl=((cp-618)/618*100),pnl$=((cp-618)/618*50);
+    font(13,'700','JetBrains Mono');X.fillStyle=WHT;
+    X.fillText('$'+cp.toFixed(0),cX+s(28),cY+s(198));
+    X.textAlign='right';font(13,'700','JetBrains Mono');X.fillStyle=LIME;
+    X.fillText('+$'+pnl$.toFixed(2)+' (+'+pnl.toFixed(1)+'%)',cX+cW-s(28),cY+s(194));
+    X.textAlign='left';
+    // Chart
+    drawChart(el,chX,chY,chW,chH);
+    drawChartLabels(el,chX,chY,chW,chH);
   }
 
-  // ===================== PHASE 4: Chelsea pull one back (16-20s) =====================
-  else if (elapsed < 20000) {
-    const t = (elapsed - 16000) / 4000;
-
-    triggerOnce('goal3', () => {
-      triggerShake(12);
-      spawnParticles(centerX, centerY - s(30), RED, 40);
-      spawnParticles(centerX, centerY - s(30), CHELSEA, 30);
-    });
-
-    drawRoundedRect(cardX, cardY, cardW, cardH, s(12));
-    ctx.fillStyle = CARD_BG;
-    ctx.fill();
-    const glowI = Math.max(0, 1 - t * 2);
-    ctx.strokeStyle = `rgba(255,77,77,${0.3 + glowI * 0.4})`;
-    ctx.lineWidth = 1 + glowI * 2;
-    ctx.stroke();
-
-    drawLive(cardX + s(20), cardY + s(24), elapsed);
-    setFont(12, '600', 'JetBrains Mono');
-    ctx.fillStyle = RED;
-    ctx.textAlign = 'right';
-    ctx.fillText("71'", cardX + cardW - s(20), cardY + s(27));
-
-    // Red flash
-    const flashA = Math.max(0, 1 - t * 2.5);
-    if (flashA > 0) {
-      ctx.globalAlpha = flashA * 0.12;
-      ctx.fillStyle = RED;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalAlpha = 1;
-    }
-
-    setFont(14, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('PREMIER LEAGUE', centerX, cardY + s(55));
-
-    setFont(28, '700');
-    ctx.fillStyle = ARSENAL;
-    ctx.textAlign = 'right';
-    ctx.fillText('ARSENAL', centerX - s(30), cardY + s(85));
-    setFont(20, '400');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('vs', centerX, cardY + s(83));
-    setFont(28, '700');
-    ctx.fillStyle = CHELSEA;
-    ctx.textAlign = 'left';
-    ctx.fillText('CHELSEA', centerX + s(30), cardY + s(85));
-
-    setFont(48, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    ctx.fillText('2 - 1', centerX, cardY + s(130));
-
-    const evA = easeOutCubic(Math.min(1, t * 3));
-    ctx.globalAlpha = evA;
-    setFont(15, '700');
-    ctx.fillStyle = RED;
-    ctx.textAlign = 'center';
-    ctx.fillText('Chelsea pull one back!', centerX, cardY + s(155));
-
+  // ===== PHASE 4: Chelsea pull one back (16-20s) =====
+  else if(el<20000){
+    const t=(el-16000)/4000;
+    once('g3',()=>{shake(12);spawn(cx,cy-s(30),RED,40);spawn(cx,cy-s(30),CHE,30)});
+    const fl=Math.max(0,1-t*2.5);
+    if(fl>0){X.globalAlpha=fl*.12;X.fillStyle=RED;X.fillRect(0,0,W,H);X.globalAlpha=1}
+    rr(cX,cY,cW,cH,s(10));X.fillStyle=CARD;X.fill();
+    X.strokeStyle=`rgba(255,77,77,${.3+Math.max(0,1-t*2)*.4})`;X.lineWidth=1+Math.max(0,1-t*2)*2;X.stroke();
+    drawLive(cX+s(18),cY+s(22),el);
+    drawHeader(cX,cY,cW,'2 - 1',"71'",RED,el);
+    // Event
+    const ea=eOC(Math.min(1,t*3));
+    X.globalAlpha=ea;font(14,'700');X.fillStyle=RED;X.textAlign='center';
+    X.fillText('Chelsea pull one back!',cx,cY+s(148));
+    X.globalAlpha=1;
     // Hold or sell
-    const holdAlpha = easeOutCubic(Math.min(1, Math.max(0, (t - 0.3) * 3)));
-    ctx.globalAlpha = holdAlpha;
-    setFont(13, '600');
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText('Hold or sell?', centerX, cardY + s(175));
-    ctx.globalAlpha = 1;
-
-    drawRoundedRect(cardX + s(20), cardY + s(190), cardW - s(40), s(42), s(8));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-    ctx.strokeStyle = RED + '40';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    const curPrice = getPrice(elapsed);
-    const pnl = ((curPrice - 618) / 618 * 100);
-    const pnlDollar = ((curPrice - 618) / 618 * 50);
-
-    setFont(13, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'left';
-    ctx.fillText(`$${curPrice.toFixed(0)}`, cardX + s(35), cardY + s(216));
-    ctx.textAlign = 'right';
-    ctx.fillStyle = pnlDollar >= 0 ? LIME : RED;
-    ctx.fillText(`+$${pnlDollar.toFixed(2)} (+${pnl.toFixed(1)}%)`, cardX + cardW - s(35), cardY + s(216));
-
-    const chartX = cardX + s(50);
-    const chartY2 = cardY + s(248);
-    const chartW = cardW - s(80);
-    const chartH = s(95);
-    drawChart(elapsed, chartX, chartY2, chartW, chartH);
-    drawChartLabels(elapsed, chartX, chartY2, chartW, chartH);
-
-    ctx.textAlign = 'left';
+    const ha=eOC(Math.min(1,Math.max(0,(t-.3)*3)));
+    X.globalAlpha=ha;font(12,'600');X.fillStyle='#ffd700';X.textAlign='center';
+    X.fillText('Hold or sell?',cx,cY+s(168));
+    X.globalAlpha=1;
+    // Position
+    rr(cX+s(16),cY+s(180),cW-s(32),s(38),s(7));X.fillStyle='#0c0f16';X.fill();
+    X.strokeStyle=RED+'40';X.lineWidth=1;X.stroke();
+    const cp=price(el),pnl=((cp-618)/618*100),pnl$=((cp-618)/618*50);
+    font(12,'700','JetBrains Mono');X.fillStyle=WHT;X.textAlign='left';
+    X.fillText('$'+cp.toFixed(0),cX+s(28),cY+s(204));
+    X.textAlign='right';font(12,'700','JetBrains Mono');X.fillStyle=pnl$>=0?LIME:RED;
+    X.fillText('+$'+pnl$.toFixed(2)+' (+'+pnl.toFixed(1)+'%)',cX+cW-s(28),cY+s(204));
+    X.textAlign='left';
+    // Chart
+    drawChart(el,chX,chY,chW,chH);
+    drawChartLabels(el,chX,chY,chW,chH);
   }
 
-  // ===================== PHASE 5: Full time (20-24s) =====================
-  else if (elapsed < 24000) {
-    const t = (elapsed - 20000) / 4000;
+  // ===== PHASE 5: Full Time (20-24s) =====
+  else if(el<24000){
+    const t=(el-20000)/4000;
+    once('ft',()=>{shake(10);confetti(cx,cy-s(80),70);spawn(cx,cy,LIME,50)});
+    rr(cX,cY,cW,cH,s(10));X.fillStyle=CARD;X.fill();X.strokeStyle=LIME+'40';X.lineWidth=1;X.stroke();
+    // FT Badge
+    const ftA=eOB(Math.min(1,t*2.5));
+    X.globalAlpha=ftA;
+    rr(cX+s(14),cY+s(12),s(68),s(20),s(4));X.fillStyle=LIME;X.fill();
+    font(10,'700');X.fillStyle='#0a0c10';X.textAlign='left';X.fillText("90+3' FT",cX+s(20),cY+s(27));
+    X.globalAlpha=1;
+    // Header (no live dot, show FT)
+    font(13,'600');X.fillStyle=DIM;X.textAlign='center';X.fillText('FULL TIME',cx,cY+s(48));
+    font(26,'700');X.fillStyle=ARS;X.textAlign='right';X.fillText('ARSENAL',cx-s(28),cY+s(82));
+    font(18,'400');X.fillStyle=DIM2;X.textAlign='center';X.fillText('vs',cx,cY+s(80));
+    font(26,'700');X.fillStyle=CHE;X.textAlign='left';X.fillText('CHELSEA',cx+s(28),cY+s(82));
+    font(44,'700','JetBrains Mono');X.fillStyle=WHT;X.textAlign='center';X.fillText('2 - 1',cx,cY+s(125));
+    X.textAlign='left';
+    // PnL card
+    const pa=eOC(Math.min(1,Math.max(0,(t-.15)*2.5)));
+    X.globalAlpha=pa;
+    rr(cX+s(14),cY+s(140),cW-s(28),s(55),s(7));X.fillStyle='#0c0f16';X.fill();
+    X.strokeStyle=LIME+'40';X.lineWidth=1;X.stroke();
+    font(10,'600');X.fillStyle=LIME;X.textAlign='left';X.fillText('FINAL PnL',cX+s(26),cY+s(158));
+    font(20,'700','JetBrains Mono');X.fillStyle=LIME;X.fillText('+$2.42 (+4.9%)',cX+s(26),cY+s(182));
+    X.textAlign='right';font(10,'500');X.fillStyle=DIM;
+    X.fillText('5x leverage on $50 stake',cX+cW-s(26),cY+s(158));
+    font(16,'700','JetBrains Mono');X.fillStyle='#ffd700';
+    X.fillText('+24.3% return',cX+cW-s(26),cY+s(182));
+    X.textAlign='left';X.globalAlpha=1;
+    // Full chart
+    const ca=eOC(Math.min(1,Math.max(0,(t-.3)*2.5)));
+    X.globalAlpha=ca;
+    drawChart(24000,chX,chY-s(6),chW,chH+s(6));
+    drawChartLabels(24000,chX,chY-s(6),chW,chH+s(6));
+    X.globalAlpha=1;
+  }
 
-    triggerOnce('ft', () => {
-      triggerShake(10);
-      spawnConfetti(centerX, centerY - s(80), 70);
-      spawnParticles(centerX, centerY, LIME, 50);
+  // ===== PHASE 6: Contrast (24-28s) =====
+  else if(el<28000){
+    const t=(el-24000)/4000;
+    const gap=s(14), halfW=(cW-gap)/2;
+    const lX=cX, rX=cX+halfW+gap;
+    const bY=cy-s(110), bH=s(220);
+
+    // LEFT: Traditional bet
+    const la=eOC(Math.min(1,t*2.5));
+    X.globalAlpha=la;
+    rr(lX,bY,halfW,bH,s(10));X.fillStyle='#15181f';X.fill();X.strokeStyle='#2a2e3a';X.lineWidth=1;X.stroke();
+    font(10,'600');X.fillStyle=DIM;X.textAlign='center';X.fillText('TRADITIONAL BET',lX+halfW/2,bY+s(28));
+    font(13,'700');X.fillStyle=WHT;X.fillText('Arsenal to win',lX+halfW/2,bY+s(50));
+    font(11,'500','JetBrains Mono');X.fillStyle=DIM;X.fillText('Stake: $50',lX+halfW/2,bY+s(70));
+    font(26,'700','JetBrains Mono');X.fillStyle='#7acc3a';X.fillText('Win $105',lX+halfW/2,bY+s(108));
+    font(12,'600');X.fillStyle=RED;X.fillText('Done.',lX+halfW/2,bY+s(130));
+    // X cross
+    const xa=eOC(Math.min(1,Math.max(0,(t-.4)*3)));
+    X.globalAlpha=la*xa;X.strokeStyle=RED+'aa';X.lineWidth=s(2.5);
+    X.beginPath();X.moveTo(lX+s(20),bY+s(140));X.lineTo(lX+halfW-s(20),bY+bH-s(18));
+    X.moveTo(lX+halfW-s(20),bY+s(140));X.lineTo(lX+s(20),bY+bH-s(18));X.stroke();
+    font(10,'500');X.fillStyle=RED;X.fillText('Bet expires. No more value.',lX+halfW/2,bY+bH-s(8));
+    X.globalAlpha=1;
+
+    // RIGHT: Notch
+    const ra=eOC(Math.min(1,Math.max(0,(t-.15)*2)));
+    X.globalAlpha=ra;
+    rr(rX,bY,halfW,bH,s(10));X.fillStyle='#0d1017';X.fill();X.strokeStyle=LIME+'50';X.lineWidth=1.5;X.stroke();
+    glow(rX+halfW/2,bY+bH/2,s(100),LIME);
+    font(10,'700');X.fillStyle=LIME;X.textAlign='center';X.fillText('NOTCH',rX+halfW/2,bY+s(28));
+    font(13,'700');X.fillStyle=WHT;X.fillText('LONG ARS position',rX+halfW/2,bY+s(50));
+    font(11,'500','JetBrains Mono');X.fillStyle=DIM;X.fillText('Stake: $50 (5x lev)',rX+halfW/2,bY+s(70));
+    font(26,'700','JetBrains Mono');X.fillStyle=LIME;X.fillText('+24.3%',rX+halfW/2,bY+s(108));
+    font(12,'700');X.fillStyle=LIME;X.fillText('Position still open.',rX+halfW/2,bY+s(130));
+    // Pulse text
+    const pp=.7+.3*Math.sin(el/400);
+    X.globalAlpha=ra*pp;font(11,'600');X.fillStyle='#ffd700';
+    X.fillText('Next match: Wednesday',rX+halfW/2,bY+s(156));
+    X.globalAlpha=ra;
+    // Mini chart
+    const mX=rX+s(14),mW=halfW-s(28),mY=bY+s(170),mH=s(30);
+    X.strokeStyle=LIME+'60';X.lineWidth=s(1.5);X.beginPath();
+    for(let i=0;i<=30;i++){const x=mX+(i/30)*mW,y=mY+mH/2+Math.sin(i*.4+el*.003)*s(7);i?X.lineTo(x,y):X.moveTo(x,y)}
+    X.stroke();
+    X.fillStyle=LIME;X.beginPath();
+    X.moveTo(mX+mW,mY+mH/2-s(4));X.lineTo(mX+mW+s(7),mY+mH/2);X.lineTo(mX+mW,mY+mH/2+s(4));X.fill();
+    X.globalAlpha=1;X.textAlign='left';
+  }
+
+  // ===== PHASE 7: Finale CTA (28-32s) =====
+  else if(el<32000){
+    const t=(el-28000)/4000;
+    once('fin',()=>confetti(cx,cy-s(100),80));
+    const lines=['Every goal.','Every card.','Every moment.'];
+    lines.forEach((l,i)=>{
+      const a=eOC(Math.min(1,Math.max(0,(t-i*.1)*3)));
+      X.globalAlpha=a;font(30,'700');X.fillStyle=WHT;X.textAlign='center';
+      X.fillText(l,cx,cy-s(90)+i*s(42));
     });
-
-    // Card
-    drawRoundedRect(cardX, cardY, cardW, cardH, s(12));
-    ctx.fillStyle = CARD_BG;
-    ctx.fill();
-    ctx.strokeStyle = LIME + '50';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // FT badge
-    const ftAlpha = easeOutBounce(Math.min(1, t * 2.5));
-    ctx.globalAlpha = ftAlpha;
-    setFont(12, '700');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'left';
-    drawRoundedRect(cardX + s(15), cardY + s(14), s(70), s(22), s(4));
-    ctx.fillStyle = LIME;
-    ctx.fill();
-    setFont(11, '700');
-    ctx.fillStyle = '#0a0c10';
-    ctx.fillText("90+3' FT", cardX + s(22), cardY + s(30));
-    ctx.globalAlpha = 1;
-
-    setFont(14, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('FULL TIME', centerX, cardY + s(55));
-
-    setFont(28, '700');
-    ctx.fillStyle = ARSENAL;
-    ctx.textAlign = 'right';
-    ctx.fillText('ARSENAL', centerX - s(30), cardY + s(85));
-    setFont(20, '400');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('vs', centerX, cardY + s(83));
-    setFont(28, '700');
-    ctx.fillStyle = CHELSEA;
-    ctx.textAlign = 'left';
-    ctx.fillText('CHELSEA', centerX + s(30), cardY + s(85));
-
-    setFont(48, '700', 'JetBrains Mono');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    ctx.fillText('2 - 1', centerX, cardY + s(130));
-
-    // Final PnL card
-    const pnlAlpha = easeOutCubic(Math.min(1, Math.max(0, (t - 0.2) * 2.5)));
-    ctx.globalAlpha = pnlAlpha;
-    drawRoundedRect(cardX + s(15), cardY + s(148), cardW - s(30), s(60), s(8));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-    ctx.strokeStyle = LIME + '50';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    setFont(11, '600');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'left';
-    ctx.fillText('FINAL PnL', cardX + s(30), cardY + s(167));
-
-    setFont(22, '700', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.fillText('+$2.42 (+4.9%)', cardX + s(30), cardY + s(194));
-
-    ctx.textAlign = 'right';
-    setFont(11, '500');
-    ctx.fillStyle = DIM;
-    ctx.fillText('5x leverage on $50 stake', cardX + cardW - s(30), cardY + s(170));
-    setFont(18, '700', 'JetBrains Mono');
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText('+24.3% return', cardX + cardW - s(30), cardY + s(194));
-
-    ctx.globalAlpha = 1;
-
-    // Full match chart
-    const chartAlpha = easeOutCubic(Math.min(1, Math.max(0, (t - 0.35) * 2.5)));
-    ctx.globalAlpha = chartAlpha;
-    const chartX = cardX + s(50);
-    const chartY2 = cardY + s(225);
-    const chartW = cardW - s(80);
-    const chartH = s(120);
-    drawChart(24000, chartX, chartY2, chartW, chartH);
-    drawChartLabels(24000, chartX, chartY2, chartW, chartH);
-    ctx.globalAlpha = 1;
-
-    ctx.textAlign = 'left';
+    const sa=eOC(Math.min(1,Math.max(0,(t-.4)*2.5)));
+    X.globalAlpha=sa;font(15,'500');X.fillStyle=DIM;X.fillText('Your position feels it all.',cx,cy+s(48));
+    const ca=eOE(Math.min(1,Math.max(0,(t-.6)*2)));
+    X.globalAlpha=ca;glow(cx,cy+s(100),s(90),LIME);
+    font(34,'700');X.fillStyle=LIME;X.fillText('notch.win',cx,cy+s(105));
+    const tw=X.measureText('notch.win').width;
+    X.strokeStyle=LIME+'80';X.lineWidth=s(2);X.beginPath();
+    X.moveTo(cx-tw/2,cy+s(112));X.lineTo(cx+tw/2,cy+s(112));X.stroke();
+    X.globalAlpha=1;X.textAlign='left';
+    if(t>.7)btn.classList.add('visible');
   }
 
-  // ===================== PHASE 6: Contrast (24-28s) =====================
-  else if (elapsed < 28000) {
-    const t = (elapsed - 24000) / 4000;
-
-    // Two cards side by side
-    const gap = s(16);
-    const halfW = (cardW - gap) / 2;
-    const leftX = cardX;
-    const rightX = cardX + halfW + gap;
-    const cY = centerY - s(120);
-    const cH = s(240);
-
-    // Traditional bet card (left)
-    const leftAlpha = easeOutCubic(Math.min(1, t * 2.5));
-    ctx.globalAlpha = leftAlpha;
-
-    drawRoundedRect(leftX, cY, halfW, cH, s(10));
-    ctx.fillStyle = '#15181f';
-    ctx.fill();
-    ctx.strokeStyle = '#2a2e3a';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    setFont(11, '600');
-    ctx.fillStyle = DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText('TRADITIONAL BET', leftX + halfW / 2, cY + s(30));
-
-    setFont(14, '700');
-    ctx.fillStyle = WHITE;
-    ctx.fillText('Arsenal to win', leftX + halfW / 2, cY + s(55));
-
-    setFont(12, '500', 'JetBrains Mono');
-    ctx.fillStyle = DIM;
-    ctx.fillText('Stake: $50', leftX + halfW / 2, cY + s(78));
-
-    // Payout
-    setFont(28, '700', 'JetBrains Mono');
-    ctx.fillStyle = '#7acc3a';
-    ctx.fillText('Win $105', leftX + halfW / 2, cY + s(120));
-
-    setFont(13, '600');
-    ctx.fillStyle = RED;
-    ctx.fillText('Done.', leftX + halfW / 2, cY + s(145));
-
-    // Dead X
-    const xAlpha = easeOutCubic(Math.min(1, Math.max(0, (t - 0.4) * 3)));
-    ctx.globalAlpha = leftAlpha * xAlpha;
-    ctx.strokeStyle = RED + 'aa';
-    ctx.lineWidth = s(3);
-    ctx.beginPath();
-    ctx.moveTo(leftX + s(25), cY + s(160));
-    ctx.lineTo(leftX + halfW - s(25), cY + cH - s(20));
-    ctx.moveTo(leftX + halfW - s(25), cY + s(160));
-    ctx.lineTo(leftX + s(25), cY + cH - s(20));
-    ctx.stroke();
-
-    setFont(11, '500');
-    ctx.fillStyle = RED;
-    ctx.fillText('Bet expires. No more value.', leftX + halfW / 2, cY + cH - s(10));
-
-    ctx.globalAlpha = 1;
-
-    // Notch card (right)
-    const rightAlpha = easeOutCubic(Math.min(1, Math.max(0, (t - 0.15) * 2)));
-    ctx.globalAlpha = rightAlpha;
-
-    drawRoundedRect(rightX, cY, halfW, cH, s(10));
-    ctx.fillStyle = '#0d1017';
-    ctx.fill();
-    ctx.strokeStyle = LIME + '60';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Glow
-    drawGlow(rightX + halfW / 2, cY + cH / 2, s(120), LIME);
-
-    setFont(11, '700');
-    ctx.fillStyle = LIME;
-    ctx.textAlign = 'center';
-    ctx.fillText('NOTCH', rightX + halfW / 2, cY + s(30));
-
-    setFont(14, '700');
-    ctx.fillStyle = WHITE;
-    ctx.fillText('LONG ARS position', rightX + halfW / 2, cY + s(55));
-
-    setFont(12, '500', 'JetBrains Mono');
-    ctx.fillStyle = DIM;
-    ctx.fillText('Stake: $50 (5x lev)', rightX + halfW / 2, cY + s(78));
-
-    setFont(28, '700', 'JetBrains Mono');
-    ctx.fillStyle = LIME;
-    ctx.fillText('+24.3%', rightX + halfW / 2, cY + s(120));
-
-    setFont(13, '700');
-    ctx.fillStyle = LIME;
-    ctx.fillText('Position still open.', rightX + halfW / 2, cY + s(145));
-
-    // Pulse
-    const pulse = 0.7 + 0.3 * Math.sin(elapsed / 400);
-    ctx.globalAlpha = rightAlpha * pulse;
-    setFont(12, '600');
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText('Next match: Wednesday', rightX + halfW / 2, cY + s(175));
-
-    // Mini chart showing continuation
-    ctx.globalAlpha = rightAlpha;
-    const miniY = cY + s(190);
-    const miniH = s(35);
-    const miniW = halfW - s(30);
-    const miniX = rightX + s(15);
-    ctx.strokeStyle = LIME + '60';
-    ctx.lineWidth = s(1.5);
-    ctx.beginPath();
-    for (let i = 0; i <= 30; i++) {
-      const x = miniX + (i / 30) * miniW;
-      const y = miniY + miniH / 2 + Math.sin(i * 0.4 + elapsed * 0.003) * s(8);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Arrow continuing right
-    ctx.fillStyle = LIME;
-    ctx.beginPath();
-    ctx.moveTo(miniX + miniW, miniY + miniH / 2 - s(5));
-    ctx.lineTo(miniX + miniW + s(8), miniY + miniH / 2);
-    ctx.lineTo(miniX + miniW, miniY + miniH / 2 + s(5));
-    ctx.fill();
-
-    ctx.globalAlpha = 1;
-    ctx.textAlign = 'left';
-  }
-
-  // ===================== PHASE 7: Finale CTA (28-32s) =====================
-  else if (elapsed < 32000) {
-    const t = (elapsed - 28000) / 4000;
-
-    triggerOnce('finale', () => {
-      spawnConfetti(centerX, centerY - s(100), 80);
-    });
-
-    // Taglines
-    const lines = [
-      { text: 'Every goal.', delay: 0 },
-      { text: 'Every card.', delay: 0.12 },
-      { text: 'Every moment.', delay: 0.24 },
-    ];
-
-    lines.forEach(line => {
-      const a = easeOutCubic(Math.min(1, Math.max(0, (t - line.delay) * 3)));
-      ctx.globalAlpha = a;
-      setFont(32, '700');
-      ctx.fillStyle = WHITE;
-      ctx.textAlign = 'center';
-      const idx = lines.indexOf(line);
-      ctx.fillText(line.text, centerX, centerY - s(100) + idx * s(45));
-    });
-
-    // Subtext
-    const subAlpha = easeOutCubic(Math.min(1, Math.max(0, (t - 0.45) * 2.5)));
-    ctx.globalAlpha = subAlpha;
-    setFont(16, '500');
-    ctx.fillStyle = DIM;
-    ctx.fillText('Your position feels it all.', centerX, centerY + s(50));
-
-    // CTA
-    const ctaAlpha = easeOutElastic(Math.min(1, Math.max(0, (t - 0.6) * 2)));
-    ctx.globalAlpha = ctaAlpha;
-
-    // Glow behind CTA
-    drawGlow(centerX, centerY + s(110), s(100), LIME);
-
-    setFont(36, '700');
-    ctx.fillStyle = LIME;
-    ctx.fillText('notch.win', centerX, centerY + s(115));
-
-    // Underline
-    const tw = ctx.measureText('notch.win').width;
-    ctx.strokeStyle = LIME + '80';
-    ctx.lineWidth = s(2);
-    ctx.beginPath();
-    ctx.moveTo(centerX - tw / 2, centerY + s(122));
-    ctx.lineTo(centerX + tw / 2, centerY + s(122));
-    ctx.stroke();
-
-    ctx.globalAlpha = 1;
-    ctx.textAlign = 'left';
-
-    // Show watch again button
-    if (t > 0.7) btn.classList.add('visible');
-  }
-
-  // ===================== After 32s: hold final frame =====================
-  else {
-    const t = 1;
-    ctx.globalAlpha = 1;
-
-    setFont(32, '700');
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = 'center';
-    ctx.fillText('Every goal.', centerX, centerY - s(100));
-    ctx.fillText('Every card.', centerX, centerY - s(55));
-    ctx.fillText('Every moment.', centerX, centerY - s(10));
-
-    setFont(16, '500');
-    ctx.fillStyle = DIM;
-    ctx.fillText('Your position feels it all.', centerX, centerY + s(50));
-
-    drawGlow(centerX, centerY + s(110), s(100), LIME);
-    setFont(36, '700');
-    ctx.fillStyle = LIME;
-    ctx.fillText('notch.win', centerX, centerY + s(115));
-    const tw = ctx.measureText('notch.win').width;
-    ctx.strokeStyle = LIME + '80';
-    ctx.lineWidth = s(2);
-    ctx.beginPath();
-    ctx.moveTo(centerX - tw / 2, centerY + s(122));
-    ctx.lineTo(centerX + tw / 2, centerY + s(122));
-    ctx.stroke();
-
-    ctx.textAlign = 'left';
+  // ===== Hold final frame =====
+  else{
+    X.globalAlpha=1;
+    font(30,'700');X.fillStyle=WHT;X.textAlign='center';
+    ['Every goal.','Every card.','Every moment.'].forEach((l,i)=>X.fillText(l,cx,cy-s(90)+i*s(42)));
+    font(15,'500');X.fillStyle=DIM;X.fillText('Your position feels it all.',cx,cy+s(48));
+    glow(cx,cy+s(100),s(90),LIME);
+    font(34,'700');X.fillStyle=LIME;X.fillText('notch.win',cx,cy+s(105));
+    const tw=X.measureText('notch.win').width;
+    X.strokeStyle=LIME+'80';X.lineWidth=s(2);X.beginPath();
+    X.moveTo(cx-tw/2,cy+s(112));X.lineTo(cx+tw/2,cy+s(112));X.stroke();
+    X.textAlign='left';
     btn.classList.add('visible');
   }
 
-  ctx.restore();
-  drawParticles();
-  drawProgress(elapsed);
-
-  if (elapsed < TOTAL + 2000) {
-    animFrame = requestAnimationFrame(render);
-  }
+  X.restore();
+  drawParts();
+  drawProgress(el);
+  if(el<TOTAL+2000) raf=requestAnimationFrame(render);
 }
 
-function restart() {
+function restart(){
   btn.classList.remove('visible');
-  startTime = null;
-  triggered = new Set();
-  particles = [];
-  confetti = [];
-  shakeX = shakeY = shakeDecay = 0;
-  cancelAnimationFrame(animFrame);
-  animFrame = requestAnimationFrame(render);
+  t0=null;triggers=new Set();parts=[];conf=[];shkX=shkY=shkD=0;
+  cancelAnimationFrame(raf);raf=requestAnimationFrame(render);
 }
 
-// Start
-animFrame = requestAnimationFrame(render);
+raf=requestAnimationFrame(render);
 </script>
 </body>
 </html>

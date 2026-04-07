@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — They Limit Winners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 180 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnBurst(x, y, count, color) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (80 + Math.random() * 200) * S;
+    particles.push(new Particle(x, y, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.5 + Math.random() * 0.7, 2 + Math.random() * 3));
+  }
+}
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 900;
+  ctx.textBaseline = 'middle';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── EASING ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// ── DRAW HELPERS ──
+function setFont(size, weight, family) {
+  ctx.font = `${weight || 600} ${Math.round(size * S)}px '${family || 'Space Grotesk'}', sans-serif`;
+}
+function setMono(size, weight) {
+  ctx.font = `${weight || 500} ${Math.round(size * S)}px 'JetBrains Mono', monospace`;
+}
+
+function drawProgressBar(t) {
+  const bw = W * 0.6;
+  const bh = 4 * S;
+  const bx = (W - bw) / 2;
+  const by = H - 20 * S;
+  ctx.fillStyle = DIMMER;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, bh, bh/2);
+  ctx.fill();
+  ctx.fillStyle = LIME;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw * (t / DURATION), bh, bh/2);
+  ctx.fill();
+}
+
+// ── SCENE 1: WINNING STREAK (0-3s) ──
+let scene1Spawned = false;
+function drawScene1(t) {
+  const bets = [
+    { label: 'LAL -3.5', amount: '+$200' },
+    { label: 'BUF ML', amount: '+$150' },
+    { label: 'NYY O7.5', amount: '+$180' },
+    { label: 'KC +1.5', amount: '+$300' },
+  ];
+
+  // Title
+  const titleAlpha = clamp01(t / 0.5);
+  ctx.globalAlpha = titleAlpha;
+  setFont(42, 700);
+  ctx.fillStyle = WHITE;
+  ctx.textAlign = 'center';
+  ctx.fillText('Congratulations.', W/2, H * 0.14);
+
+  const subAlpha = clamp01((t - 0.4) / 0.5);
+  ctx.globalAlpha = subAlpha;
+  setFont(22, 500);
+  ctx.fillStyle = '#8a8f9a';
+  ctx.fillText('You won too much.', W/2, H * 0.21);
+
+  // Winning bets appearing one by one
+  const cardW = 320 * S;
+  const cardH = 52 * S;
+  const gap = 12 * S;
+  const startY = H * 0.32;
+
+  for (let i = 0; i < bets.length; i++) {
+    const delay = 0.6 + i * 0.45;
+    const p = clamp01((t - delay) / 0.35);
+    if (p <= 0) continue;
+
+    const ep = easeOut(p);
+    const y = startY + i * (cardH + gap);
+    const x = W/2 - cardW/2;
+
+    ctx.globalAlpha = ep;
+
+    // Card bg
+    ctx.fillStyle = 'rgba(178,237,104,0.08)';
+    ctx.beginPath();
+    ctx.roundRect(x, y, cardW, cardH, 10 * S);
+    ctx.fill();
+
+    // Left border accent
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.roundRect(x, y, 4 * S, cardH, [10*S, 0, 0, 10*S]);
+    ctx.fill();
+
+    // Checkmark
+    setFont(20, 600);
+    ctx.fillStyle = LIME;
+    ctx.textAlign = 'left';
+    ctx.fillText('\u2705', x + 16 * S, y + cardH/2);
+
+    // Bet label
+    setMono(15, 500);
+    ctx.fillStyle = WHITE;
+    ctx.fillText(bets[i].label, x + 48 * S, y + cardH/2);
+
+    // Amount
+    setMono(18, 700);
+    ctx.fillStyle = LIME;
+    ctx.textAlign = 'right';
+    ctx.fillText(bets[i].amount, x + cardW - 18 * S, y + cardH/2);
+
+    // Spawn particles on appear
+    if (!scene1Spawned && p > 0.3 && p < 0.5) {
+      spawnBurst(x + cardW - 40 * S, y + cardH/2, 6, LIME);
+    }
+  }
+  if (t > 2.5) scene1Spawned = true;
+
+  // Total
+  const totalP = clamp01((t - 2.4) / 0.4);
+  if (totalP > 0) {
+    ctx.globalAlpha = easeOut(totalP);
+    const ty = startY + 4 * (cardH + gap) + 20 * S;
+    setFont(28, 700);
+    ctx.fillStyle = LIME;
+    ctx.textAlign = 'center';
+    ctx.fillText('+$830 this week', W/2, ty);
+
+    // Glow
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 30 * S;
+    ctx.fillText('+$830 this week', W/2, ty);
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 2: THE EMAIL (3-7s) ──
+function drawScene2(t) {
+  const lt = t - 3; // local time 0-4
+
+  // Email envelope slides in
+  const slideP = clamp01(lt / 0.6);
+  const slideEase = easeOut(slideP);
+
+  const envW = 400 * S;
+  const envH = 280 * S;
+  const envX = W/2 - envW/2;
+  const envY = H * 0.12 + (1 - slideEase) * 80 * S;
+
+  ctx.globalAlpha = slideEase;
+
+  // Email card
+  ctx.fillStyle = '#12151c';
+  ctx.strokeStyle = '#2a2e38';
+  ctx.lineWidth = 1.5 * S;
+  ctx.beginPath();
+  ctx.roundRect(envX, envY, envW, envH, 12 * S);
+  ctx.fill();
+  ctx.stroke();
+
+  // Email header
+  ctx.fillStyle = '#1a1e28';
+  ctx.beginPath();
+  ctx.roundRect(envX, envY, envW, 48 * S, [12*S, 12*S, 0, 0]);
+  ctx.fill();
+
+  // Email icon
+  setFont(16, 500);
+  ctx.fillStyle = RED;
+  ctx.textAlign = 'left';
+  ctx.fillText('\uD83D\uDCE7', envX + 16 * S, envY + 24 * S);
+
+  setFont(13, 600);
+  ctx.fillStyle = '#8a8f9a';
+  ctx.fillText('accounts@sportsbook.com', envX + 44 * S, envY + 24 * S);
+
+  // Dot
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  ctx.arc(envX + envW - 20 * S, envY + 24 * S, 5 * S, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Subject line
+  const subjectP = clamp01((lt - 0.5) / 0.4);
+  if (subjectP > 0) {
+    ctx.globalAlpha = slideEase * easeOut(subjectP);
+    setFont(18, 700);
+    ctx.fillStyle = WHITE;
+    ctx.textAlign = 'left';
+    ctx.fillText('Your account has been reviewed.', envX + 20 * S, envY + 80 * S);
+  }
+
+  // Body text
+  const bodyP = clamp01((lt - 1.0) / 0.5);
+  if (bodyP > 0) {
+    ctx.globalAlpha = slideEase * easeOut(bodyP);
+    setFont(14, 400);
+    ctx.fillStyle = '#8a8f9a';
+    const bx = envX + 20 * S;
+    ctx.fillText('Dear valued customer,', bx, envY + 115 * S);
+    ctx.fillText('After a routine review of your wagering', bx, envY + 138 * S);
+    ctx.fillText('activity, your maximum stake has been', bx, envY + 156 * S);
+    ctx.fillText('adjusted.', bx, envY + 174 * S);
+  }
+
+  // The limit line - $500 crossed out, $5.00 replacement
+  const limitP = clamp01((lt - 1.8) / 0.5);
+  if (limitP > 0) {
+    ctx.globalAlpha = slideEase * easeOut(limitP);
+
+    setMono(14, 500);
+    ctx.fillStyle = '#8a8f9a';
+    ctx.textAlign = 'left';
+    ctx.fillText('Maximum stake:', envX + 20 * S, envY + 210 * S);
+
+    // Old amount crossed out
+    setMono(22, 700);
+    ctx.fillStyle = '#555';
+    const oldX = envX + 160 * S;
+    ctx.fillText('$500.00', oldX, envY + 210 * S);
+
+    // Strike-through line
+    const strikeP = clamp01((lt - 2.2) / 0.3);
+    if (strikeP > 0) {
+      const meas = ctx.measureText('$500.00');
+      ctx.strokeStyle = RED;
+      ctx.lineWidth = 2.5 * S;
+      ctx.beginPath();
+      ctx.moveTo(oldX - 4 * S, envY + 210 * S);
+      ctx.lineTo(oldX + meas.width * strikeP + 4 * S, envY + 210 * S);
+      ctx.stroke();
+    }
+
+    // New amount
+    const newP = clamp01((lt - 2.5) / 0.3);
+    if (newP > 0) {
+      ctx.globalAlpha = slideEase * easeOut(newP);
+      setMono(16, 700);
+      ctx.fillStyle = RED;
+      ctx.fillText('$5.00', envX + 300 * S, envY + 210 * S);
+
+      // Flash
+      if (newP < 0.5) {
+        ctx.globalAlpha = (1 - newP * 2) * 0.3;
+        ctx.fillStyle = RED;
+        ctx.fillRect(0, 0, W, H);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // Below email: "They punished you for being GOOD."
+  const punchP = clamp01((lt - 3.0) / 0.5);
+  if (punchP > 0) {
+    ctx.globalAlpha = easeOut(punchP);
+    setFont(24, 700);
+    ctx.fillStyle = WHITE;
+    ctx.textAlign = 'center';
+    ctx.fillText('They punished you for being', W/2, envY + envH + 40 * S);
+    ctx.fillStyle = LIME;
+    ctx.fillText('GOOD.', W/2, envY + envH + 72 * S);
+
+    // Jail bars effect over the email
+    const barsP = clamp01((lt - 3.2) / 0.5);
+    if (barsP > 0) {
+      ctx.globalAlpha = easeOut(barsP) * 0.5;
+      ctx.strokeStyle = RED;
+      ctx.lineWidth = 3 * S;
+      const barCount = 7;
+      for (let i = 0; i < barCount; i++) {
+        const bx = envX + (envW / (barCount + 1)) * (i + 1);
+        const barLen = envH * easeOut(barsP);
+        ctx.beginPath();
+        ctx.moveTo(bx, envY);
+        ctx.lineTo(bx, envY + barLen);
+        ctx.stroke();
+      }
+      // Horizontal bars
+      if (barsP > 0.5) {
+        const hP = clamp01((barsP - 0.5) / 0.5);
+        ctx.beginPath();
+        ctx.moveTo(envX, envY + envH * 0.33);
+        ctx.lineTo(envX + envW * easeOut(hP), envY + envH * 0.33);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(envX, envY + envH * 0.66);
+        ctx.lineTo(envX + envW * easeOut(hP), envY + envH * 0.66);
+        ctx.stroke();
+      }
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 3: SPORTSBOOKS CROSSED OUT (7-11s) ──
+function drawScene3(t) {
+  const lt = t - 7;
+
+  const books = [
+    { name: 'DraftKings', color: '#4caf50' },
+    { name: 'FanDuel', color: '#1a73e8' },
+    { name: 'BetMGM', color: '#c5a94e' },
+  ];
+
+  // Top text
+  const topP = clamp01(lt / 0.5);
+  ctx.globalAlpha = easeOut(topP);
+  setFont(20, 500);
+  ctx.fillStyle = '#8a8f9a';
+  ctx.textAlign = 'center';
+  ctx.fillText('Every major sportsbook limits winners.', W/2, H * 0.12);
+
+  // Books listed and crossed out
+  const cardW = 340 * S;
+  const cardH = 64 * S;
+  const gap = 16 * S;
+  const startY = H * 0.24;
+
+  for (let i = 0; i < books.length; i++) {
+    const delay = 0.5 + i * 1.0;
+    const appearP = clamp01((lt - delay) / 0.4);
+    if (appearP <= 0) continue;
+
+    const y = startY + i * (cardH + gap);
+    const x = W/2 - cardW/2;
+
+    ctx.globalAlpha = easeOut(appearP);
+
+    // Card
+    ctx.fillStyle = '#12151c';
+    ctx.strokeStyle = DIM;
+    ctx.lineWidth = 1 * S;
+    ctx.beginPath();
+    ctx.roundRect(x, y, cardW, cardH, 10 * S);
+    ctx.fill();
+    ctx.stroke();
+
+    // Book name
+    setFont(22, 700);
+    ctx.fillStyle = books[i].color;
+    ctx.textAlign = 'left';
+    ctx.fillText(books[i].name, x + 20 * S, y + cardH/2 - 2 * S);
+
+    // "limits winners" text
+    setFont(14, 500);
+    ctx.fillStyle = '#8a8f9a';
+    ctx.fillText('limits winners.', x + 20 * S, y + cardH/2 + 18 * S);
+
+    // Cross out / red X
+    const crossDelay = delay + 0.5;
+    const crossP = clamp01((lt - crossDelay) / 0.3);
+    if (crossP > 0) {
+      // Red X on right side
+      const xPos = x + cardW - 40 * S;
+      const yPos = y + cardH/2;
+      ctx.globalAlpha = easeOut(crossP);
+      ctx.strokeStyle = RED;
+      ctx.lineWidth = 3.5 * S;
+      const sz = 14 * S * easeOut(crossP);
+      ctx.beginPath();
+      ctx.moveTo(xPos - sz, yPos - sz);
+      ctx.lineTo(xPos + sz, yPos + sz);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(xPos + sz, yPos - sz);
+      ctx.lineTo(xPos - sz, yPos + sz);
+      ctx.stroke();
+
+      // Strikethrough over name
+      const nameWidth = ctx.measureText(books[i].name).width;
+      setFont(22, 700);
+      const nw = ctx.measureText(books[i].name).width;
+      ctx.strokeStyle = RED;
+      ctx.lineWidth = 2.5 * S;
+      ctx.beginPath();
+      ctx.moveTo(x + 20 * S - 4 * S, y + cardH/2 - 2 * S);
+      ctx.lineTo(x + 20 * S + nw * easeOut(crossP) + 4 * S, y + cardH/2 - 2 * S);
+      ctx.stroke();
+
+      // Red tint on card
+      ctx.globalAlpha = easeOut(crossP) * 0.06;
+      ctx.fillStyle = RED;
+      ctx.beginPath();
+      ctx.roundRect(x, y, cardW, cardH, 10 * S);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Bottom statement
+  const bottomDelay = 3.0;
+  const bottomP = clamp01((lt - bottomDelay) / 0.6);
+  if (bottomP > 0) {
+    ctx.globalAlpha = easeOut(bottomP);
+    const bY = startY + 3 * (cardH + gap) + 30 * S;
+    setFont(18, 600);
+    ctx.fillStyle = '#8a8f9a';
+    ctx.textAlign = 'center';
+    ctx.fillText('The house doesn\'t beat you at the game.', W/2, bY);
+
+    const line2P = clamp01((lt - bottomDelay - 0.4) / 0.5);
+    if (line2P > 0) {
+      ctx.globalAlpha = easeOut(line2P);
+      setFont(22, 700);
+      ctx.fillStyle = WHITE;
+      ctx.fillText('They remove you FROM the game.', W/2, bY + 36 * S);
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 4: NOTCH IS A MARKET (11-15s) ──
+function drawScene4(t) {
+  const lt = t - 11;
+
+  // Title
+  const titleP = clamp01(lt / 0.5);
+  ctx.globalAlpha = easeOut(titleP);
+  setFont(28, 700);
+  ctx.fillStyle = WHITE;
+  ctx.textAlign = 'center';
+  ctx.fillText('Notch is a', W/2 - 60 * S, H * 0.12);
+  ctx.fillStyle = LIME;
+  ctx.fillText('MARKET', W/2 + 80 * S, H * 0.12);
+  ctx.fillStyle = WHITE;
+  setFont(20, 500);
+  ctx.fillText('not a house.', W/2, H * 0.18);
+
+  // Order book visual
+  const bookP = clamp01((lt - 0.6) / 0.8);
+  if (bookP > 0) {
+    const bkW = 360 * S;
+    const bkH = 220 * S;
+    const bkX = W/2 - bkW/2;
+    const bkY = H * 0.25;
+
+    ctx.globalAlpha = easeOut(bookP);
+
+    // Order book container
+    ctx.fillStyle = '#0e1118';
+    ctx.strokeStyle = 'rgba(178,237,104,0.2)';
+    ctx.lineWidth = 1.5 * S;
+    ctx.beginPath();
+    ctx.roundRect(bkX, bkY, bkW, bkH, 10 * S);
+    ctx.fill();
+    ctx.stroke();
+
+    // Header
+    ctx.fillStyle = 'rgba(178,237,104,0.06)';
+    ctx.beginPath();
+    ctx.roundRect(bkX, bkY, bkW, 36 * S, [10*S, 10*S, 0, 0]);
+    ctx.fill();
+
+    setMono(11, 600);
+    ctx.fillStyle = '#8a8f9a';
+    ctx.textAlign = 'left';
+    ctx.fillText('PRICE', bkX + 16 * S, bkY + 18 * S);
+    ctx.fillText('SIZE', bkX + 120 * S, bkY + 18 * S);
+    ctx.textAlign = 'right';
+    ctx.fillText('PRICE', bkX + bkW - 100 * S, bkY + 18 * S);
+    ctx.fillText('SIZE', bkX + bkW - 16 * S, bkY + 18 * S);
+
+    // Center labels
+    setMono(9, 500);
+    ctx.fillStyle = LIME;
+    ctx.textAlign = 'center';
+    ctx.fillText('BIDS', bkX + bkW * 0.25, bkY + 18 * S);
+    ctx.fillStyle = RED;
+    ctx.fillText('ASKS', bkX + bkW * 0.75, bkY + 18 * S);
+
+    // Order rows
+    const bids = [
+      { price: '0.62', size: '1,200' },
+      { price: '0.60', size: '3,500' },
+      { price: '0.58', size: '2,800' },
+      { price: '0.55', size: '5,100' },
+      { price: '0.52', size: '4,200' },
+    ];
+    const asks = [
+      { price: '0.64', size: '900' },
+      { price: '0.66', size: '2,100' },
+      { price: '0.68', size: '1,800' },
+      { price: '0.70', size: '3,400' },
+      { price: '0.73', size: '2,600' },
+    ];
+
+    const rowH = 32 * S;
+    const rowStartY = bkY + 44 * S;
+
+    for (let i = 0; i < bids.length; i++) {
+      const rowP = clamp01((bookP - 0.2 - i * 0.08) / 0.3);
+      if (rowP <= 0) continue;
+
+      ctx.globalAlpha = easeOut(bookP) * easeOut(rowP);
+      const ry = rowStartY + i * rowH;
+
+      // Bid depth bar
+      const bidDepth = parseFloat(bids[i].size.replace(',','')) / 5100;
+      ctx.fillStyle = 'rgba(178,237,104,0.08)';
+      ctx.fillRect(bkX + 1, ry, (bkW/2 - 2) * bidDepth * easeOut(rowP), rowH - 1);
+
+      // Bid text
+      setMono(12, 500);
+      ctx.fillStyle = LIME;
+      ctx.textAlign = 'left';
+      ctx.fillText(bids[i].price, bkX + 16 * S, ry + rowH/2);
+      ctx.fillStyle = '#ccc';
+      ctx.fillText(bids[i].size, bkX + 90 * S, ry + rowH/2);
+
+      // Ask depth bar
+      const askDepth = parseFloat(asks[i].size.replace(',','')) / 3400;
+      ctx.fillStyle = 'rgba(255,77,77,0.08)';
+      ctx.fillRect(bkX + bkW/2, ry, (bkW/2 - 1) * askDepth * easeOut(rowP), rowH - 1);
+
+      // Ask text
+      ctx.fillStyle = RED;
+      ctx.textAlign = 'right';
+      ctx.fillText(asks[i].price, bkX + bkW - 100 * S, ry + rowH/2);
+      ctx.fillStyle = '#ccc';
+      ctx.fillText(asks[i].size, bkX + bkW - 16 * S, ry + rowH/2);
+    }
+
+    // Divider line
+    ctx.globalAlpha = easeOut(bookP) * 0.3;
+    ctx.strokeStyle = DIM;
+    ctx.lineWidth = 1 * S;
+    ctx.beginPath();
+    ctx.moveTo(bkX + bkW/2, bkY + 36 * S);
+    ctx.lineTo(bkX + bkW/2, bkY + bkH);
+    ctx.stroke();
+  }
+
+  // Feature bullets
+  const features = [
+    'No limits. No bans. No reviews.',
+    'The more you win, the more you trade.',
+  ];
+  for (let i = 0; i < features.length; i++) {
+    const delay = 2.2 + i * 0.6;
+    const fP = clamp01((lt - delay) / 0.5);
+    if (fP <= 0) continue;
+
+    ctx.globalAlpha = easeOut(fP);
+    const fy = H * 0.72 + i * 36 * S;
+    setFont(i === 0 ? 22 : 18, i === 0 ? 700 : 500);
+    ctx.fillStyle = i === 0 ? LIME : '#ccc';
+    ctx.textAlign = 'center';
+    ctx.fillText(features[i], W/2, fy);
+
+    if (i === 0) {
+      ctx.shadowColor = LIME;
+      ctx.shadowBlur = 20 * S;
+      ctx.fillText(features[i], W/2, fy);
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // "There's no house to beat."
+  const noHouseP = clamp01((lt - 1.4) / 0.5);
+  if (noHouseP > 0) {
+    ctx.globalAlpha = easeOut(noHouseP);
+    setFont(16, 500);
+    ctx.fillStyle = '#8a8f9a';
+    ctx.textAlign = 'center';
+    ctx.fillText('There\'s no house to beat. No one to limit you.', W/2, H * 0.64);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE 5: CTA (15-18s) ──
+function drawScene5(t) {
+  const lt = t - 15;
+
+  // "They ban winners."
+  const line1P = clamp01(lt / 0.5);
+  ctx.globalAlpha = easeOut(line1P);
+  setFont(26, 700);
+  ctx.fillStyle = RED;
+  ctx.textAlign = 'center';
+  ctx.fillText('They ban winners.', W/2, H * 0.28);
+
+  // "We welcome them."
+  const line2P = clamp01((lt - 0.6) / 0.5);
+  if (line2P > 0) {
+    ctx.globalAlpha = easeOut(line2P);
+    setFont(32, 700);
+    ctx.fillStyle = LIME;
+    ctx.fillText('We welcome them.', W/2, H * 0.38);
+
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 30 * S;
+    ctx.fillText('We welcome them.', W/2, H * 0.38);
+    ctx.shadowBlur = 0;
+  }
+
+  // Divider line
+  const lineP = clamp01((lt - 1.2) / 0.4);
+  if (lineP > 0) {
+    ctx.globalAlpha = easeOut(lineP) * 0.3;
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 1 * S;
+    const lw = 120 * S * easeOut(lineP);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - lw, H * 0.46);
+    ctx.lineTo(W/2 + lw, H * 0.46);
+    ctx.stroke();
+  }
+
+  // notch.win
+  const ctaP = clamp01((lt - 1.5) / 0.5);
+  if (ctaP > 0) {
+    ctx.globalAlpha = easeOut(ctaP);
+
+    // Logo glow
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 40 * S;
+    setFont(52, 700);
+    ctx.fillStyle = WHITE;
+    ctx.fillText('notch', W/2 - 32 * S, H * 0.56);
+    ctx.fillStyle = LIME;
+    ctx.fillText('.win', W/2 + 80 * S, H * 0.56);
+    ctx.shadowBlur = 0;
+
+    // Tagline
+    const tagP = clamp01((lt - 2.0) / 0.4);
+    if (tagP > 0) {
+      ctx.globalAlpha = easeOut(tagP);
+      setFont(16, 500);
+      ctx.fillStyle = '#8a8f9a';
+      ctx.fillText('Sports team perpetual trading. No limits.', W/2, H * 0.64);
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ── CROSS-FADE HELPER ──
+function sceneFade(t, sceneStart, sceneEnd, fadeIn, fadeOut) {
+  const fadeInEnd = sceneStart + (fadeIn || 0.4);
+  const fadeOutStart = sceneEnd - (fadeOut || 0.4);
+
+  if (t < sceneStart || t > sceneEnd) return 0;
+  if (t < fadeInEnd) return clamp01((t - sceneStart) / (fadeIn || 0.4));
+  if (t > fadeOutStart) return clamp01((sceneEnd - t) / (fadeOut || 0.4));
+  return 1;
+}
+
+// ── MAIN LOOP ──
+function frame(ts) {
+  if (!startTime) startTime = ts;
+  const dt = Math.min((ts - (startTime + animTime * 1000)) / 1000, 0.05);
+  animTime = (ts - startTime) / 1000;
+
+  if (!running) { requestAnimationFrame(frame); return; }
+
+  const t = animTime;
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw scenes with cross-fade
+  const s1a = sceneFade(t, 0, 3.3, 0.01, 0.3);
+  const s2a = sceneFade(t, 2.8, 7.3, 0.4, 0.3);
+  const s3a = sceneFade(t, 6.8, 11.3, 0.4, 0.3);
+  const s4a = sceneFade(t, 10.8, 15.3, 0.4, 0.3);
+  const s5a = sceneFade(t, 14.8, 18, 0.4, 0.01);
+
+  if (s1a > 0) { ctx.globalAlpha = s1a; drawScene1(t); ctx.globalAlpha = 1; }
+  if (s2a > 0) { ctx.globalAlpha = s2a; drawScene2(t); ctx.globalAlpha = 1; }
+  if (s3a > 0) { ctx.globalAlpha = s3a; drawScene3(t); ctx.globalAlpha = 1; }
+  if (s4a > 0) { ctx.globalAlpha = s4a; drawScene4(t); ctx.globalAlpha = 1; }
+  if (s5a > 0) { ctx.globalAlpha = s5a; drawScene5(t); ctx.globalAlpha = 1; }
+
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update(dt > 0 ? dt : 0.016);
+    particles[i].draw();
+    if (particles[i].life <= 0) particles.splice(i, 1);
+  }
+
+  // Progress bar
+  if (t < DURATION) {
+    drawProgressBar(t);
+  }
+
+  // Watch again button
+  if (t >= DURATION - 0.5) {
+    watchBtn.classList.add('visible');
+    if (t >= DURATION + 0.5) {
+      running = false;
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  scene1Spawned = false;
+  particles = [];
+  startTime = null;
+  animTime = 0;
+  running = true;
+});
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

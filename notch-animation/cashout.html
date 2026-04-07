@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — Cash Out Trap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const GOLD = '#fbbf24';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 120 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnBurst(x, y, count, color) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (80 + Math.random() * 200) * S;
+    particles.push(new Particle(x, y, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.5 + Math.random() * 0.8, 2 + Math.random() * 3));
+  }
+}
+
+function spawnSiphon(x1, y1, x2, y2, count, color) {
+  for (let i = 0; i < count; i++) {
+    const t = Math.random();
+    const px = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 20 * S;
+    const py = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 20 * S;
+    const vx = (x2 - x1) * 0.3 + (Math.random() - 0.5) * 40 * S;
+    const vy = (y2 - y1) * 0.3 + (Math.random() - 0.5) * 40 * S;
+    particles.push(new Particle(px, py, color, vx, vy, 0.6 + Math.random() * 0.5, 2 + Math.random() * 2));
+  }
+}
+
+// ── AMBIENT PARTICLES ──
+let ambientParticles = [];
+function initAmbient() {
+  ambientParticles = [];
+  for (let i = 0; i < 40; i++) {
+    ambientParticles.push({
+      x: Math.random() * W, y: Math.random() * H,
+      size: (0.5 + Math.random() * 1.5) * S,
+      speed: (8 + Math.random() * 20) * S,
+      alpha: 0.05 + Math.random() * 0.12,
+      color: Math.random() < 0.5 ? LIME : (Math.random() < 0.5 ? GOLD : '#555')
+    });
+  }
+}
+
+function drawAmbient(dt) {
+  ambientParticles.forEach(p => {
+    p.y -= p.speed * dt;
+    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 900;
+  initAmbient();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── HELPERS ──
+function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+function fadeIn(t, start, dur) { return Math.max(0, Math.min(1, (t - start) / dur)); }
+function fadeOut(t, start, dur) { return 1 - Math.max(0, Math.min(1, (t - start) / dur)); }
+function fadeInOut(t, inS, inD, outS, outD) { return Math.min(fadeIn(t, inS, inD), fadeOut(t, outS, outD)); }
+
+function fillText(text, x, y, font, color, alpha, align) {
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  ctx.fillStyle = color;
+  ctx.font = font;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+  ctx.globalAlpha = 1;
+}
+
+function drawRoundedRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawProgressBar(t) {
+  const barH = 4 * S;
+  const progress = t / DURATION;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(0, H - barH, W, barH);
+  const grad = ctx.createLinearGradient(0, 0, W * progress, 0);
+  grad.addColorStop(0, LIME);
+  grad.addColorStop(1, GOLD);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, H - barH, W * progress, barH);
+}
+
+// ── SCENE 1: Your bet is winning (0-3s) ──
+function drawScene1(t) {
+  const a = fadeInOut(t, 0, 0.4, 2.5, 0.5);
+  if (a <= 0) return;
+
+  const cx = W / 2, cy = H * 0.32;
+
+  // Title
+  fillText('Your bet is winning.', cx, H * 0.1, `bold ${32 * S}px 'Space Grotesk'`, WHITE, a * fadeIn(t, 0, 0.5));
+
+  // Match card
+  const cardW = 340 * S, cardH = 160 * S;
+  const cardX = cx - cardW / 2, cardY = cy - cardH / 2;
+  ctx.globalAlpha = a * 0.9;
+  ctx.fillStyle = '#12151c';
+  drawRoundedRect(cardX, cardY, cardW, cardH, 12 * S);
+  ctx.fill();
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 1.5 * S;
+  drawRoundedRect(cardX, cardY, cardW, cardH, 12 * S);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // LIVE badge
+  const livA = a * fadeIn(t, 0.3, 0.3);
+  const liveFlash = 0.7 + 0.3 * Math.sin(t * 5);
+  ctx.globalAlpha = livA * liveFlash;
+  ctx.fillStyle = RED;
+  drawRoundedRect(cardX + 12 * S, cardY + 10 * S, 50 * S, 22 * S, 4 * S);
+  ctx.fill();
+  fillText('LIVE', cardX + 37 * S, cardY + 21 * S, `bold ${12 * S}px 'JetBrains Mono'`, WHITE, livA * liveFlash);
+
+  // Match: Arsenal vs Chelsea
+  const teamA = a * fadeIn(t, 0.4, 0.4);
+  fillText('Arsenal', cx - 90 * S, cy - 20 * S, `600 ${22 * S}px 'Space Grotesk'`, WHITE, teamA);
+  fillText('2 - 0', cx, cy - 20 * S, `bold ${28 * S}px 'JetBrains Mono'`, LIME, teamA);
+  fillText('Chelsea', cx + 90 * S, cy - 20 * S, `600 ${22 * S}px 'Space Grotesk'`, '#888', teamA);
+  fillText("67'", cx, cy + 10 * S, `${14 * S}px 'JetBrains Mono'`, '#666', teamA);
+
+  // Bet info
+  const betA = a * fadeIn(t, 0.6, 0.4);
+  fillText('Your $50 bet  →  Pays $130', cx, cy + 42 * S, `500 ${15 * S}px 'Space Grotesk'`, '#aaa', betA);
+
+  // Cash out button (pulsing)
+  const btnA = a * fadeIn(t, 1.2, 0.6);
+  const btnY = H * 0.58;
+  const btnW = 280 * S, btnH = 56 * S;
+  const pulse = 1 + 0.04 * Math.sin(t * 6);
+
+  ctx.save();
+  ctx.translate(cx, btnY);
+  ctx.scale(pulse, pulse);
+
+  // glow
+  ctx.globalAlpha = btnA * 0.3;
+  ctx.shadowColor = GOLD;
+  ctx.shadowBlur = 30 * S;
+  ctx.fillStyle = GOLD;
+  drawRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 12 * S);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // button
+  ctx.globalAlpha = btnA;
+  const btnGrad = ctx.createLinearGradient(-btnW / 2, 0, btnW / 2, 0);
+  btnGrad.addColorStop(0, '#f59e0b');
+  btnGrad.addColorStop(1, GOLD);
+  ctx.fillStyle = btnGrad;
+  drawRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 12 * S);
+  ctx.fill();
+
+  fillText('CASH OUT: $85', 0, 0, `bold ${22 * S}px 'Space Grotesk'`, '#000', btnA);
+  ctx.restore();
+
+  // Sportsbook label
+  fillText('Sportsbook offers...', cx, H * 0.72, `${14 * S}px 'Space Grotesk'`, '#666', btnA * 0.7);
+}
+
+// ── SCENE 2: Real value reveal (3-7s) ──
+let siphonSpawned = false;
+function drawScene2(t) {
+  const a = fadeInOut(t, 3, 0.5, 6.5, 0.5);
+  if (a <= 0) { siphonSpawned = false; return; }
+
+  const cx = W / 2, cy = H * 0.15;
+
+  // Title
+  fillText('But the REAL value of your bet is $105.', cx, cy, `bold ${28 * S}px 'Space Grotesk'`, WHITE, a * fadeIn(t, 3, 0.6));
+
+  // Comparison bars
+  const barTop = H * 0.28;
+  const barW = 260 * S;
+  const barH = 50 * S;
+  const gap = 20 * S;
+
+  // Fair value bar
+  const fairA = a * fadeIn(t, 3.4, 0.5);
+  const fairW = barW * easeOut(fadeIn(t, 3.4, 0.8));
+  ctx.globalAlpha = fairA;
+  ctx.fillStyle = LIME;
+  drawRoundedRect(cx - barW / 2, barTop, fairW, barH, 8 * S);
+  ctx.fill();
+  fillText('Fair value: $105', cx, barTop + barH / 2, `bold ${18 * S}px 'JetBrains Mono'`, '#000', fairA * fadeIn(t, 3.8, 0.4));
+
+  // Sportsbook offer bar
+  const sbA = a * fadeIn(t, 4.0, 0.5);
+  const sbFrac = 85 / 105;
+  const sbW = barW * sbFrac * easeOut(fadeIn(t, 4.0, 0.8));
+  ctx.globalAlpha = sbA;
+  ctx.fillStyle = GOLD;
+  drawRoundedRect(cx - barW / 2, barTop + barH + gap, sbW, barH, 8 * S);
+  ctx.fill();
+  fillText('Cash out: $85', cx - barW / 2 + sbW / 2, barTop + barH + gap + barH / 2, `bold ${18 * S}px 'JetBrains Mono'`, '#000', sbA * fadeIn(t, 4.4, 0.4));
+
+  // The gap — hidden fee
+  const feeA = a * fadeIn(t, 4.8, 0.5);
+  if (feeA > 0) {
+    const gapStart = cx - barW / 2 + barW * sbFrac;
+    const gapW = barW * (1 - sbFrac);
+    const gapY = barTop + barH + gap;
+
+    ctx.globalAlpha = feeA * (0.6 + 0.2 * Math.sin(t * 4));
+    ctx.fillStyle = RED;
+    drawRoundedRect(gapStart, gapY, gapW, barH, 0);
+    ctx.fill();
+    fillText('-$20', gapStart + gapW / 2, gapY + barH / 2, `bold ${16 * S}px 'JetBrains Mono'`, WHITE, feeA);
+
+    // Siphon particles
+    if (t > 5.0 && t < 6.5 && !siphonSpawned) {
+      siphonSpawned = true;
+    }
+    if (siphonSpawned && t < 6.5 && Math.random() < 0.3) {
+      spawnSiphon(cx, barTop + barH + gap + barH / 2, cx + barW * 0.6, barTop - 20 * S, 2, RED);
+    }
+  }
+
+  // Explanation text
+  const txtA = a * fadeIn(t, 5.2, 0.5);
+  fillText("They're buying your bet back at a discount.", cx, H * 0.58, `500 ${20 * S}px 'Space Grotesk'`, '#ccc', txtA);
+
+  // Hidden fee callout
+  const feeCallA = a * fadeIn(t, 5.8, 0.5);
+  fillText('HIDDEN FEE: $20', cx, H * 0.68, `bold ${26 * S}px 'JetBrains Mono'`, RED, feeCallA * (0.7 + 0.3 * Math.sin(t * 5)));
+  fillText("The 'feature' costs you 19%.", cx, H * 0.75, `500 ${17 * S}px 'Space Grotesk'`, '#999', feeCallA);
+}
+
+// ── SCENE 3: Binary trap (7-11s) ──
+function drawScene3(t) {
+  const a = fadeInOut(t, 7, 0.5, 10.5, 0.5);
+  if (a <= 0) return;
+
+  const cx = W / 2;
+
+  // Title
+  fillText("Don't cash out? Fine.", cx, H * 0.1, `bold ${28 * S}px 'Space Grotesk'`, WHITE, a * fadeIn(t, 7, 0.5));
+
+  // Timeline showing score changes
+  const tlY = H * 0.32;
+  const tlW = 320 * S;
+
+  // Phase 1: 2-1
+  const p1A = a * fadeIn(t, 7.6, 0.5);
+  // Score change
+  const scoreY1 = tlY;
+  if (p1A > 0) {
+    ctx.globalAlpha = p1A;
+    ctx.fillStyle = '#12151c';
+    drawRoundedRect(cx - tlW / 2, scoreY1 - 30 * S, tlW, 60 * S, 10 * S);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1 * S;
+    drawRoundedRect(cx - tlW / 2, scoreY1 - 30 * S, tlW, 60 * S, 10 * S);
+    ctx.stroke();
+
+    fillText("73' — Arsenal 2 - 1 Chelsea", cx, scoreY1 - 6 * S, `500 ${16 * S}px 'Space Grotesk'`, '#ccc', p1A);
+    fillText('Cash out drops to $62', cx, scoreY1 + 16 * S, `bold ${15 * S}px 'JetBrains Mono'`, GOLD, p1A);
+  }
+
+  // Phase 2: 2-2
+  const p2A = a * fadeIn(t, 8.8, 0.5);
+  const scoreY2 = tlY + 90 * S;
+  if (p2A > 0) {
+    ctx.globalAlpha = p2A;
+    ctx.fillStyle = '#12151c';
+    drawRoundedRect(cx - tlW / 2, scoreY2 - 30 * S, tlW, 60 * S, 10 * S);
+    ctx.fill();
+    ctx.strokeStyle = RED + '66';
+    ctx.lineWidth = 1.5 * S;
+    drawRoundedRect(cx - tlW / 2, scoreY2 - 30 * S, tlW, 60 * S, 10 * S);
+    ctx.stroke();
+
+    fillText("81' — Arsenal 2 - 2 Chelsea", cx, scoreY2 - 6 * S, `500 ${16 * S}px 'Space Grotesk'`, RED, p2A);
+    fillText('Cash out: $0', cx, scoreY2 + 16 * S, `bold ${15 * S}px 'JetBrains Mono'`, RED, p2A * (0.6 + 0.4 * Math.sin(t * 6)));
+
+    if (t > 9.0 && t < 9.2) {
+      spawnBurst(cx, scoreY2, 15, RED);
+    }
+  }
+
+  // Binary trap message
+  const trapA = a * fadeIn(t, 9.6, 0.5);
+  fillText('You had no middle ground.', cx, H * 0.72, `bold ${22 * S}px 'Space Grotesk'`, WHITE, trapA);
+  fillText('$85 or $0. Binary trap.', cx, H * 0.79, `600 ${20 * S}px 'JetBrains Mono'`, RED, trapA);
+}
+
+// ── SCENE 4: Notch flip (11-15s) ──
+function drawScene4(t) {
+  const a = fadeInOut(t, 11, 0.5, 14.5, 0.5);
+  if (a <= 0) return;
+
+  const cx = W / 2;
+
+  // Title
+  fillText('On Notch, YOU set the price.', cx, H * 0.08, `bold ${28 * S}px 'Space Grotesk'`, LIME, a * fadeIn(t, 11, 0.6));
+
+  // Order book visualization
+  const obY = H * 0.22;
+  const obW = 300 * S;
+  const obH = 200 * S;
+  const obX = cx - obW / 2;
+
+  ctx.globalAlpha = a * fadeIn(t, 11.3, 0.5);
+  ctx.fillStyle = '#0d1017';
+  drawRoundedRect(obX, obY, obW, obH, 10 * S);
+  ctx.fill();
+  ctx.strokeStyle = DIM;
+  ctx.lineWidth = 1 * S;
+  drawRoundedRect(obX, obY, obW, obH, 10 * S);
+  ctx.stroke();
+
+  // Header
+  fillText('ORDER BOOK', cx, obY + 16 * S, `bold ${11 * S}px 'JetBrains Mono'`, '#666', a * fadeIn(t, 11.3, 0.4));
+
+  // Bids (green) and Asks (red)
+  const bookA = a * fadeIn(t, 11.6, 0.6);
+  const rows = [
+    { price: '$107', size: '12', side: 'ask', color: RED + '55' },
+    { price: '$106', size: '28', side: 'ask', color: RED + '44' },
+    { price: '$105', size: '45', side: 'ask', color: RED + '33' },
+    { price: '$104', size: '52', side: 'bid', color: LIME + '33' },
+    { price: '$103', size: '38', side: 'bid', color: LIME + '44' },
+    { price: '$102', size: '20', side: 'bid', color: LIME + '55' },
+  ];
+
+  const rowH = 24 * S;
+  const startY = obY + 38 * S;
+
+  rows.forEach((row, i) => {
+    const ry = startY + i * rowH;
+    const rowA = bookA * fadeIn(t, 11.6 + i * 0.08, 0.3);
+    const barFrac = parseInt(row.size) / 55;
+
+    ctx.globalAlpha = rowA * 0.4;
+    ctx.fillStyle = row.color;
+    const barDir = row.side === 'bid' ? 1 : 1;
+    ctx.fillRect(obX + 5 * S, ry, (obW - 10 * S) * barFrac * easeOut(fadeIn(t, 11.8 + i * 0.08, 0.5)), rowH - 2 * S);
+
+    fillText(row.price, obX + 50 * S, ry + rowH / 2 - 1 * S, `${13 * S}px 'JetBrains Mono'`, row.side === 'bid' ? LIME : RED, rowA, 'center');
+    fillText(row.size, obX + obW - 50 * S, ry + rowH / 2 - 1 * S, `${13 * S}px 'JetBrains Mono'`, '#888', rowA, 'center');
+  });
+
+  // Spread indicator
+  fillText('Spread: $1', cx, startY + 2.5 * rowH, `bold ${11 * S}px 'JetBrains Mono'`, GOLD, bookA * fadeIn(t, 12.2, 0.4));
+
+  // Sell action
+  const sellA = a * fadeIn(t, 12.8, 0.6);
+  const sellY = H * 0.62;
+  const sellW = 280 * S, sellH = 50 * S;
+
+  ctx.globalAlpha = sellA * 0.15;
+  ctx.shadowColor = LIME;
+  ctx.shadowBlur = 25 * S;
+  ctx.fillStyle = LIME;
+  drawRoundedRect(cx - sellW / 2, sellY - sellH / 2, sellW, sellH, 10 * S);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.globalAlpha = sellA;
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2 * S;
+  drawRoundedRect(cx - sellW / 2, sellY - sellH / 2, sellW, sellH, 10 * S);
+  ctx.stroke();
+  fillText('SELL AT MARKET: $105', cx, sellY, `bold ${18 * S}px 'JetBrains Mono'`, LIME, sellA);
+
+  // Comparison
+  const compA = a * fadeIn(t, 13.2, 0.6);
+  fillText('Sportsbook: $85', cx - 100 * S, H * 0.74, `${16 * S}px 'JetBrains Mono'`, '#666', compA, 'center');
+  fillText('→', cx, H * 0.74, `${18 * S}px 'Space Grotesk'`, '#666', compA, 'center');
+  fillText('Notch: $105', cx + 100 * S, H * 0.74, `bold ${16 * S}px 'JetBrains Mono'`, LIME, compA, 'center');
+
+  // +$20 callout
+  const bonusA = a * fadeIn(t, 13.6, 0.5);
+  fillText('+$20 more in your pocket.', cx, H * 0.83, `bold ${22 * S}px 'Space Grotesk'`, LIME, bonusA);
+
+  if (t > 13.6 && t < 13.8) {
+    spawnBurst(cx, H * 0.83, 20, LIME);
+  }
+}
+
+// ── SCENE 5: CTA (15-18s) ──
+function drawScene5(t) {
+  const a = fadeIn(t, 15, 0.6);
+  if (a <= 0) return;
+
+  const cx = W / 2;
+
+  // Top line
+  const l1A = a * fadeIn(t, 15, 0.5);
+  fillText('Their cash out is a fee.', cx, H * 0.28, `bold ${26 * S}px 'Space Grotesk'`, '#999', l1A);
+
+  // Main line
+  const l2A = a * fadeIn(t, 15.6, 0.6);
+  fillText('Your exit is a market.', cx, H * 0.38, `bold ${30 * S}px 'Space Grotesk'`, WHITE, l2A);
+
+  // Notch logo / brand
+  const logoA = a * fadeIn(t, 16.2, 0.6);
+  const logoScale = easeOut(fadeIn(t, 16.2, 0.5));
+
+  ctx.save();
+  ctx.translate(cx, H * 0.54);
+  ctx.scale(logoScale, logoScale);
+
+  // Glow
+  ctx.globalAlpha = logoA * 0.2;
+  ctx.shadowColor = LIME;
+  ctx.shadowBlur = 40 * S;
+  ctx.fillStyle = LIME;
+  ctx.beginPath();
+  ctx.arc(0, 0, 40 * S, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  fillText('notch.win', 0, 0, `bold ${42 * S}px 'Space Grotesk'`, LIME, logoA);
+  ctx.restore();
+
+  // Tagline
+  const tagA = a * fadeIn(t, 16.8, 0.5);
+  fillText('Trade sports. Not with the house.', cx, H * 0.66, `500 ${16 * S}px 'Space Grotesk'`, '#888', tagA);
+
+  // Show watch again
+  if (t > 17) {
+    watchBtn.classList.add('visible');
+  }
+}
+
+// ── MAIN LOOP ──
+let lastTime = 0;
+function render(now) {
+  if (!startTime) startTime = now;
+  const dt = Math.min((now - (lastTime || now)) / 1000, 0.05);
+  lastTime = now;
+  animTime = (now - startTime) / 1000;
+
+  if (animTime > DURATION + 1) {
+    animTime = DURATION + 1;
+  }
+
+  const t = animTime;
+
+  // Clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Ambient
+  drawAmbient(dt);
+
+  // Scenes
+  drawScene1(t);
+  drawScene2(t);
+  drawScene3(t);
+  drawScene4(t);
+  drawScene5(t);
+
+  // Particles
+  particles.forEach(p => { p.update(dt); p.draw(); });
+  particles = particles.filter(p => p.life > 0);
+
+  // Progress bar
+  drawProgressBar(t);
+
+  if (running) requestAnimationFrame(render);
+}
+
+// ── WATCH AGAIN ──
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  particles = [];
+  siphonSpawned = false;
+  startTime = null;
+  lastTime = 0;
+  animTime = 0;
+});
+
+// ── START ──
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

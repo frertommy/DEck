@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — Sharp Banned</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+// ── SETUP ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+const DARK_RED = '#331111';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 200 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnBurst(x, y, count, color) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (100 + Math.random() * 300) * S;
+    particles.push(new Particle(x, y, color,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.4 + Math.random() * 0.6, 2 + Math.random() * 4));
+  }
+}
+
+function spawnStampDebris(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (80 + Math.random() * 200) * S;
+    particles.push(new Particle(x, y, RED,
+      Math.cos(angle) * speed, Math.sin(angle) * speed,
+      0.3 + Math.random() * 0.5, 1.5 + Math.random() * 3));
+  }
+}
+
+// ── SCREEN SHAKE ──
+let shakeAmount = 0;
+let shakeDecay = 0;
+function triggerShake(amount) {
+  shakeAmount = amount;
+  shakeDecay = amount;
+}
+
+// ── STAMP TRACKING ──
+let stampTriggered = [false, false, false, false];
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 900;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── EASING ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+function elasticOut(t) {
+  if (t === 0 || t === 1) return t;
+  return Math.pow(2, -10 * t) * Math.sin((t - 0.075) * (2 * Math.PI) / 0.3) + 1;
+}
+function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+
+// ── DRAW HELPERS ──
+function drawText(text, x, y, size, color, align, font, maxWidth) {
+  ctx.fillStyle = color;
+  ctx.font = `${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  if (maxWidth) ctx.fillText(text, x, y, maxWidth);
+  else ctx.fillText(text, x, y);
+}
+
+function drawBoldText(text, x, y, size, color, align, font) {
+  ctx.fillStyle = color;
+  ctx.font = `700 ${Math.round(size * S)}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+function drawMonoText(text, x, y, size, color, align) {
+  drawText(text, x, y, size, color, align, 'JetBrains Mono');
+}
+
+// ── PROGRESS BAR ──
+function drawProgressBar(t) {
+  const barH = 4 * S;
+  const progress = t / DURATION;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(0, H - barH, W, barH);
+  ctx.fillStyle = LIME;
+  ctx.fillRect(0, H - barH, W * progress, barH);
+}
+
+// ── SCENE 1: SKILL METER (0-3s) ──
+function drawScene1(t) {
+  const cx = W / 2;
+  const topY = H * 0.12;
+
+  // Title
+  const titleAlpha = clamp01(t / 0.5);
+  ctx.globalAlpha = titleAlpha;
+  drawBoldText('The better you get...', cx, topY, 38, WHITE);
+  ctx.globalAlpha = 1;
+
+  // Skill meter items
+  const items = [
+    { label: 'Research', icon: '' },
+    { label: 'Model building', icon: '' },
+    { label: 'Edge found', icon: '' },
+    { label: 'Consistent profit', icon: '' }
+  ];
+
+  const meterX = cx - 180 * S;
+  const meterW = 360 * S;
+  const startY = H * 0.28;
+  const rowH = 60 * S;
+
+  items.forEach((item, i) => {
+    const itemDelay = 0.4 + i * 0.55;
+    const itemT = clamp01((t - itemDelay) / 0.4);
+    const checkT = clamp01((t - itemDelay - 0.2) / 0.3);
+
+    if (itemT <= 0) return;
+
+    const y = startY + i * rowH;
+
+    // Row bg
+    ctx.globalAlpha = itemT * 0.6;
+    ctx.fillStyle = DIMMER;
+    const rr = 8 * S;
+    ctx.beginPath();
+    ctx.roundRect(meterX, y - rowH * 0.38, meterW, rowH * 0.76, rr);
+    ctx.fill();
+
+    // Fill bar
+    const fillW = meterW * easeOut(itemT);
+    ctx.globalAlpha = itemT * 0.3;
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.roundRect(meterX, y - rowH * 0.38, fillW, rowH * 0.76, rr);
+    ctx.fill();
+
+    // Label
+    ctx.globalAlpha = itemT;
+    drawText(item.label, meterX + 16 * S, y, 20, WHITE, 'left', 'JetBrains Mono');
+
+    // Checkmark
+    if (checkT > 0) {
+      const checkScale = elasticOut(checkT);
+      ctx.globalAlpha = checkT;
+      ctx.save();
+      const checkX = meterX + meterW - 30 * S;
+      ctx.translate(checkX, y);
+      ctx.scale(checkScale, checkScale);
+      drawBoldText('\u2705', 0, 0, 22, LIME);
+      ctx.restore();
+
+      // Particles on check complete
+      if (checkT > 0.8 && checkT < 0.95) {
+        spawnBurst(meterX + meterW - 30 * S, y, 3, LIME);
+      }
+    }
+    ctx.globalAlpha = 1;
+  });
+
+  // "You're a SHARP" badge
+  const badgeT = clamp01((t - 2.5) / 0.4);
+  if (badgeT > 0) {
+    const badgeY = startY + 4 * rowH + 30 * S;
+    const badgeScale = elasticOut(badgeT);
+    ctx.save();
+    ctx.translate(cx, badgeY);
+    ctx.scale(badgeScale, badgeScale);
+    ctx.globalAlpha = badgeT;
+
+    // Badge bg
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.roundRect(-120 * S, -22 * S, 240 * S, 44 * S, 22 * S);
+    ctx.fill();
+
+    drawBoldText("You're a SHARP.", 0, 0, 22, '#0a0c10');
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
+    if (badgeT > 0.5 && badgeT < 0.7) {
+      spawnBurst(cx, badgeY, 15, LIME);
+    }
+  }
+
+  // Full meter bar at bottom
+  const meterBarY = H * 0.82;
+  const meterBarW = 300 * S;
+  const meterFill = clamp01(t / 2.8);
+  ctx.fillStyle = DIM;
+  ctx.beginPath();
+  ctx.roundRect(cx - meterBarW/2, meterBarY, meterBarW, 12*S, 6*S);
+  ctx.fill();
+  ctx.fillStyle = LIME;
+  ctx.beginPath();
+  ctx.roundRect(cx - meterBarW/2, meterBarY, meterBarW * easeOut(meterFill), 12*S, 6*S);
+  ctx.fill();
+  drawMonoText('SKILL LEVEL', cx, meterBarY - 16*S, 12, DIM);
+  if (meterFill >= 0.99) {
+    drawMonoText('MAX', cx + meterBarW/2 + 30*S, meterBarY + 6*S, 13, LIME);
+  }
+}
+
+// ── SCENE 2: BANNED STAMPS (3-7s) ──
+function drawScene2(t) {
+  const localT = t - 3;
+  const cx = W / 2;
+
+  // Title
+  const titleAlpha = clamp01(localT / 0.4);
+  ctx.globalAlpha = titleAlpha;
+  drawBoldText('...the less they want you.', cx, H * 0.1, 36, WHITE);
+  ctx.globalAlpha = 1;
+
+  const stamps = [
+    { name: 'DraftKings', status: 'RESTRICTED', delay: 0.5, angle: -3 },
+    { name: 'FanDuel', status: 'LIMITED', delay: 1.3, angle: 4 },
+    { name: 'BetMGM', status: 'SUSPENDED', delay: 2.1, angle: -2 },
+    { name: 'Caesars', status: 'BANNED', delay: 2.9, angle: 5 }
+  ];
+
+  const startY = H * 0.24;
+  const rowH = H * 0.145;
+
+  stamps.forEach((stamp, i) => {
+    const stampT = clamp01((localT - stamp.delay) / 0.15);
+    if (stampT <= 0) return;
+
+    const y = startY + i * rowH;
+
+    // Account card bg
+    const cardAlpha = clamp01((localT - stamp.delay + 0.3) / 0.3);
+    ctx.globalAlpha = cardAlpha * 0.7;
+    ctx.fillStyle = DIMMER;
+    ctx.beginPath();
+    ctx.roundRect(cx - 200*S, y - 26*S, 400*S, 52*S, 8*S);
+    ctx.fill();
+
+    // Sportsbook name
+    ctx.globalAlpha = cardAlpha;
+    drawText(stamp.name, cx - 120*S, y, 20, '#666', 'left', 'JetBrains Mono');
+
+    // BANNED stamp slam
+    if (stampT > 0) {
+      const slamScale = stampT < 0.5 ? 3 - 2 * (stampT / 0.5) : 1;
+      const slamAlpha = Math.min(1, stampT * 2);
+
+      ctx.save();
+      ctx.translate(cx + 80*S, y);
+      ctx.rotate(stamp.angle * Math.PI / 180);
+      ctx.scale(slamScale, slamScale);
+      ctx.globalAlpha = slamAlpha;
+
+      // Red stamp bg
+      ctx.strokeStyle = RED;
+      ctx.lineWidth = 3 * S;
+      ctx.beginPath();
+      ctx.roundRect(-70*S, -18*S, 140*S, 36*S, 4*S);
+      ctx.stroke();
+
+      drawBoldText(stamp.status, 0, 0, 18, RED, 'center', 'JetBrains Mono');
+
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // Trigger shake and particles once
+      if (!stampTriggered[i] && stampT > 0.1) {
+        stampTriggered[i] = true;
+        triggerShake(8 * S);
+        spawnStampDebris(cx + 80*S, y, 20);
+      }
+    }
+
+    // Prohibition emoji
+    if (stampT > 0.3) {
+      ctx.globalAlpha = clamp01((stampT - 0.3) / 0.3);
+      drawText('\ud83d\udeab', cx - 180*S, y, 22, RED, 'center');
+      ctx.globalAlpha = 1;
+    }
+  });
+
+  // Bottom tagline
+  const tagT = clamp01((localT - 3.3) / 0.5);
+  if (tagT > 0) {
+    ctx.globalAlpha = tagT;
+    drawText('The only game where winning gets you expelled.', cx, H * 0.86, 18, '#888', 'center', 'Space Grotesk');
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SCENE 3: EVERY OTHER MARKET (7-11s) ──
+function drawScene3(t) {
+  const localT = t - 7;
+  const cx = W / 2;
+
+  // Title
+  const titleAlpha = clamp01(localT / 0.4);
+  ctx.globalAlpha = titleAlpha;
+  drawBoldText('In EVERY other market:', cx, H * 0.1, 34, WHITE);
+  ctx.globalAlpha = 1;
+
+  const markets = [
+    { market: 'Stock market?', sharp: 'Sharps = hedge funds.', result: 'Welcome.', good: true, delay: 0.4 },
+    { market: 'Crypto?', sharp: 'Sharps = whales.', result: 'Welcome.', good: true, delay: 1.2 },
+    { market: 'Forex?', sharp: 'Sharps = institutional traders.', result: 'Welcome.', good: true, delay: 2.0 },
+    { market: 'Sports betting?', sharp: 'Sharps =', result: 'BANNED.', good: false, delay: 2.8 }
+  ];
+
+  const startY = H * 0.25;
+  const rowH = H * 0.155;
+
+  markets.forEach((m, i) => {
+    const rowT = clamp01((localT - m.delay) / 0.4);
+    const resultT = clamp01((localT - m.delay - 0.3) / 0.3);
+    if (rowT <= 0) return;
+
+    const y = startY + i * rowH;
+
+    // Row slide in
+    const slideX = (1 - easeOut(rowT)) * 100 * S;
+    ctx.globalAlpha = rowT;
+
+    // Market name
+    drawBoldText(m.market, cx - 180*S + slideX, y, 22, WHITE, 'left');
+
+    // Sharp description
+    drawText(m.sharp, cx - 180*S + slideX, y + 30*S, 16, '#888', 'left', 'JetBrains Mono');
+
+    // Result with icon
+    if (resultT > 0) {
+      ctx.globalAlpha = resultT;
+      const color = m.good ? LIME : RED;
+      const icon = m.good ? '\u2705' : '\u274c';
+      const resultScale = m.good ? 1 : elasticOut(resultT);
+
+      ctx.save();
+      const rx = cx + 160*S;
+      ctx.translate(rx, y + 12*S);
+      ctx.scale(resultScale, resultScale);
+      drawBoldText(m.result, 0, 0, 20, color);
+      drawText(icon, -60*S, 0, 18, color);
+      ctx.restore();
+
+      // Red flash on BANNED
+      if (!m.good && resultT > 0.2 && resultT < 0.4) {
+        spawnBurst(cx + 160*S, y + 12*S, 12, RED);
+        triggerShake(5 * S);
+      }
+    }
+    ctx.globalAlpha = 1;
+  });
+}
+
+// ── SCENE 4: NOTCH IS A MARKET (11-15s) ──
+function drawScene4(t) {
+  const localT = t - 11;
+  const cx = W / 2;
+
+  // Title
+  const titleT = clamp01(localT / 0.5);
+  ctx.globalAlpha = titleT;
+  drawBoldText('Notch is a MARKET.', cx, H * 0.08, 40, LIME);
+  ctx.globalAlpha = 1;
+
+  // Subtitle lines
+  const lines = [
+    { text: "Sharps don't hurt the platform.", delay: 0.4 },
+    { text: 'They make it BETTER.', delay: 0.9, bold: true, color: LIME },
+  ];
+
+  lines.forEach((line, i) => {
+    const lineT = clamp01((localT - line.delay) / 0.4);
+    if (lineT <= 0) return;
+    ctx.globalAlpha = lineT;
+    const y = H * 0.18 + i * 40 * S;
+    if (line.bold) drawBoldText(line.text, cx, y, 22, line.color || WHITE);
+    else drawText(line.text, cx, y, 20, '#ccc');
+    ctx.globalAlpha = 1;
+  });
+
+  // Benefits
+  const benefits = [
+    { text: 'More volume.', delay: 1.3 },
+    { text: 'Tighter spreads.', delay: 1.6 },
+    { text: 'Better prices for everyone.', delay: 1.9 }
+  ];
+
+  benefits.forEach((b, i) => {
+    const bT = clamp01((localT - b.delay) / 0.3);
+    if (bT <= 0) return;
+    ctx.globalAlpha = bT;
+    const y = H * 0.32 + i * 32 * S;
+    drawMonoText(b.text, cx, y, 16, WHITE);
+    ctx.globalAlpha = 1;
+  });
+
+  // Order book visualization
+  const bookT = clamp01((localT - 1.5) / 1.5);
+  if (bookT > 0) {
+    const bookY = H * 0.48;
+    const bookW = 300 * S;
+    const bookH = 220 * S;
+    const bookX = cx - bookW / 2;
+
+    ctx.globalAlpha = bookT * 0.9;
+
+    // Book background
+    ctx.fillStyle = 'rgba(15,18,25,0.9)';
+    ctx.beginPath();
+    ctx.roundRect(bookX, bookY, bookW, bookH, 8*S);
+    ctx.fill();
+
+    // Header
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.roundRect(bookX, bookY, bookW, 28*S, [8*S, 8*S, 0, 0]);
+    ctx.fill();
+    drawMonoText('ORDER BOOK', cx, bookY + 14*S, 11, '#666');
+
+    // Bid/Ask sides
+    const rows = 7;
+    const rowHt = (bookH - 35*S) / rows;
+    const midRow = Math.floor(rows / 2);
+
+    for (let i = 0; i < rows; i++) {
+      const ry = bookY + 32*S + i * rowHt;
+      const isBid = i >= midRow;
+      const depth = bookT * (0.3 + 0.7 * (1 - Math.abs(i - midRow) / midRow));
+      const barColor = isBid ? 'rgba(178,237,104,0.15)' : 'rgba(255,77,77,0.15)';
+      const textColor = isBid ? LIME : RED;
+
+      // Depth bar (gets deeper/tighter with time)
+      const barW = bookW * 0.45 * depth * (0.5 + 0.5 * easeOut(bookT));
+      ctx.fillStyle = barColor;
+      if (isBid) {
+        ctx.fillRect(cx, ry, barW, rowHt - 2*S);
+      } else {
+        ctx.fillRect(cx - barW, ry, barW, rowHt - 2*S);
+      }
+
+      // Price
+      const spread = 0.5 * (1 - bookT * 0.7); // Spread tightens
+      const basePrice = 105.50;
+      const price = isBid
+        ? (basePrice - spread - (i - midRow) * 0.25).toFixed(2)
+        : (basePrice + spread + (midRow - i) * 0.25).toFixed(2);
+      const qty = Math.floor(50 + depth * 200 * (0.5 + Math.random() * 0.5));
+
+      drawMonoText(price, cx - 40*S, ry + rowHt/2, 12, textColor, 'center');
+      drawMonoText(String(qty), cx + 45*S, ry + rowHt/2, 12, textColor, 'center');
+    }
+
+    // Spread label
+    const spreadVal = (0.5 * (1 - bookT * 0.7)).toFixed(2);
+    drawMonoText(`spread: ${spreadVal}`, cx, bookY + bookH + 16*S, 11, DIM);
+
+    ctx.globalAlpha = 1;
+  }
+
+  // Bottom tagline
+  const tagT = clamp01((localT - 3.0) / 0.5);
+  if (tagT > 0) {
+    ctx.globalAlpha = tagT;
+    drawBoldText('The sharper you are, the more we want you.', cx, H * 0.9, 20, LIME);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SCENE 5: CTA (15-18s) ──
+function drawScene5(t) {
+  const localT = t - 15;
+  const cx = W / 2;
+
+  // Main line
+  const mainT = clamp01(localT / 0.6);
+  ctx.globalAlpha = mainT;
+  drawBoldText('Built for sharps.', cx, H * 0.3, 42, WHITE);
+  ctx.globalAlpha = 1;
+
+  const subT = clamp01((localT - 0.4) / 0.5);
+  ctx.globalAlpha = subT;
+  drawBoldText('Open to everyone.', cx, H * 0.3 + 55*S, 42, LIME);
+  ctx.globalAlpha = 1;
+
+  // Logo / brand
+  const logoT = clamp01((localT - 1.0) / 0.5);
+  if (logoT > 0) {
+    const logoScale = elasticOut(logoT);
+    ctx.save();
+    ctx.translate(cx, H * 0.55);
+    ctx.scale(logoScale, logoScale);
+    ctx.globalAlpha = logoT;
+
+    // Notch pill
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.roundRect(-80*S, -28*S, 160*S, 56*S, 28*S);
+    ctx.fill();
+    drawBoldText('notch.win', 0, 0, 28, '#0a0c10');
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
+    if (logoT > 0.5 && logoT < 0.7) {
+      spawnBurst(cx, H * 0.55, 25, LIME);
+    }
+  }
+
+  // Subtext
+  const subT2 = clamp01((localT - 1.8) / 0.5);
+  ctx.globalAlpha = subT2;
+  drawText('Trade teams. Not sportsbooks.', cx, H * 0.66, 18, '#888');
+  ctx.globalAlpha = 1;
+
+  // Show watch again
+  if (localT > 2.0) {
+    watchBtn.classList.add('visible');
+  }
+}
+
+// ── BACKGROUND GRID ──
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(178,237,104,0.03)';
+  ctx.lineWidth = 1;
+  const gridSize = 60 * S;
+  for (let x = 0; x < W; x += gridSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += gridSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+}
+
+// ── AMBIENT PARTICLES ──
+let ambientParticles = [];
+function initAmbient() {
+  ambientParticles = [];
+  for (let i = 0; i < 30; i++) {
+    ambientParticles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 20 * S,
+      vy: (Math.random() - 0.5) * 20 * S,
+      size: (1 + Math.random() * 2) * S,
+      alpha: 0.05 + Math.random() * 0.1
+    });
+  }
+}
+initAmbient();
+
+function drawAmbient(dt) {
+  ambientParticles.forEach(p => {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H;
+    if (p.y > H) p.y = 0;
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ── SCENE TRANSITIONS ──
+function getSceneFade(t, sceneStart, sceneEnd) {
+  const fadeIn = clamp01((t - sceneStart) / 0.4);
+  const fadeOut = clamp01((sceneEnd - t) / 0.4);
+  return Math.min(fadeIn, fadeOut);
+}
+
+// ── MAIN RENDER ──
+let lastTime = 0;
+function render(ts) {
+  if (!startTime) startTime = ts;
+  const elapsed = (ts - startTime) / 1000;
+  const dt = Math.min(0.05, (ts - lastTime) / 1000);
+  lastTime = ts;
+
+  if (running) animTime = elapsed;
+  const t = Math.min(animTime, DURATION);
+
+  // Clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Screen shake
+  if (shakeAmount > 0.1) {
+    const sx = (Math.random() - 0.5) * shakeAmount * 2;
+    const sy = (Math.random() - 0.5) * shakeAmount * 2;
+    ctx.save();
+    ctx.translate(sx, sy);
+    shakeAmount *= 0.85;
+  }
+
+  drawGrid();
+  drawAmbient(dt);
+
+  // Scene routing with crossfade
+  if (t < 3.4) {
+    ctx.globalAlpha = getSceneFade(t, 0, 3.4);
+    drawScene1(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 2.8 && t < 7.4) {
+    ctx.globalAlpha = getSceneFade(t, 2.8, 7.4);
+    drawScene2(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 6.8 && t < 11.4) {
+    ctx.globalAlpha = getSceneFade(t, 6.8, 11.4);
+    drawScene3(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 10.8 && t < 15.4) {
+    ctx.globalAlpha = getSceneFade(t, 10.8, 15.4);
+    drawScene4(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 14.8) {
+    ctx.globalAlpha = getSceneFade(t, 14.8, DURATION + 1);
+    drawScene5(t);
+    ctx.globalAlpha = 1;
+  }
+
+  // Particles
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => { p.update(dt); p.draw(); });
+
+  // Restore shake
+  if (shakeDecay > 0.1) {
+    ctx.restore();
+    shakeDecay *= 0.85;
+    if (shakeDecay < 0.1) shakeDecay = 0;
+  }
+
+  drawProgressBar(t);
+
+  // Stop at end
+  if (t >= DURATION && running) {
+    running = false;
+  }
+
+  requestAnimationFrame(render);
+}
+
+// ── WATCH AGAIN ──
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  startTime = null;
+  animTime = 0;
+  running = true;
+  particles = [];
+  stampTriggered = [false, false, false, false];
+  shakeAmount = 0;
+  shakeDecay = 0;
+  initAmbient();
+});
+
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch — The Parlay Lie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0c10; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #watchAgain {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: none; border: 2px solid #b2ed68; color: #b2ed68;
+    font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s, background 0.2s;
+    z-index: 10;
+  }
+  #watchAgain:hover { background: rgba(178,237,104,0.15); }
+  #watchAgain.visible { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="watchAgain">Watch Again</button>
+<script>
+// ── SETUP ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const watchBtn = document.getElementById('watchAgain');
+
+let W, H, S, startTime, animTime = 0, running = true;
+const DURATION = 18;
+
+const BG = '#0a0c10';
+const LIME = '#b2ed68';
+const RED = '#ff4d4d';
+const GOLD = '#fbbf24';
+const WHITE = '#ffffff';
+const DIM = '#2a2e38';
+const DIMMER = '#181b22';
+
+// ── PARTICLES ──
+let particles = [];
+class Particle {
+  constructor(x, y, color, vx, vy, life, size) {
+    this.x = x; this.y = y; this.color = color;
+    this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    this.size = size || 3;
+  }
+  update(dt) {
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.vy += 200 * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SPARKLES ──
+let sparkles = [];
+class Sparkle {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.life = 0.5 + Math.random() * 0.8;
+    this.maxLife = this.life;
+    this.size = 2 + Math.random() * 4;
+    this.angle = Math.random() * Math.PI * 2;
+    this.speed = 20 + Math.random() * 60;
+  }
+  update(dt) {
+    this.x += Math.cos(this.angle) * this.speed * dt;
+    this.y += Math.sin(this.angle) * this.speed * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = GOLD;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    const s = this.size * S;
+    // 4-point star
+    ctx.beginPath();
+    ctx.moveTo(0, -s);
+    ctx.lineTo(s * 0.3, -s * 0.3);
+    ctx.lineTo(s, 0);
+    ctx.lineTo(s * 0.3, s * 0.3);
+    ctx.lineTo(0, s);
+    ctx.lineTo(-s * 0.3, s * 0.3);
+    ctx.lineTo(-s, 0);
+    ctx.lineTo(-s * 0.3, -s * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SHATTER PIECES ──
+let shatterPieces = [];
+class ShatterPiece {
+  constructor(x, y, w, h, color) {
+    this.x = x; this.y = y; this.w = w; this.h = h; this.color = color;
+    this.vx = (Math.random() - 0.5) * 600;
+    this.vy = -200 + Math.random() * -300;
+    this.rot = 0;
+    this.vr = (Math.random() - 0.5) * 10;
+    this.life = 1.5;
+    this.maxLife = 1.5;
+  }
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.vy += 800 * dt;
+    this.rot += this.vr * dt;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = a;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rot);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+}
+
+let shatterTriggered = false;
+
+// ── SIPHON PARTICLES ──
+let siphonParticles = [];
+class SiphonParticle {
+  constructor(x, y, tx, ty) {
+    this.x = x; this.y = y;
+    this.tx = tx; this.ty = ty;
+    this.life = 1.2;
+    this.maxLife = 1.2;
+    this.progress = 0;
+    this.ox = x; this.oy = y;
+    this.curve = (Math.random() - 0.5) * 100 * S;
+  }
+  update(dt) {
+    this.progress = Math.min(1, this.progress + dt / this.maxLife);
+    const t = this.progress;
+    const mx = (this.ox + this.tx) / 2 + this.curve;
+    const my = (this.oy + this.ty) / 2 - 40 * S;
+    this.x = (1-t)*(1-t)*this.ox + 2*(1-t)*t*mx + t*t*this.tx;
+    this.y = (1-t)*(1-t)*this.oy + 2*(1-t)*t*my + t*t*this.ty;
+    this.life -= dt;
+  }
+  draw() {
+    const a = Math.max(0, this.life / this.maxLife) * 0.8;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = RED;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 3 * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── RESIZE ──
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = window.innerWidth * dpr;
+  H = canvas.height = window.innerHeight * dpr;
+  S = Math.min(W, H) / 900;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── HELPERS ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t) { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+function fadeIn(t, start, dur) { return Math.max(0, Math.min(1, (t - start) / dur)); }
+function fadeOut(t, start, dur) { return Math.max(0, 1 - (t - start) / dur); }
+
+function drawText(text, x, y, size, color, align, font, maxW) {
+  ctx.fillStyle = color;
+  ctx.font = `${size * S}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  if (maxW) ctx.fillText(text, x, y, maxW);
+  else ctx.fillText(text, x, y);
+}
+
+function drawBoldText(text, x, y, size, color, align, font) {
+  ctx.fillStyle = color;
+  ctx.font = `700 ${size * S}px '${font || 'Space Grotesk'}', sans-serif`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+function drawMonoText(text, x, y, size, color, align) {
+  drawText(text, x, y, size, color, align, 'JetBrains Mono');
+}
+
+function drawRoundedRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function drawProgressBar(t) {
+  const barH = 4 * S;
+  const progress = t / DURATION;
+  ctx.fillStyle = DIMMER;
+  ctx.fillRect(0, H - barH, W, barH);
+  ctx.fillStyle = LIME;
+  ctx.fillRect(0, H - barH, W * progress, barH);
+}
+
+// ── SCENE 1: SEXY PARLAY TICKET (0-3s) ──
+function drawScene1(t) {
+  const ticketW = 420 * S;
+  const ticketH = 320 * S;
+  const tx = W / 2 - ticketW / 2;
+  const ty = H / 2 - ticketH / 2 - 20 * S;
+
+  // slide up
+  const slideT = easeOut(Math.min(1, t / 0.8));
+  const offsetY = (1 - slideT) * 60 * S;
+
+  // glow behind ticket
+  const glowA = fadeIn(t, 0.3, 0.5) * 0.3;
+  ctx.globalAlpha = glowA;
+  const grd = ctx.createRadialGradient(W/2, H/2 - 20*S + offsetY, 0, W/2, H/2 - 20*S + offsetY, ticketW * 0.8);
+  grd.addColorStop(0, GOLD);
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 1;
+
+  // ticket background
+  const ta = fadeIn(t, 0, 0.6);
+  ctx.globalAlpha = ta;
+  ctx.save();
+  ctx.translate(0, offsetY);
+
+  // ticket border glow
+  ctx.shadowColor = GOLD;
+  ctx.shadowBlur = 20 * S;
+  drawRoundedRect(tx, ty, ticketW, ticketH, 16 * S);
+  ctx.fillStyle = '#12151c';
+  ctx.fill();
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // header
+  drawBoldText('3-Leg Parlay', W/2, ty + 36 * S, 24, GOLD);
+
+  // dashed separator
+  ctx.setLineDash([6 * S, 4 * S]);
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1 * S;
+  ctx.beginPath();
+  ctx.moveTo(tx + 20 * S, ty + 60 * S);
+  ctx.lineTo(tx + ticketW - 20 * S, ty + 60 * S);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // legs
+  const legs = [
+    { icon: '', name: 'Arsenal Win', odds: '-130' },
+    { icon: '', name: 'Liverpool Win', odds: '-150' },
+    { icon: '', name: 'Over 2.5 Goals', odds: '-110' }
+  ];
+  const legY = ty + 85 * S;
+  legs.forEach((leg, i) => {
+    const ly = legY + i * 48 * S;
+    const legA = fadeIn(t, 0.4 + i * 0.2, 0.4);
+    ctx.globalAlpha = ta * legA;
+    // check circle
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.arc(tx + 36 * S, ly, 10 * S, 0, Math.PI * 2);
+    ctx.fill();
+    // checkmark
+    ctx.strokeStyle = '#0a0c10';
+    ctx.lineWidth = 2.5 * S;
+    ctx.beginPath();
+    ctx.moveTo(tx + 31 * S, ly);
+    ctx.lineTo(tx + 35 * S, ly + 5 * S);
+    ctx.lineTo(tx + 42 * S, ly - 5 * S);
+    ctx.stroke();
+
+    drawText(leg.name, tx + 56 * S, ly, 17, WHITE, 'left');
+    drawMonoText(leg.odds, tx + ticketW - 30 * S, ly, 15, '#999', 'right');
+  });
+
+  // payout section
+  const payA = fadeIn(t, 1.2, 0.5);
+  ctx.globalAlpha = ta * payA;
+
+  ctx.setLineDash([6 * S, 4 * S]);
+  ctx.strokeStyle = '#333';
+  ctx.beginPath();
+  ctx.moveTo(tx + 20 * S, ty + 225 * S);
+  ctx.lineTo(tx + ticketW - 20 * S, ty + 225 * S);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawMonoText('+600 odds', W/2, ty + 252 * S, 16, GOLD);
+  drawBoldText('$50  →  $350!', W/2, ty + 288 * S, 30, LIME);
+
+  ctx.restore();
+  ctx.globalAlpha = 1;
+
+  // sparkles
+  if (t > 1.0 && t < 2.8) {
+    if (Math.random() < 0.4) {
+      sparkles.push(new Sparkle(
+        W/2 + (Math.random()-0.5) * ticketW * 1.1,
+        H/2 - 20*S + offsetY + (Math.random()-0.5) * ticketH * 1.1
+      ));
+    }
+  }
+
+  // tagline
+  const tagA = fadeIn(t, 2.0, 0.5) * fadeOut(t, 2.7, 0.3);
+  if (tagA > 0) {
+    ctx.globalAlpha = tagA;
+    drawText("Every bettor's dream.", W/2, ty + ticketH + 40 * S + offsetY, 20, '#888');
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SCENE 2: REAL ODDS REVEAL (3-7s) ──
+function drawScene2(t) {
+  const lt = t - 3; // local time 0-4
+
+  // header
+  const hA = fadeIn(lt, 0, 0.5);
+  ctx.globalAlpha = hA;
+  drawBoldText("Now let's look at the REAL odds.", W/2, H * 0.12, 26, RED);
+  ctx.globalAlpha = 1;
+
+  // vig breakdown
+  const boxW = 380 * S;
+  const boxH = 200 * S;
+  const bx = W/2 - boxW/2;
+  const by = H * 0.22;
+
+  const boxA = fadeIn(lt, 0.5, 0.5);
+  ctx.globalAlpha = boxA;
+  drawRoundedRect(bx, by, boxW, boxH, 12 * S);
+  ctx.fillStyle = '#12151c';
+  ctx.fill();
+  ctx.strokeStyle = '#2a2e38';
+  ctx.lineWidth = 1 * S;
+  ctx.stroke();
+
+  // each leg vig
+  const vigLegs = [
+    { name: 'Arsenal Win', vig: '~5.2%' },
+    { name: 'Liverpool Win', vig: '~5.5%' },
+    { name: 'Over 2.5 Goals', vig: '~5.1%' }
+  ];
+  vigLegs.forEach((leg, i) => {
+    const vigA = fadeIn(lt, 0.8 + i * 0.3, 0.4);
+    ctx.globalAlpha = boxA * vigA;
+    const ly = by + 42 * S + i * 45 * S;
+    drawText(leg.name, bx + 20 * S, ly, 16, '#999', 'left');
+    drawMonoText(leg.vig + ' vig', bx + boxW - 20 * S, ly, 15, RED, 'right');
+
+    // vig bar
+    const barW = 80 * S;
+    const barH = 6 * S;
+    const barX = bx + boxW - 20 * S - barW - 80 * S;
+    ctx.fillStyle = '#1a1d26';
+    drawRoundedRect(barX, ly - barH/2, barW, barH, 3 * S);
+    ctx.fill();
+    ctx.fillStyle = RED;
+    drawRoundedRect(barX, ly - barH/2, barW * vigA * 0.055 / 0.06, barH, 3 * S);
+    ctx.fill();
+  });
+
+  // combined
+  const combA = fadeIn(lt, 1.8, 0.5);
+  ctx.globalAlpha = boxA * combA;
+  ctx.setLineDash([4 * S, 3 * S]);
+  ctx.strokeStyle = '#333';
+  ctx.beginPath();
+  ctx.moveTo(bx + 15 * S, by + boxH - 50 * S);
+  ctx.lineTo(bx + boxW - 15 * S, by + boxH - 50 * S);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  drawBoldText('Combined: 15.8% vig', W/2, by + boxH - 25 * S, 20, RED);
+  ctx.globalAlpha = 1;
+
+  // siphon visual
+  const siphT = fadeIn(lt, 2.3, 0.5);
+  if (siphT > 0) {
+    const fairY = H * 0.62;
+    const sA = fadeIn(lt, 2.3, 0.4);
+    ctx.globalAlpha = sA;
+
+    // fair vs actual
+    drawText('Fair payout:', W/2 - 100 * S, fairY, 18, '#888', 'center');
+    drawBoldText('$410', W/2 + 50 * S, fairY, 22, WHITE);
+
+    const actA = fadeIn(lt, 2.7, 0.4);
+    ctx.globalAlpha = sA * actA;
+    drawText('They pay you:', W/2 - 100 * S, fairY + 42 * S, 18, '#888', 'center');
+    drawBoldText('$350', W/2 + 50 * S, fairY + 42 * S, 22, GOLD);
+
+    // siphon amount
+    const sipA = fadeIn(lt, 3.0, 0.5);
+    ctx.globalAlpha = sA * sipA;
+
+    // red box for siphoned money
+    const sBoxW = 200 * S;
+    const sBoxH = 50 * S;
+    const sBoxX = W/2 - sBoxW/2;
+    const sBoxY = fairY + 90 * S;
+    drawRoundedRect(sBoxX, sBoxY, sBoxW, sBoxH, 10 * S);
+    ctx.fillStyle = 'rgba(255,77,77,0.12)';
+    ctx.fill();
+    ctx.strokeStyle = RED;
+    ctx.lineWidth = 2 * S;
+    ctx.stroke();
+    drawBoldText('-$60 stolen', W/2, sBoxY + sBoxH/2, 22, RED);
+
+    // siphon particles
+    if (lt > 3.0 && lt < 3.8 && Math.random() < 0.3) {
+      siphonParticles.push(new SiphonParticle(
+        W/2 + 50*S + (Math.random()-0.5)*30*S,
+        fairY + (Math.random()-0.5)*20*S,
+        W/2, sBoxY + sBoxH/2
+      ));
+    }
+
+    ctx.globalAlpha = 1;
+  }
+
+  // bottom quote
+  const quoteA = fadeIn(lt, 3.2, 0.5) * fadeOut(lt, 3.7, 0.3);
+  if (quoteA > 0) {
+    ctx.globalAlpha = quoteA;
+    drawText('"The more legs, the more they take."', W/2, H * 0.88, 18, '#666');
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SCENE 3: ONE LEG LOSES (7-11s) ──
+function drawScene3(t) {
+  const lt = t - 7; // local time 0-4
+
+  // header
+  const hA = fadeIn(lt, 0, 0.5);
+  ctx.globalAlpha = hA;
+  drawBoldText('And if ONE leg loses?', W/2, H * 0.1, 28, RED);
+  ctx.globalAlpha = 1;
+
+  // show results
+  const results = [
+    { name: 'Arsenal Win', result: 'Arsenal 2-1', won: true },
+    { name: 'Liverpool Win', result: 'Liverpool 3-0', won: true },
+    { name: 'Over 2.5 Goals', result: 'Game: 1-0', won: false }
+  ];
+
+  const cardW = 360 * S;
+  const cardH = 60 * S;
+  const startY = H * 0.25;
+
+  results.forEach((r, i) => {
+    const rA = fadeIn(lt, 0.4 + i * 0.4, 0.4);
+    ctx.globalAlpha = hA * rA;
+
+    const cy = startY + i * (cardH + 16 * S);
+    const cx = W/2 - cardW/2;
+
+    // shaking for the losing leg
+    let shakeX = 0;
+    if (!r.won && lt > 1.6 && lt < 2.2) {
+      shakeX = Math.sin((lt - 1.6) * 40) * 4 * S;
+    }
+
+    drawRoundedRect(cx + shakeX, cy, cardW, cardH, 10 * S);
+    ctx.fillStyle = r.won ? 'rgba(178,237,104,0.08)' : 'rgba(255,77,77,0.12)';
+    ctx.fill();
+    ctx.strokeStyle = r.won ? LIME : RED;
+    ctx.lineWidth = (r.won ? 1 : 2) * S;
+    ctx.stroke();
+
+    // icon
+    const iconX = cx + 30 * S + shakeX;
+    const iconY = cy + cardH / 2;
+    if (r.won) {
+      ctx.fillStyle = LIME;
+      ctx.beginPath();
+      ctx.arc(iconX, iconY, 12 * S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#0a0c10';
+      ctx.lineWidth = 2.5 * S;
+      ctx.beginPath();
+      ctx.moveTo(iconX - 5*S, iconY);
+      ctx.lineTo(iconX - 1*S, iconY + 5*S);
+      ctx.lineTo(iconX + 7*S, iconY - 5*S);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = RED;
+      ctx.beginPath();
+      ctx.arc(iconX, iconY, 12 * S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#0a0c10';
+      ctx.lineWidth = 2.5 * S;
+      ctx.beginPath();
+      ctx.moveTo(iconX - 5*S, iconY - 5*S);
+      ctx.lineTo(iconX + 5*S, iconY + 5*S);
+      ctx.moveTo(iconX + 5*S, iconY - 5*S);
+      ctx.lineTo(iconX - 5*S, iconY + 5*S);
+      ctx.stroke();
+    }
+
+    drawText(r.name, iconX + 24 * S, iconY - 8 * S, 16, WHITE, 'left');
+    drawMonoText(r.result, iconX + 24 * S, iconY + 12 * S, 13, r.won ? LIME : RED, 'left');
+  });
+
+  // 67% correct callout
+  const corrA = fadeIn(lt, 2.0, 0.5);
+  ctx.globalAlpha = corrA;
+  drawText('Two out of three right.', W/2, H * 0.58, 20, '#888');
+  ctx.globalAlpha = 1;
+
+  // PAYOUT $0
+  const payA = fadeIn(lt, 2.5, 0.4);
+  if (payA > 0) {
+    ctx.globalAlpha = payA;
+    const payY = H * 0.66;
+    drawBoldText('Payout: $0', W/2, payY, 40, RED);
+
+    // shatter the ticket
+    if (!shatterTriggered && lt > 2.6) {
+      shatterTriggered = true;
+      for (let i = 0; i < 30; i++) {
+        shatterPieces.push(new ShatterPiece(
+          W/2 + (Math.random()-0.5) * 300 * S,
+          payY + (Math.random()-0.5) * 60 * S,
+          (10 + Math.random() * 30) * S,
+          (8 + Math.random() * 20) * S,
+          [GOLD, RED, '#555', '#333'][Math.floor(Math.random()*4)]
+        ));
+      }
+      // burst particles
+      for (let i = 0; i < 40; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (100 + Math.random() * 300) * S;
+        particles.push(new Particle(W/2, payY, RED,
+          Math.cos(angle)*speed, Math.sin(angle)*speed,
+          0.6 + Math.random() * 0.8, 2 + Math.random() * 4));
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // bottom tagline
+  const tagA = fadeIn(lt, 3.0, 0.5) * fadeOut(lt, 3.7, 0.3);
+  if (tagA > 0) {
+    ctx.globalAlpha = tagA;
+    drawText('"You were 67% correct and got nothing."', W/2, H * 0.82, 18, '#666');
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── SCENE 4: NOTCH LEVERAGE (11-15s) ──
+function drawScene4(t) {
+  const lt = t - 11; // local time 0-4
+
+  // header
+  const hA = fadeIn(lt, 0, 0.5);
+  ctx.globalAlpha = hA;
+  drawBoldText('Notch gives you LEVERAGE instead.', W/2, H * 0.1, 26, LIME);
+  ctx.globalAlpha = 1;
+
+  // leverage card
+  const cardW = 400 * S;
+  const cardH = 260 * S;
+  const cx = W/2 - cardW/2;
+  const cy = H * 0.2;
+
+  const cardA = fadeIn(lt, 0.4, 0.6);
+  ctx.globalAlpha = cardA;
+
+  // card glow
+  ctx.shadowColor = LIME;
+  ctx.shadowBlur = 25 * S * cardA;
+  drawRoundedRect(cx, cy, cardW, cardH, 14 * S);
+  ctx.fillStyle = '#0e1118';
+  ctx.fill();
+  ctx.strokeStyle = LIME;
+  ctx.lineWidth = 2 * S;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // leverage details
+  const dA = fadeIn(lt, 0.8, 0.5);
+  ctx.globalAlpha = cardA * dA;
+  drawMonoText('$50 with 5x leverage', W/2, cy + 40 * S, 18, LIME);
+
+  // exposure bar
+  const barY = cy + 70 * S;
+  const barW = cardW - 60 * S;
+  const barH = 30 * S;
+  const barX = cx + 30 * S;
+
+  ctx.fillStyle = '#1a1d26';
+  drawRoundedRect(barX, barY, barW, barH, 6 * S);
+  ctx.fill();
+
+  const fillT = easeOut(fadeIn(lt, 1.0, 0.8));
+  ctx.fillStyle = LIME;
+  drawRoundedRect(barX, barY, barW * fillT, barH, 6 * S);
+  ctx.fill();
+
+  drawBoldText('$250 exposure', W/2, barY + barH + 24 * S, 18, WHITE);
+
+  // return calc
+  const retA = fadeIn(lt, 1.8, 0.5);
+  ctx.globalAlpha = cardA * retA;
+
+  const retY = cy + 160 * S;
+  drawText('Arsenal price moves +10%', W/2, retY, 16, '#888');
+
+  const profA = fadeIn(lt, 2.2, 0.5);
+  ctx.globalAlpha = cardA * profA;
+  drawBoldText('+$25 profit (50% return)', W/2, retY + 36 * S, 22, LIME);
+
+  ctx.globalAlpha = 1;
+
+  // comparison points
+  const points = [
+    { text: 'No compounding vig', delay: 2.5 },
+    { text: 'No all-or-nothing', delay: 2.8 },
+    { text: 'Just one thing needs to go right', delay: 3.1 }
+  ];
+
+  const startPY = H * 0.7;
+  points.forEach((p, i) => {
+    const pA = fadeIn(lt, p.delay, 0.4);
+    ctx.globalAlpha = pA;
+    const py = startPY + i * 36 * S;
+
+    // checkmark
+    ctx.fillStyle = LIME;
+    ctx.beginPath();
+    ctx.arc(W/2 - 160 * S, py, 8 * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#0a0c10';
+    ctx.lineWidth = 2 * S;
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 164 * S, py);
+    ctx.lineTo(W/2 - 161 * S, py + 3 * S);
+    ctx.lineTo(W/2 - 155 * S, py - 4 * S);
+    ctx.stroke();
+
+    drawText(p.text, W/2 - 140 * S, py, 17, WHITE, 'left');
+  });
+  ctx.globalAlpha = 1;
+
+  // lime sparkles
+  if (lt > 1.0 && lt < 3.5 && Math.random() < 0.15) {
+    const sx = cx + Math.random() * cardW;
+    const sy = cy + Math.random() * cardH;
+    sparkles.push(new Sparkle(sx, sy));
+  }
+}
+
+// ── SCENE 5: CTA (15-18s) ──
+function drawScene5(t) {
+  const lt = t - 15; // local time 0-3
+
+  // line 1
+  const l1A = fadeIn(lt, 0, 0.5);
+  ctx.globalAlpha = l1A;
+  drawText("Parlays are the sportsbook's best friend.", W/2, H * 0.3, 22, RED);
+  ctx.globalAlpha = 1;
+
+  // line 2
+  const l2A = fadeIn(lt, 0.6, 0.5);
+  ctx.globalAlpha = l2A;
+  drawBoldText('Leverage is yours.', W/2, H * 0.4, 28, LIME);
+  ctx.globalAlpha = 1;
+
+  // notch.win CTA
+  const ctaA = fadeIn(lt, 1.2, 0.6);
+  if (ctaA > 0) {
+    ctx.globalAlpha = ctaA;
+
+    const ctaY = H * 0.55;
+    const ctaW = 260 * S;
+    const ctaH = 64 * S;
+    const ctaX = W/2 - ctaW/2;
+
+    // pulsing glow
+    const pulse = 0.7 + 0.3 * Math.sin(lt * 3);
+    ctx.shadowColor = LIME;
+    ctx.shadowBlur = 30 * S * pulse;
+
+    drawRoundedRect(ctaX, ctaY, ctaW, ctaH, 14 * S);
+    ctx.fillStyle = LIME;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    drawBoldText('notch.win', W/2, ctaY + ctaH/2, 28, '#0a0c10');
+
+    ctx.globalAlpha = 1;
+  }
+
+  // show watch again button
+  if (lt > 1.8) {
+    watchBtn.classList.add('visible');
+  }
+}
+
+// ── MAIN LOOP ──
+function drawBgGrid() {
+  ctx.globalAlpha = 0.04;
+  ctx.strokeStyle = WHITE;
+  ctx.lineWidth = 1;
+  const step = 60 * S;
+  for (let x = 0; x < W; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+let lastTime = 0;
+function frame(ts) {
+  if (!startTime) startTime = ts;
+  const dt = Math.min(0.05, (ts - (lastTime || ts)) / 1000);
+  lastTime = ts;
+
+  if (running) {
+    animTime = (ts - startTime) / 1000;
+  }
+
+  const t = Math.min(animTime, DURATION);
+
+  // clear
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  drawBgGrid();
+
+  // scene transitions with crossfade
+  if (t < 3.3) {
+    ctx.globalAlpha = t < 3 ? 1 : fadeOut(t, 3, 0.3);
+    drawScene1(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 2.7 && t < 7.3) {
+    ctx.globalAlpha = t < 3 ? fadeIn(t, 2.7, 0.3) : (t > 7 ? fadeOut(t, 7, 0.3) : 1);
+    drawScene2(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 6.7 && t < 11.3) {
+    ctx.globalAlpha = t < 7 ? fadeIn(t, 6.7, 0.3) : (t > 11 ? fadeOut(t, 11, 0.3) : 1);
+    drawScene3(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 10.7 && t < 15.3) {
+    ctx.globalAlpha = t < 11 ? fadeIn(t, 10.7, 0.3) : (t > 15 ? fadeOut(t, 15, 0.3) : 1);
+    drawScene4(t);
+    ctx.globalAlpha = 1;
+  }
+  if (t >= 14.7) {
+    ctx.globalAlpha = t < 15 ? fadeIn(t, 14.7, 0.3) : 1;
+    drawScene5(t);
+    ctx.globalAlpha = 1;
+  }
+
+  // update & draw particles
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => { p.update(dt); p.draw(); });
+
+  sparkles = sparkles.filter(s => s.life > 0);
+  sparkles.forEach(s => { s.update(dt); s.draw(); });
+
+  shatterPieces = shatterPieces.filter(p => p.life > 0);
+  shatterPieces.forEach(p => { p.update(dt); p.draw(); });
+
+  siphonParticles = siphonParticles.filter(p => p.life > 0);
+  siphonParticles.forEach(p => { p.update(dt); p.draw(); });
+
+  drawProgressBar(t);
+
+  requestAnimationFrame(frame);
+}
+
+// ── WATCH AGAIN ──
+watchBtn.addEventListener('click', () => {
+  watchBtn.classList.remove('visible');
+  startTime = null;
+  lastTime = 0;
+  animTime = 0;
+  running = true;
+  particles = [];
+  sparkles = [];
+  shatterPieces = [];
+  siphonParticles = [];
+  shatterTriggered = false;
+});
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

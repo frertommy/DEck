@@ -58,8 +58,13 @@ let floatingPoints = [];
 function resize() {
   W = canvas.width = window.innerWidth;
   H = canvas.height = window.innerHeight;
-  scale = Math.min(W / 1080, H / 1920) * (W > H ? Math.min(W/1080, H/700) : 1);
-  if (W > H) scale = Math.min(W / 1200, H / 800);
+  // Scale based on a 1080x800 reference for landscape, 1080x1920 for portrait
+  if (W > H) {
+    scale = Math.min(W / 1080, H / 700);
+  } else {
+    scale = Math.min(W / 540, H / 960);
+  }
+  scale = Math.max(scale, 0.5); // floor so nothing gets invisible
 }
 window.addEventListener('resize', resize);
 resize();
@@ -272,7 +277,7 @@ const TOTAL_DURATION = 30;
 function draw(timestamp) {
   if (!startTime) startTime = timestamp;
   const elapsed = (timestamp - startTime) / 1000;
-  const time = elapsed % (TOTAL_DURATION + 1); // +1 for watch again pause
+  const time = Math.min(elapsed, TOTAL_DURATION); // clamp, don't loop
   const dt = 1/60;
 
   // Progress bar
