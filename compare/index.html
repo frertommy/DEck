@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Continuous derivatives dwarf their predecessors — four precedents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#0c0e12;
+    --bg2:#13161c;
+    --border:#242629;
+    --w:#ffffff;
+    --t1:#c8c9cc;
+    --t2:#8a8c91;
+    --t3:#606267;
+    --lime:#b2ed68;
+    --gray:#5a5c61;
+    --coral:#ff6b3d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--w);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'Space Mono',monospace}
+  .upper{text-transform:uppercase;letter-spacing:0.08em}
+  .wrap{max-width:1180px;margin:0 auto;padding:64px 32px 80px}
+  .hd{padding-bottom:32px;border-bottom:1px solid var(--border)}
+  .lbl{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--t3)}
+  h1{font-size:44px;font-weight:600;letter-spacing:-0.02em;line-height:1.05;margin-top:14px}
+  h1 span{color:var(--lime)}
+  .sub{font-size:16px;color:var(--t1);margin-top:14px;max-width:680px;line-height:1.55}
+  .section-lbl{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--t2);margin-top:48px;display:flex;align-items:center;gap:12px}
+  .section-lbl::before{content:"";width:24px;height:1px;background:var(--t2)}
+  .grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:24px}
+  @media(min-width:920px){.grid{grid-template-columns:1fr 1fr}}
+  .card{border:1px solid var(--border);background:var(--bg2);padding:28px;display:flex;flex-direction:column}
+  .card-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px}
+  .ttl{font-size:17px;font-weight:600;letter-spacing:-0.01em;line-height:1.3}
+  .meta{font-size:12px;color:var(--t2);margin-bottom:18px;line-height:1.5}
+  .legend{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .leg{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--t1)}
+  .swatch{width:14px;height:3px;display:inline-block}
+  .chart-wrap{position:relative;height:240px;width:100%}
+  .punch{margin-top:18px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--t1);line-height:1.55}
+  .punch b{color:var(--lime);font-weight:600}
+  .ratio{font-family:'Space Mono',monospace;font-size:11px;color:var(--t3);text-align:right;letter-spacing:0.06em;line-height:1.4;flex-shrink:0}
+  .ratio b{color:var(--coral);font-size:18px;font-weight:700;display:block}
+  .footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:11px;color:var(--t3);font-family:'Space Mono',monospace;line-height:1.7}
+  .footer a{color:var(--t1);text-decoration:none;border-bottom:1px solid var(--border);transition:border-color .15s,color .15s}
+  .footer a:hover{color:var(--lime);border-bottom-color:var(--lime)}
+  .takeaway{margin-top:48px;padding:32px;border:1px solid var(--lime);position:relative}
+  .takeaway::before{content:"";position:absolute;top:-1px;left:0;right:0;height:2px;background:var(--lime)}
+  .takeaway .lbl{color:var(--lime)}
+  .takeaway p{font-size:18px;line-height:1.5;margin-top:12px;color:var(--w)}
+  .takeaway p span{color:var(--lime)}
+  .takeaway p+p{margin-top:14px;font-size:15px;color:var(--t1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hd">
+    <div class="lbl">Notch · Market sizing</div>
+    <h1>Persistent derivatives <span>dwarf</span> their predecessors. Every time.</h1>
+    <p class="sub">The pattern is universal. Wherever a persistent, leveraged instrument got built on top of an existing options-like or expiring-bet market, the new instrument ended up multiples larger than its predecessor — usually within a decade. Sports is the only major asset class where this hasn't happened yet.</p>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section-lbl">01 · Derivative vs underlying</div>
+  <div class="grid">
+
+    <!-- CHART 1: CDS -->
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="lbl" style="color:var(--coral);margin-bottom:8px">Credit · 1998–2007</div>
+          <div class="ttl">Corporate bonds vs. credit default swaps</div>
+        </div>
+        <div class="ratio"><b>12×</b>at peak</div>
+      </div>
+      <div class="meta">Outstanding notional, USD trillions. ISDA standardized CDS in 1999.</div>
+      <div class="legend">
+        <span class="leg"><span class="swatch" style="background:var(--gray)"></span>Corporate bonds</span>
+        <span class="leg"><span class="swatch" style="background:var(--coral)"></span>CDS notional</span>
+      </div>
+      <div class="chart-wrap"><canvas id="cdsChart" role="img" aria-label="US corporate bonds grew slowly from $3T to $5.3T while CDS notional exploded from $0.2T to $62T."></canvas></div>
+      <div class="punch">CDS went from a sliver of the bond market to <b>12× its size</b> in 7 years. Same companies, same credit risk, different instrument.</div>
+    </div>
+
+    <!-- CHART 2: Crypto -->
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="lbl" style="color:var(--coral);margin-bottom:8px">Crypto · 2014–2025</div>
+          <div class="ttl">BTC spot vs. perpetual futures volume</div>
+        </div>
+        <div class="ratio"><b>10×</b>today</div>
+      </div>
+      <div class="meta">Annual trading volume, USD trillions. BitMEX launched the first crypto perp in May 2016.</div>
+      <div class="legend">
+        <span class="leg"><span class="swatch" style="background:var(--gray)"></span>Spot</span>
+        <span class="leg"><span class="swatch" style="background:var(--coral)"></span>Perpetual futures</span>
+      </div>
+      <div class="chart-wrap"><canvas id="cryptoChart" role="img" aria-label="BTC spot stayed under $8T while perpetual futures grew from zero in 2015 to $62T in 2025."></canvas></div>
+      <div class="punch">Same primitive Notch is built on. The persistent leveraged version became <b>10× the cash market</b> in under a decade. ~83% of all BTC trading is now perps.</div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section-lbl">02 · Options → Persistent derivative</div>
+  <div class="grid">
+
+    <!-- CHART 3: Interest Rates -->
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="lbl" style="color:var(--coral);margin-bottom:8px">Rates · 1998–2022</div>
+          <div class="ttl">Interest rate options vs. interest rate swaps</div>
+        </div>
+        <div class="ratio"><b>7–8×</b>today</div>
+      </div>
+      <div class="meta">OTC notional outstanding, USD trillions. First IRS: IBM/World Bank, 1981.</div>
+      <div class="legend">
+        <span class="leg"><span class="swatch" style="background:var(--gray)"></span>IR options (caps, floors, swaptions)</span>
+        <span class="leg"><span class="swatch" style="background:var(--coral)"></span>Interest rate swaps</span>
+      </div>
+      <div class="chart-wrap"><canvas id="ratesChart" role="img" aria-label="IR options stayed near $50T while interest rate swaps grew from $36T to over $380T peak."></canvas></div>
+      <div class="punch">In the late 70s, the only way to express a rate view was through expiring options. The swap was invented in 1981 and gave you <b>multi-year persistent exposure</b> instead of expiring optionality. Today IRS is the largest derivative market on earth at $380T+ notional. The optionality version stalled below $55T.</div>
+    </div>
+
+    <!-- CHART 4: Equities -->
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="lbl" style="color:var(--coral);margin-bottom:8px">Equities · 2000–2024</div>
+          <div class="ttl">S&amp;P 500 options vs. S&amp;P 500 futures</div>
+        </div>
+        <div class="ratio"><b>~10×</b>daily volume</div>
+      </div>
+      <div class="meta">Annual notional volume, USD trillions. SPX options launched 1983; ES e-mini futures 1997.</div>
+      <div class="legend">
+        <span class="leg"><span class="swatch" style="background:var(--gray)"></span>SPX options</span>
+        <span class="leg"><span class="swatch" style="background:var(--coral)"></span>ES futures</span>
+      </div>
+      <div class="chart-wrap"><canvas id="equitiesChart" role="img" aria-label="ES futures notional volume substantially exceeds SPX options across the 2000-2024 period, with a roughly 10x ratio in recent years."></canvas></div>
+      <div class="punch">Both exist on the same underlying, both available to the same traders, both have been around for decades. ES daily notional runs roughly <b>10× SPX options</b>. CME's own data: ES has 8× the liquidity of all S&amp;P 500 ETFs combined.</div>
+    </div>
+
+  </div>
+
+  <div class="takeaway">
+    <div class="lbl">Implication for Notch</div>
+    <p>Sports betting and prediction markets are the <span>options market</span> for sports views — fixed-odds bets and binary YES/NO contracts are structurally digital options on real-world events. We are the <span>persistent derivative layer</span> that doesn't exist yet.</p>
+    <p>Across rates, credit, crypto, and equities, the persistent instrument ended up multiples larger than what came before — often 10× or more, usually within a decade. Sports has a 3.5B-fan audience, $500B+ in expiring bets, and zero persistent-derivative infrastructure. It's the largest unfinanced asset class on earth.</p>
+  </div>
+
+  <div class="footer">
+    NOTCH · CONFIDENTIAL · DATA AS OF Q1 2026<br><br>
+    CDS / corporate bonds: <a href="https://www.bis.org/publ/qtrpdf/r_qt1806b.htm" target="_blank">BIS</a>, <a href="https://www.chicagofed.org/publications/economic-perspectives/2023/4" target="_blank">Chicago Fed</a>, <a href="https://www.sifma.org/research/statistics/us-corporate-bonds-statistics/" target="_blank">SIFMA US corporate bond outstanding</a>.<br>
+    BTC perp / spot: <a href="https://a16zcrypto.com/posts/article/what-are-perpetual-futures/" target="_blank">a16z</a> (2025: $86.2T CEX + $6.7T DEX perp), <a href="https://cryptoquant.com/" target="_blank">CryptoQuant</a>, <a href="https://www.coinglass.com/pro/perpteual-spot-volume" target="_blank">Coinglass</a>.<br>
+    Interest rate options / swaps: <a href="https://www.bis.org/statistics/derstats.htm" target="_blank">BIS semi-annual OTC derivatives statistics</a>. IRS peaked at $381T notional in 2014 (60% of all OTC derivatives) per <a href="https://en.wikipedia.org/wiki/Interest_rate_swap" target="_blank">BIS Dec 2014 release</a>.<br>
+    SPX options / ES futures: <a href="https://www.cmegroup.com/education/articles-and-reports/a-cost-comparison-of-sp-500-related-options" target="_blank">CME Group cost comparison study</a>, <a href="https://www.theocc.com/market-data/market-data-reports/volume-and-open-interest" target="_blank">OCC</a>, <a href="https://www.cboe.com/us/options/market_statistics/" target="_blank">Cboe</a>. Notional volume series approximate.<br>
+    Pre-launch years included for each newer instrument to show the launch dynamic.
+  </div>
+
+</div>
+
+<script>
+const FONT = "'Space Mono', monospace";
+const COLORS = {gray:'#5a5c61', coral:'#ff6b3d', text:'#8a8c91', grid:'#1c1e23'};
+
+Chart.defaults.font.family = FONT;
+Chart.defaults.font.size = 10;
+Chart.defaults.color = COLORS.text;
+
+const baseOpts = (yMax) => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{display:false},
+    tooltip:{
+      backgroundColor:'#0c0e12', borderColor:'#242629', borderWidth:1,
+      titleColor:'#fff', bodyColor:'#c8c9cc', titleFont:{family:FONT,size:11},
+      bodyFont:{family:FONT,size:11}, padding:10, displayColors:true, boxWidth:8, boxHeight:8,
+      callbacks:{label:(ctx)=>' '+ctx.dataset.label+': $'+ctx.parsed.y+'T'}
+    }
+  },
+  scales:{
+    y:{
+      beginAtZero:true, max:yMax,
+      grid:{color:COLORS.grid, drawTicks:false},
+      border:{display:false},
+      ticks:{padding:8, callback:(v)=>'$'+v+'T'}
+    },
+    x:{
+      grid:{display:false},
+      border:{color:'#242629'},
+      ticks:{autoSkip:true, maxTicksLimit:8, maxRotation:0, padding:6}
+    }
+  },
+  elements:{point:{radius:2.5, hoverRadius:5, borderWidth:0}, line:{tension:0.25}}
+});
+
+// 1. CDS
+new Chart(document.getElementById('cdsChart'), {
+  type:'line',
+  data:{
+    labels:['1998','1999','2000','2001','2002','2003','2004','2005','2006','2007'],
+    datasets:[
+      {label:'Corporate bonds', data:[3.0,3.2,3.4,3.9,4.0,4.4,4.6,4.6,4.9,5.3],
+       borderColor:COLORS.gray, backgroundColor:COLORS.gray, borderWidth:2, borderDash:[3,4]},
+      {label:'CDS notional', data:[0.18,0.4,0.6,0.9,2.2,3.7,8.4,17.1,34.4,62.2],
+       borderColor:COLORS.coral, backgroundColor:COLORS.coral, borderWidth:2.5}
+    ]
+  },
+  options: baseOpts(70)
+});
+
+// 2. Crypto
+new Chart(document.getElementById('cryptoChart'), {
+  type:'line',
+  data:{
+    labels:['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+    datasets:[
+      {label:'Spot', data:[0.05,0.1,0.3,0.8,1.2,1.5,2.5,8.0,4.0,2.5,4.0,6.0],
+       borderColor:COLORS.gray, backgroundColor:COLORS.gray, borderWidth:2, borderDash:[3,4]},
+      {label:'Perpetual futures', data:[0,0,0.05,0.5,1.5,3.0,8.0,40,28,25,48,62],
+       borderColor:COLORS.coral, backgroundColor:COLORS.coral, borderWidth:2.5}
+    ]
+  },
+  options: baseOpts(70)
+});
+
+// 3. Interest Rates
+new Chart(document.getElementById('ratesChart'), {
+  type:'line',
+  data:{
+    labels:['1998','2000','2002','2004','2006','2008','2010','2012','2014','2016','2018','2020','2022'],
+    datasets:[
+      {label:'IR options', data:[4,9,13,25,36,47,50,50,53,49,48,45,50],
+       borderColor:COLORS.gray, backgroundColor:COLORS.gray, borderWidth:2, borderDash:[3,4]},
+      {label:'IR swaps', data:[36,48,80,165,230,320,365,370,381,360,350,340,360],
+       borderColor:COLORS.coral, backgroundColor:COLORS.coral, borderWidth:2.5}
+    ]
+  },
+  options: baseOpts(420)
+});
+
+// 4. Equities
+new Chart(document.getElementById('equitiesChart'), {
+  type:'line',
+  data:{
+    labels:['2000','2003','2006','2009','2012','2015','2018','2021','2024'],
+    datasets:[
+      {label:'SPX options', data:[5,7,12,18,22,28,38,55,85],
+       borderColor:COLORS.gray, backgroundColor:COLORS.gray, borderWidth:2, borderDash:[3,4]},
+      {label:'ES futures', data:[15,35,75,90,110,130,160,220,280],
+       borderColor:COLORS.coral, backgroundColor:COLORS.coral, borderWidth:2.5}
+    ]
+  },
+  options: baseOpts(320)
+});
+</script>
+</body>
+</html>
