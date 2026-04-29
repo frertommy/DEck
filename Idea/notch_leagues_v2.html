@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Notch — Leagues v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0c0e12;
+    --card: #15171c;
+    --card-2: #1a1c22;
+    --border: #242629;
+    --border-2: #2a2d33;
+    --lime: #b2ed68;
+    --lime-bg: rgba(178, 237, 104, 0.08);
+    --lime-bg-strong: rgba(178, 237, 104, 0.15);
+    --lime-border: rgba(178, 237, 104, 0.3);
+    --red: #ff5b5b;
+    --amber: #f5b942;
+    --amber-bg: rgba(245, 185, 66, 0.08);
+    --amber-border: rgba(245, 185, 66, 0.3);
+    --gold: #e6c068;
+    --text: #ffffff;
+    --muted: #6b6e75;
+    --muted-2: #8a8d94;
+    --grotesk: 'Space Grotesk', -apple-system, sans-serif;
+    --mono: 'Space Mono', 'SF Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #050608;
+    color: var(--text);
+    font-family: var(--grotesk);
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  .deck-header { max-width: 1480px; margin: 0 auto 36px; text-align: center; }
+  .deck-header h1 { font-size: 24px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .deck-header p { font-size: 13px; color: var(--muted); font-family: var(--mono); }
+  .deck { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  @media (max-width: 1080px) { .deck { grid-template-columns: repeat(2, 1fr); max-width: 720px; } }
+  @media (max-width: 720px) { .deck { grid-template-columns: 1fr; max-width: 360px; } }
+
+  .screen-wrap { display: flex; flex-direction: column; align-items: center; }
+  .screen-label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+  .phone {
+    background: var(--bg);
+    border-radius: 28px;
+    width: 320px;
+    min-height: 690px;
+    padding: 22px 18px 18px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    box-shadow: 0 0 0 8px #0a0b0e, 0 0 0 9px #1a1c22;
+  }
+
+  .lime { color: var(--lime); }
+  .red { color: var(--red); }
+  .muted { color: var(--muted); }
+  .mono { font-family: var(--mono); }
+  .between { display: flex; justify-content: space-between; align-items: center; }
+  .row { display: flex; align-items: center; }
+  .label-tiny { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+
+  .card-n { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+
+  .pill { text-align: center; padding: 9px 12px; border-radius: 99px; font-size: 12px; background: var(--card); border: 1px solid var(--border); cursor: pointer; color: var(--text); }
+  .pill.active { background: var(--lime-bg); color: var(--lime); border-color: var(--lime-border); font-weight: 500; }
+
+  .input-n { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; width: 100%; color: var(--text); font-family: var(--grotesk); font-size: 13px; }
+
+  .cta-lime { background: var(--lime); color: var(--bg); text-align: center; padding: 14px; border-radius: 99px; font-weight: 500; font-size: 13px; border: none; width: 100%; cursor: pointer; font-family: var(--grotesk); }
+  .cta-secondary { background: var(--card); color: var(--text); text-align: center; padding: 14px; border-radius: 99px; font-weight: 500; font-size: 13px; border: 1px solid var(--border); width: 100%; cursor: pointer; font-family: var(--grotesk); }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--card); border-radius: 99px; }
+  .tabs.three-col { grid-template-columns: 1fr 1fr 1fr; }
+  .tab { text-align: center; padding: 8px; font-size: 12px; border-radius: 99px; color: var(--muted); cursor: pointer; }
+  .tab.active { background: var(--bg); color: var(--text); font-weight: 500; border: 1px solid var(--border); }
+
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 18px; min-width: 18px;
+    border-radius: 99px;
+    font-size: 9px; font-weight: 500;
+    padding: 0 6px;
+    margin-left: 6px;
+  }
+  .badge-live { background: var(--lime-bg-strong); color: var(--lime); border: 1px solid var(--lime-border); padding: 0 8px; height: 20px; font-size: 10px; font-weight: 500; border-radius: 99px; }
+  .badge-active { background: transparent; color: var(--lime); border: 1px solid var(--lime); padding: 0 8px; height: 20px; font-size: 10px; border-radius: 99px; }
+  .badge-upcoming { background: transparent; color: var(--muted); border: 1px solid var(--muted); padding: 0 8px; height: 20px; font-size: 10px; border-radius: 99px; }
+  .badge-tier { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge-tier.large { background: rgba(230, 192, 104, 0.1); color: var(--gold); border: 1px solid rgba(230, 192, 104, 0.4); }
+  .badge-tier.small { background: var(--card-2); color: var(--muted-2); border: 1px solid var(--border); }
+
+  .trophy-mini {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    margin-left: 4px;
+    font-size: 9px;
+    background: var(--lime-bg-strong);
+    color: var(--lime);
+  }
+  .trophy-mini.gold { background: rgba(230, 192, 104, 0.15); color: var(--gold); }
+
+  /* leaderboard rows */
+  .lb-row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+    column-gap: 10px;
+  }
+  .lb-row.you { background: rgba(178, 237, 104, 0.04); border: 1px solid var(--lime-border); }
+  .lb-row.unqualified { opacity: 0.55; }
+  .lb-row .rank { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+  .lb-row .rank.medal-1 { color: #f5d676; }
+  .lb-row .rank.medal-2 { color: #c8c8c8; }
+  .lb-row .rank.medal-3 { color: #cd9461; }
+  .lb-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* tier strip */
+  .tier-strip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .tier-progress-bar {
+    height: 5px;
+    background: var(--bg);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .tier-progress-fill {
+    height: 100%;
+    background: var(--amber);
+    border-radius: 99px;
+  }
+
+  /* prize block */
+  .prize-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .prize-row:last-child { border-bottom: none; }
+  .prize-pos {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .prize-pos.pos-1 { color: #f5d676; }
+  .prize-pos.pos-2 { color: #c8c8c8; }
+  .prize-pos.pos-3 { color: #cd9461; }
+  .prize-amt {
+    font-family: var(--mono);
+    color: var(--lime);
+    font-weight: 500;
+  }
+
+  /* league card in My Leagues */
+  .league-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .league-card .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .league-card .meta-row {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .ending-soon {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* segmented info button */
+  .info-link {
+    font-size: 11px;
+    color: var(--muted-2);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* phone overflow needed for modals */
+  .phone { position: relative; overflow: hidden; }
+
+  /* bottom sheet modal */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+    display: flex;
+    align-items: flex-end;
+    z-index: 10;
+    border-radius: 28px;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-sheet {
+    width: 100%;
+    background: #15171c;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-top: 1px solid #2a2d33;
+    border-left: 1px solid #2a2d33;
+    border-right: 1px solid #2a2d33;
+    padding: 14px 18px 22px;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 92%;
+    overflow-y: auto;
+  }
+  .modal-overlay.active .modal-sheet { transform: translateY(0); }
+  .drag-handle { width: 38px; height: 4px; background: #2a2d33; border-radius: 99px; margin: 0 auto 14px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .modal-header .title { font-size: 17px; font-weight: 500; }
+  .modal-header .close { color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; }
+
+  /* How it works step rows */
+  .step-row { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--lime-bg-strong);
+    color: var(--lime);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    font-family: var(--mono);
+    border: 1px solid var(--lime-border);
+  }
+  .step-body { flex: 1; padding-top: 1px; }
+  .step-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .step-sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="deck-header">
+  <h1>Notch · Leagues</h1>
+  <p>incentive system + rewards visibility</p>
+</div>
+
+<div class="deck">
+
+  <!-- ============ SCREEN 1: LEAGUES MAIN ============ -->
+  <div class="screen-wrap">
+    <div class="screen-label">1 · Leagues main</div>
+    <div class="phone">
+
+      <div style="font-size: 22px; font-weight: 600; margin-bottom: 16px;">Rankings</div>
+
+      <div class="tabs" style="margin-bottom: 16px;">
+        <div class="tab active">🏆 Leagues</div>
+        <div class="tab">★ Points</div>
+      </div>
+
+      <!-- Season 1 sponsored -->
+      <div class="card-n" style="margin-bottom: 14px;">
+        <div class="between" style="margin-bottom: 6px;">
+          <div style="display: flex; align-items: center;">
+            <div style="font-size: 16px; font-weight: 500;">Season 1</div>
+            <div class="badge-live" style="margin-left: 8px;">Live</div>
+          </div>
+          <div class="badge-active mono">27d left</div>
+        </div>
+        <div style="font-size: 11px; color: var(--muted); margin-bottom: 8px;">Prize Pool · Best PnL Wins</div>
+        <div style="font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 10px;">$10,000</div>
+        <div class="row" style="gap: 10px; font-size: 11px;">
+          <span class="lime">🥇 1st $5K</span>
+          <span class="muted">🥈 2nd $3K</span>
+          <span class="muted">🥉 3rd $2K</span>
+          <span style="margin-left: auto; color: var(--muted);">👥 832</span>
+        </div>
+      </div>
+
+      <!-- New: How NP rewards work -->
+      <div class="card-n" style="margin-bottom: 18px; padding: 12px 14px;">
+        <div class="between" style="margin-bottom: 4px;">
+          <div style="font-size: 12px; font-weight: 500;">Private leagues earn NP</div>
+          <div class="info-link" onclick="openModal('how-1')">How it works</div>
+        </div>
+        <div style="font-size: 11px; color: var(--muted); line-height: 1.5;">
+          Win weekly, fortnight or monthly cycles · rewards scale with qualified players
+        </div>
+      </div>
+
+      <!-- My leagues -->
+      <div class="between" style="margin-bottom: 10px;">
+        <div style="font-size: 14px; font-weight: 500;">My leagues <span style="color: var(--muted); font-weight: 400; font-size: 12px;">2 / 4</span></div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <button class="cta-lime" style="font-size: 12px; padding: 12px;">+ Create</button>
+        <button class="cta-secondary" style="font-size: 12px; padding: 12px;">Join</button>
+      </div>
+
+      <!-- League card — Medium tier league with cycle ending -->
+      <div class="league-card">
+        <div class="top-row">
+          <div style="font-size: 14px; font-weight: 500;">The Boys February</div>
+          <div class="badge badge-tier">Medium</div>
+        </div>
+        <div class="row mono" style="font-size: 18px; color: var(--lime); font-weight: 500;">
+          #2 <span style="font-size: 11px; color: var(--muted); font-weight: 400; font-family: var(--grotesk); margin-left: 6px;">monthly rank</span>
+          <span class="trophy-mini" style="margin-left: 8px;">🏆</span>
+        </div>
+        <div class="meta-row">
+          <span>👥 47 qualified</span>
+          <span>•</span>
+          <span>Ends in 12d</span>
+        </div>
+        <div class="ending-soon">
+          <span class="muted">Weekly ends in 3d · 1st</span>
+          <span class="lime mono">1,500 NP</span>
+        </div>
+      </div>
+
+      <!-- League card — Small tier -->
+      <div class="league-card">
+        <div class="top-row">
+          <div style="font-size: 14px; font-weight: 500;">Pub Crew</div>
+          <div class="badge badge-tier small">Small</div>
+        </div>
+        <div class="row mono" style="font-size: 18px; color: var(--lime); font-weight: 500;">
+          #1 <span style="font-size: 11px; color: var(--muted); font-weight: 400; font-family: var(--grotesk); margin-left: 6px;">monthly rank</span>
+          <span class="trophy-mini gold">★</span>
+        </div>
+        <div class="meta-row">
+          <span>👥 8 qualified</span>
+          <span>•</span>
+          <span>Ends in 12d</span>
+        </div>
+        <div class="ending-soon">
+          <span class="muted">Monthly · 1st</span>
+          <span class="lime mono">5,000 NP</span>
+        </div>
+      </div>
+
+      <!-- HOW IT WORKS MODAL -->
+      <div class="modal-overlay" id="how-1" onclick="if(event.target===this)closeModal('how-1')">
+        <div class="modal-sheet">
+          <div class="drag-handle"></div>
+          <div class="modal-header">
+            <div class="title">How leagues work</div>
+            <div class="close" onclick="closeModal('how-1')">×</div>
+          </div>
+
+          <div class="step-row">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Three cycles run at once</div>
+              <div class="step-sub">Weekly, fortnight and monthly leaderboards inside every league. Always something ending soon.</div>
+            </div>
+          </div>
+
+          <div class="step-row">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Best PnL % wins</div>
+              <div class="step-sub">Pure ratio — fair regardless of how much you trade with.</div>
+            </div>
+          </div>
+
+          <div class="step-row">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Trade enough to qualify</div>
+              <div class="step-sub">Min volume each cycle: <span class="mono" style="color: var(--text);">$500/wk · $1,500/2wk · $3,000/mo</span></div>
+            </div>
+          </div>
+
+          <div class="step-row">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">Rewards scale with depth</div>
+              <div class="step-sub">More qualified players = bigger NP prizes. Small (3–25) → Medium (26–99) → Large (100+).</div>
+            </div>
+          </div>
+
+          <div class="step-row" style="margin-bottom: 18px;">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <div class="step-title">Earn permanent badges</div>
+              <div class="step-sub">Champion, Gold, Hat-trick — earned by winning, never expire.</div>
+            </div>
+          </div>
+
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; font-size: 11px; color: var(--muted); line-height: 1.5;">
+            You can create <span style="color: var(--text);">1 league</span> and join up to <span style="color: var(--text);">3 more</span>.
+          </div>
+
+          <button class="cta-lime" onclick="closeModal('how-1')">Got it</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: CUSTOM LEAGUE — LEADERBOARD W/ CYCLES ============ -->
+  <div class="screen-wrap">
+    <div class="screen-label">2 · League · cycles + leaderboard</div>
+    <div class="phone">
+
+      <div style="color: var(--muted); font-size: 16px; margin-bottom: 14px; cursor: pointer;">‹</div>
+
+      <div style="font-size: 22px; font-weight: 600; margin-bottom: 14px; letter-spacing: -0.01em;">The Boys February</div>
+
+      <!-- top stats -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 16px; text-align: center; gap: 8px;">
+        <div>
+          <div class="label-tiny" style="margin-bottom: 4px;">Members</div>
+          <div style="font-size: 16px; font-weight: 500;">53</div>
+        </div>
+        <div style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+          <div class="label-tiny" style="margin-bottom: 4px;">Qualified</div>
+          <div style="font-size: 16px; font-weight: 500;">47</div>
+        </div>
+        <div>
+          <div class="label-tiny" style="margin-bottom: 4px;">Tier</div>
+          <div style="font-size: 16px; font-weight: 500; color: var(--amber);">Medium</div>
+        </div>
+      </div>
+
+      <!-- tier strip -->
+      <div class="tier-strip">
+        <div class="between" style="margin-bottom: 2px;">
+          <div style="font-size: 12px;">
+            <span style="color: var(--amber); font-weight: 500;">Medium tier</span>
+            <span class="muted"> · 53 to Large</span>
+          </div>
+          <div class="info-link" onclick="openModal('prizes-2')">Prizes</div>
+        </div>
+        <div class="tier-progress-bar"><div class="tier-progress-fill" style="width: 47%;"></div></div>
+        <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">47 qualified · 100 unlocks Large tier</div>
+      </div>
+
+      <!-- cycle toggle -->
+      <div class="tabs three-col" style="margin-bottom: 14px;">
+        <div class="tab">Week</div>
+        <div class="tab">Fortnight</div>
+        <div class="tab active">Month</div>
+      </div>
+
+      <!-- countdown + your position summary -->
+      <div class="between" style="margin-bottom: 12px; padding: 0 4px;">
+        <div style="font-size: 11px; color: var(--muted);">Ends in 12d 4h</div>
+        <div style="font-size: 11px;">You: <span class="lime mono">+19.8%</span></div>
+      </div>
+
+      <!-- leaderboard -->
+      <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px;">
+        <div class="lb-row">
+          <span class="rank medal-1">1</span>
+          <span style="display: flex; align-items: center;">cryptogunner <span class="trophy-mini gold">★</span></span>
+          <span class="lime mono">+24.1%</span>
+        </div>
+        <div class="lb-row you">
+          <span class="rank">2</span>
+          <span style="display: flex; align-items: center;">bobafett <span style="font-size: 10px; color: var(--lime); border: 1px solid var(--lime); padding: 1px 6px; border-radius: 99px; margin-left: 6px;">You</span></span>
+          <span class="lime mono">+19.8%</span>
+        </div>
+        <div class="lb-row">
+          <span class="rank medal-3">3</span>
+          <span>degensam</span>
+          <span class="lime mono">+14.2%</span>
+        </div>
+        <div class="lb-row">
+          <span class="rank">4</span>
+          <span>premtrader</span>
+          <span class="lime mono">+9.8%</span>
+        </div>
+        <div class="lb-row">
+          <span class="rank">5</span>
+          <span>madridista99</span>
+          <span class="lime mono">+8.7%</span>
+        </div>
+        <div class="lb-divider"></div>
+        <div style="font-size: 10px; color: var(--muted); padding: 4px 12px 8px;">Below threshold · 6 players</div>
+        <div class="lb-row unqualified">
+          <span class="rank">—</span>
+          <span>arsenalfan_fi</span>
+          <span class="muted mono" style="font-size: 11px;">$1,840 / $3,000</span>
+        </div>
+        <div class="lb-row unqualified">
+          <span class="rank">—</span>
+          <span>spursdan</span>
+          <span class="muted mono" style="font-size: 11px;">$420 / $3,000</span>
+        </div>
+      </div>
+
+      <!-- prizes inline summary -->
+      <div style="margin-top: 16px;">
+        <div class="label-tiny">Monthly prizes · medium tier</div>
+        <div class="card-n" style="padding: 4px 14px;">
+          <div class="prize-row">
+            <span class="prize-pos pos-1">1st</span>
+            <span style="font-size: 12px;">Top trader</span>
+            <span class="prize-amt">12,000 NP</span>
+          </div>
+          <div class="prize-row">
+            <span class="prize-pos pos-2">2nd</span>
+            <span style="font-size: 12px;">Runner-up</span>
+            <span class="prize-amt">5,000 NP</span>
+          </div>
+          <div class="prize-row">
+            <span class="prize-pos pos-3">3rd</span>
+            <span style="font-size: 12px;">Third</span>
+            <span class="prize-amt">2,500 NP</span>
+          </div>
+          <div class="prize-row">
+            <span class="prize-pos">10%</span>
+            <span style="font-size: 12px;">Top 10% (each)</span>
+            <span class="prize-amt">1,500 NP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIZES MODAL -->
+      <div class="modal-overlay" id="prizes-2" onclick="if(event.target===this)closeModal('prizes-2')">
+        <div class="modal-sheet">
+          <div class="drag-handle"></div>
+          <div class="modal-header">
+            <div class="title">Prizes</div>
+            <div class="close" onclick="closeModal('prizes-2')">×</div>
+          </div>
+
+          <div style="font-size: 11px; color: var(--muted); margin-bottom: 16px; line-height: 1.5;">
+            Win cycles by best PnL %. Rewards scale with the number of qualified players. Unqualified members don't compete.
+          </div>
+
+          <div class="label-tiny">Qualifying volume per cycle</div>
+          <div class="card-n" style="padding: 4px 14px; margin-bottom: 18px;">
+            <div class="prize-row"><span style="font-size: 11px; color: var(--muted); text-align: left;">Weekly</span><span></span><span class="mono" style="font-size: 12px;">$500</span></div>
+            <div class="prize-row"><span style="font-size: 11px; color: var(--muted); text-align: left;">Fortnight</span><span></span><span class="mono" style="font-size: 12px;">$1,500</span></div>
+            <div class="prize-row"><span style="font-size: 11px; color: var(--muted); text-align: left;">Monthly</span><span></span><span class="mono" style="font-size: 12px;">$3,000</span></div>
+          </div>
+
+          <div class="label-tiny">Tier scaling (per cycle)</div>
+
+          <div class="card-n" style="margin-bottom: 8px; padding: 12px 14px;">
+            <div class="between" style="margin-bottom: 8px;">
+              <div style="font-size: 13px;"><span class="badge badge-tier small" style="margin-left: 0;">Small</span></div>
+              <div class="mono muted" style="font-size: 11px;">3–25 qualified</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 11px;">
+              <div><div class="muted" style="font-size: 10px;">Weekly</div><div class="mono lime">500</div></div>
+              <div><div class="muted" style="font-size: 10px;">Fortnight 1st</div><div class="mono lime">1,500</div></div>
+              <div><div class="muted" style="font-size: 10px;">Monthly 1st</div><div class="mono lime">5,000</div></div>
+            </div>
+          </div>
+
+          <div class="card-n" style="margin-bottom: 8px; padding: 12px 14px; border-color: var(--amber-border); background: var(--amber-bg);">
+            <div class="between" style="margin-bottom: 8px;">
+              <div style="font-size: 13px;"><span class="badge badge-tier" style="margin-left: 0;">Medium · current</span></div>
+              <div class="mono muted" style="font-size: 11px;">26–99 qualified</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 11px;">
+              <div><div class="muted" style="font-size: 10px;">Weekly</div><div class="mono lime">1,500</div></div>
+              <div><div class="muted" style="font-size: 10px;">Fortnight 1st</div><div class="mono lime">4,000</div></div>
+              <div><div class="muted" style="font-size: 10px;">Monthly 1st</div><div class="mono lime">12,000</div></div>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 8px;">+ Top 10% gets 1,500 NP each</div>
+          </div>
+
+          <div class="card-n" style="margin-bottom: 18px; padding: 12px 14px;">
+            <div class="between" style="margin-bottom: 8px;">
+              <div style="font-size: 13px;"><span class="badge badge-tier large" style="margin-left: 0;">Large</span></div>
+              <div class="mono muted" style="font-size: 11px;">100+ qualified</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 11px;">
+              <div><div class="muted" style="font-size: 10px;">Weekly</div><div class="mono lime">5,000</div></div>
+              <div><div class="muted" style="font-size: 10px;">Fortnight 1st</div><div class="mono lime">10,000</div></div>
+              <div><div class="muted" style="font-size: 10px;">Monthly 1st</div><div class="mono lime">30,000</div></div>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 8px;">+ Top 10% (3,000) · Top 25% (750) each</div>
+          </div>
+
+          <div class="label-tiny">Permanent badges</div>
+          <div class="card-n" style="padding: 4px 14px; margin-bottom: 18px;">
+            <div class="prize-row"><span style="font-size: 16px; text-align: center;">🏆</span><span style="font-size: 11px;">Win monthly in any league</span><span class="muted mono" style="font-size: 10px;">Champion</span></div>
+            <div class="prize-row"><span style="font-size: 16px; text-align: center; color: var(--gold);">★</span><span style="font-size: 11px;">Win monthly in Large tier</span><span class="muted mono" style="font-size: 10px;">Gold</span></div>
+            <div class="prize-row"><span style="font-size: 16px; text-align: center;">🔥</span><span style="font-size: 11px;">3 weekly wins in a row</span><span class="muted mono" style="font-size: 10px;">+1,000 NP</span></div>
+            <div class="prize-row"><span style="font-size: 16px; text-align: center;">3×</span><span style="font-size: 11px;">3 monthly wins in a year</span><span class="muted mono" style="font-size: 10px;">Hat-trick</span></div>
+          </div>
+
+          <button class="cta-lime" onclick="closeModal('prizes-2')">Got it</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: CREATE MODAL — NO BUY-IN ============ -->
+  <div class="screen-wrap">
+    <div class="screen-label">3 · Create league (no buy-in)</div>
+    <div class="phone">
+
+      <div class="between" style="margin-bottom: 22px;">
+        <div style="font-size: 18px; font-weight: 500;">Create league</div>
+        <div style="color: var(--muted); font-size: 18px; cursor: pointer;">×</div>
+      </div>
+
+      <div class="label-tiny">League name</div>
+      <input class="input-n" placeholder="e.g. Office league" value="Office league" style="margin-bottom: 22px;" />
+
+      <!-- explainer card replacing buy-in -->
+      <div style="background: var(--lime-bg); border: 1px solid var(--lime-border); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+        <div class="between" style="margin-bottom: 10px;">
+          <div style="font-size: 12px; font-weight: 500; color: var(--lime);">How it works</div>
+          <div class="info-link" style="color: var(--lime); opacity: 0.8;" onclick="openModal('how-3')">More →</div>
+        </div>
+        <div style="font-size: 11px; color: var(--text); line-height: 1.6; margin-bottom: 12px;">
+          Win cycles by best PnL %. Three concurrent leaderboards reset weekly, fortnightly, and monthly.
+        </div>
+        <div style="font-size: 11px; color: var(--muted); line-height: 1.6;">
+          Min volume to qualify: <span class="mono" style="color: var(--text);">$500/wk · $1,500/2wk · $3,000/mo</span>
+        </div>
+      </div>
+
+      <div class="label-tiny">Reward example · monthly 1st place</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 22px;">
+        <div class="card-n" style="text-align: center; padding: 12px 6px;">
+          <div style="font-size: 10px; color: var(--muted);">Small</div>
+          <div class="mono lime" style="font-size: 14px; font-weight: 500; margin-top: 4px;">5,000</div>
+          <div style="font-size: 9px; color: var(--muted); margin-top: 2px;">3–25 qual.</div>
+        </div>
+        <div class="card-n" style="text-align: center; padding: 12px 6px;">
+          <div style="font-size: 10px; color: var(--muted);">Medium</div>
+          <div class="mono lime" style="font-size: 14px; font-weight: 500; margin-top: 4px;">12,000</div>
+          <div style="font-size: 9px; color: var(--muted); margin-top: 2px;">26–99 qual.</div>
+        </div>
+        <div class="card-n" style="text-align: center; padding: 12px 6px; border-color: rgba(230,192,104,0.3);">
+          <div style="font-size: 10px; color: var(--gold);">Large</div>
+          <div class="mono lime" style="font-size: 14px; font-weight: 500; margin-top: 4px;">30,000</div>
+          <div style="font-size: 9px; color: var(--muted); margin-top: 2px;">100+ qual.</div>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; color: var(--muted); margin-bottom: 14px; text-align: center; line-height: 1.5;">
+        You can create 1 league and join up to 3 more
+      </div>
+
+      <button class="cta-lime">Create league</button>
+
+      <!-- HOW IT WORKS MODAL (in create) -->
+      <div class="modal-overlay" id="how-3" onclick="if(event.target===this)closeModal('how-3')">
+        <div class="modal-sheet">
+          <div class="drag-handle"></div>
+          <div class="modal-header">
+            <div class="title">How leagues work</div>
+            <div class="close" onclick="closeModal('how-3')">×</div>
+          </div>
+
+          <div class="step-row">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Three cycles run at once</div>
+              <div class="step-sub">Weekly, fortnight and monthly leaderboards inside every league. Always something ending soon.</div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Best PnL % wins</div>
+              <div class="step-sub">Pure ratio — fair regardless of how much you trade with.</div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Trade enough to qualify</div>
+              <div class="step-sub">Min volume each cycle: <span class="mono" style="color: var(--text);">$500/wk · $1,500/2wk · $3,000/mo</span></div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">Rewards scale with depth</div>
+              <div class="step-sub">More qualified players = bigger NP prizes. Small (3–25) → Medium (26–99) → Large (100+).</div>
+            </div>
+          </div>
+          <div class="step-row" style="margin-bottom: 18px;">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <div class="step-title">Earn permanent badges</div>
+              <div class="step-sub">Champion, Gold, Hat-trick — earned by winning, never expire.</div>
+            </div>
+          </div>
+
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; font-size: 11px; color: var(--muted); line-height: 1.5;">
+            You can create <span style="color: var(--text);">1 league</span> and join up to <span style="color: var(--text);">3 more</span>.
+          </div>
+
+          <button class="cta-lime" onclick="closeModal('how-3')">Got it</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.active').forEach(function(m) {
+        m.classList.remove('active');
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
