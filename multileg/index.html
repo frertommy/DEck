@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Settlement Projections · Position Sizing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #0c0e12; color: #e8eaee; font-family: "Space Grotesk", sans-serif; }
+  .scene { padding: 56px 24px; max-width: 1200px; margin: 0 auto; }
+
+  .divider {
+    margin: 80px auto 32px; max-width: 1200px; padding: 24px;
+    text-align: center; border-top: 1px solid #242629;
+    color: #5a5f6a; font-family: "Space Mono", monospace;
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+  }
+  .divider .num { color: #b2ed68; padding: 0 12px; }
+  .divider .for { color: #8a8f99; }
+
+  /* sticky shared state with controls */
+  .sticky-state {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(12, 14, 18, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1f2229;
+    padding: 14px 24px;
+  }
+  .sticky-state .inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px; align-items: center;
+    font-family: "Space Mono", monospace; font-size: 12px;
+  }
+  .sticky-state .label { color: #5a5f6a; letter-spacing: 0.15em; text-transform: uppercase; font-size: 10px; margin-right: 6px; }
+  .sticky-state .seq { display: inline-flex; gap: 6px; align-items: center; color: #8a8f99; }
+  .sticky-state .seq .leg { background: #1a1d22; padding: 4px 9px; border: 1px solid #242629; }
+  .sticky-state .seq .leg b { font-weight: 700; }
+  .sticky-state .seq .leg.W b { color: #b2ed68; }
+  .sticky-state .seq .leg.D b { color: #f0b557; }
+  .sticky-state .seq .leg.L b { color: #ef6b6b; }
+
+  /* controls: size + leverage */
+  .ctrl-group { display: inline-flex; align-items: center; gap: 6px; }
+  .size-input {
+    background: #11141a; border: 1px solid #242629; color: #e8eaee;
+    font-family: "Space Mono", monospace; font-size: 12px;
+    padding: 5px 10px; width: 80px; border-radius: 0;
+    outline: none; -moz-appearance: textfield;
+  }
+  .size-input::-webkit-outer-spin-button, .size-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .size-input:focus { border-color: #b2ed68; }
+  .lev-pills { display: inline-flex; gap: 2px; }
+  .lev-pills button {
+    background: #11141a; border: 1px solid #242629; color: #5a5f6a;
+    font-family: "Space Mono", monospace; font-size: 11px;
+    padding: 5px 10px; cursor: pointer; transition: all 0.12s;
+  }
+  .lev-pills button:hover { color: #8a8f99; border-color: #2d3038; }
+  .lev-pills button.active { background: rgba(178,237,104,0.12); border-color: #b2ed68; color: #b2ed68; font-weight: 700; }
+
+  .sticky-state .right { text-align: right; display: inline-flex; gap: 18px; align-items: center; }
+  .sticky-state .right .price { color: #b2ed68; font-weight: 700; font-size: 14px; }
+  .sticky-state .right .pnl { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .sticky-state .right .pnl.up { color: #b2ed68; }
+  .sticky-state .right .pnl.dn { color: #ef6b6b; }
+
+  /* ════════════════════════════════════════════════════════════
+     VARIANT 1 — PERP TRADER
+     ════════════════════════════════════════════════════════════ */
+  .perp { background: #0a0c10; border: 1px solid #1f2229; padding: 28px; font-family: "IBM Plex Mono", monospace; }
+  .perp-head { display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center; padding-bottom: 18px; border-bottom: 1px solid #1f2229; margin-bottom: 22px; }
+  .perp-head .pair { font-size: 22px; font-weight: 500; color: #e8eaee; }
+  .perp-head .pair span { color: #5a5f6a; }
+  .perp-head .price { font-size: 32px; font-weight: 500; color: #b2ed68; font-variant-numeric: tabular-nums; transition: color 0.2s; }
+  .perp-head .meta { font-size: 10px; color: #5a5f6a; letter-spacing: 0.15em; text-transform: uppercase; text-align: right; }
+  .perp-head .meta .pulse::before { content: "● "; color: #b2ed68; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  .perp-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
+  .perp-side { display: flex; flex-direction: column; gap: 12px; }
+
+  .perp-leg { margin-bottom: 16px; }
+  .perp-leg-h { font-size: 11px; color: #8a8f99; margin-bottom: 6px; padding: 0 4px; display: flex; justify-content: space-between; }
+  .perp-leg-h .seq { color: #5a5f6a; }
+  .perp-leg-h .seq b { color: #b2ed68; }
+  .perp-row {
+    display: grid; grid-template-columns: 32px 50px 1fr 90px 90px;
+    gap: 10px; padding: 10px 14px; background: #11141a; border: 1px solid #1f2229;
+    margin-bottom: 3px; align-items: center; font-size: 13px;
+    cursor: pointer; transition: all 0.12s ease; user-select: none;
+  }
+  .perp-row:hover { border-color: #2d3038; background: #14181f; }
+  .perp-row.selected.W { border-color: #b2ed68; background: rgba(178,237,104,0.06); }
+  .perp-row.selected.D { border-color: #f0b557; background: rgba(240,181,87,0.06); }
+  .perp-row.selected.L { border-color: #ef6b6b; background: rgba(239,107,107,0.06); }
+  .perp-row .badge { font-size: 10px; font-weight: 700; padding: 3px 7px; text-align: center; }
+  .perp-row.W .badge { background: rgba(178,237,104,0.15); color: #b2ed68; }
+  .perp-row.D .badge { background: rgba(240,181,87,0.15); color: #f0b557; }
+  .perp-row.L .badge { background: rgba(239,107,107,0.15); color: #ef6b6b; }
+  .perp-row .prob { color: #8a8f99; font-size: 11px; }
+  .perp-row .opp { color: #e8eaee; }
+  .perp-row .px { color: #e8eaee; text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .perp-row .delta { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .perp-row .delta.up { color: #b2ed68; }
+  .perp-row .delta.dn { color: #ef6b6b; }
+
+  .perp-stats { background: #0e1116; border: 1px solid #1f2229; padding: 16px; }
+  .perp-stats .stat { padding: 8px 0; border-bottom: 1px dashed #1f2229; }
+  .perp-stats .stat:last-child { border-bottom: none; padding-bottom: 0; }
+  .perp-stats .stat:first-child { padding-top: 0; }
+  .perp-stats .k { font-size: 9px; letter-spacing: 0.25em; color: #5a5f6a; text-transform: uppercase; margin-bottom: 3px; }
+  .perp-stats .v { font-size: 14px; color: #e8eaee; font-weight: 500; font-variant-numeric: tabular-nums; transition: color 0.2s; }
+  .perp-stats .v.up { color: #b2ed68; }
+  .perp-stats .v.dn { color: #ef6b6b; }
+  .perp-stats .v .sub { font-size: 10px; color: #5a5f6a; margin-left: 4px; }
+  .perp-stats h4 { font-size: 9px; letter-spacing: 0.25em; color: #5a5f6a; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1f2229; }
+
+  .perp-position {
+    background: #0e1116; border: 1px solid #1f2229; border-left: 2px solid #b2ed68;
+    padding: 16px;
+  }
+  .perp-position h4 { font-size: 9px; letter-spacing: 0.25em; color: #b2ed68; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1f2229; }
+  .perp-position .stat { padding: 7px 0; border-bottom: 1px dashed #1f2229; }
+  .perp-position .stat:last-child { border-bottom: none; padding-bottom: 0; padding-top: 12px; }
+  .perp-position .stat:first-of-type { padding-top: 0; }
+  .perp-position .k { font-size: 9px; letter-spacing: 0.22em; color: #5a5f6a; text-transform: uppercase; margin-bottom: 3px; }
+  .perp-position .v { font-size: 14px; color: #e8eaee; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .perp-position .v.big { font-size: 22px; font-weight: 700; }
+  .perp-position .v.up { color: #b2ed68; }
+  .perp-position .v.dn { color: #ef6b6b; }
+  .perp-position .v .sub { font-size: 11px; color: #5a5f6a; margin-left: 4px; font-weight: 400; }
+  .perp-position .liq-warn { font-size: 10px; color: #ef6b6b; margin-top: 6px; letter-spacing: 0.05em; }
+
+  /* ════════════════════════════════════════════════════════════
+     VARIANT 2 — EQUITY
+     ════════════════════════════════════════════════════════════ */
+  .equity { background: #f8f6f0; color: #1a1814; padding: 28px; font-family: "Inter", sans-serif; border: 1px solid #d4cfc0; }
+  .equity-head { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; padding-bottom: 18px; margin-bottom: 22px; border-bottom: 2px solid #1a1814; }
+  .equity-head .ticker { font-weight: 800; font-size: 22px; letter-spacing: -0.01em; }
+  .equity-head .ticker .ext { color: #6b6862; font-weight: 400; font-size: 13px; margin-left: 6px; }
+  .equity-head .last { text-align: center; font-variant-numeric: tabular-nums; }
+  .equity-head .last .lbl-eq { font-size: 10px; letter-spacing: 0.15em; color: #6b6862; text-transform: uppercase; }
+  .equity-head .last .num { font-size: 28px; font-weight: 700; color: #1a1814; transition: color 0.2s; }
+  .equity-head .last .chg { font-size: 12px; color: #1a8a4a; font-weight: 500; transition: color 0.2s; }
+  .equity-head .last .chg.dn { color: #b8344a; }
+  .equity-head .timing { text-align: right; font-size: 11px; color: #6b6862; line-height: 1.5; }
+  .equity-head .timing b { display: block; color: #1a1814; font-size: 13px; font-weight: 600; }
+
+  .equity-table { width: 100%; border-collapse: collapse; }
+  .equity-table thead th { text-align: right; font-size: 9px; font-weight: 600; letter-spacing: 0.18em; color: #6b6862; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid #1a1814; }
+  .equity-table thead th:first-child { text-align: left; }
+  .equity-table thead th.center { text-align: center; }
+  .equity-table tbody td { padding: 10px 12px; border-bottom: 1px solid #d4cfc0; font-variant-numeric: tabular-nums; text-align: right; font-size: 13px; cursor: pointer; transition: background 0.12s; }
+  .equity-table tbody td:first-child { text-align: left; }
+  .equity-table tbody td.center { text-align: center; }
+  .equity-table tbody tr.section td { background: #1a1814; color: #f8f6f0; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; cursor: default; }
+  .equity-table tbody tr.outcome:hover:not(.selected) td { background: #efeadc; }
+  .equity-table tbody tr.outcome.selected td { background: #1a1814; color: #f8f6f0; font-weight: 700; }
+  .equity-table tbody tr.outcome.selected td.pos { color: #6ce39c; }
+  .equity-table tbody tr.outcome.selected td.neg { color: #f78aa6; }
+  .equity-table tbody tr.outcome.selected td .prob-bar { background: #4a4742; }
+  .equity-table tbody tr.outcome.selected td .prob-bar .fill { background: #f8f6f0; }
+  .equity-table .sym { font-weight: 600; }
+  .equity-table .pos { color: #1a8a4a; font-weight: 600; }
+  .equity-table .neg { color: #b8344a; font-weight: 600; }
+  .equity-table .prob-bar { display: inline-block; width: 50px; height: 5px; background: #d4cfc0; position: relative; vertical-align: middle; margin-right: 6px; }
+  .equity-table .prob-bar .fill { position: absolute; left: 0; top: 0; height: 100%; background: #1a1814; }
+  .equity-table tr.summary td { padding-top: 14px; padding-bottom: 14px; border-top: 1px solid #1a1814; border-bottom: none; font-weight: 700; font-size: 14px; cursor: default; background: #efeadc; }
+
+  .equity-position {
+    margin-top: 16px;
+    background: #1a1814;
+    color: #f8f6f0;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.5fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .equity-position .item .k { font-size: 9px; font-weight: 500; letter-spacing: 0.22em; color: #a09a8c; text-transform: uppercase; margin-bottom: 5px; }
+  .equity-position .item .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .equity-position .item.pnl .v { font-size: 26px; }
+  .equity-position .item.pnl .v.up { color: #6ce39c; }
+  .equity-position .item.pnl .v.dn { color: #f78aa6; }
+  .equity-position .item.pnl .sub { font-size: 11px; color: #a09a8c; margin-top: 2px; font-weight: 400; }
+
+  /* ════════════════════════════════════════════════════════════
+     VARIANT 3 — SPORTS
+     ════════════════════════════════════════════════════════════ */
+  .sports { background: #0c0e12; border: 1px solid #1f2229; padding: 28px; font-family: "Space Grotesk", sans-serif; }
+  .sports-head { margin-bottom: 24px; }
+  .sports-head h3 { font-size: 22px; font-weight: 600; color: #e8eaee; letter-spacing: -0.01em; }
+
+  .sports-leg { margin-bottom: 18px; }
+  .sports-leg-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #1f2229; }
+  .sports-leg-h .num {
+    width: 22px; height: 22px; background: #1a1d22; color: #b2ed68;
+    font-family: "Space Mono", monospace; font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; margin-right: 10px;
+  }
+  .sports-leg-h .match { font-size: 14px; font-weight: 600; color: #e8eaee; }
+  .sports-leg-h .meta { font-size: 11px; color: #5a5f6a; font-family: "Space Mono", monospace; }
+
+  .sports-outcomes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sports-outcome {
+    background: #11141a; border: 1px solid #1f2229; padding: 14px 16px;
+    cursor: pointer; transition: all 0.12s ease; position: relative; user-select: none;
+  }
+  .sports-outcome:hover { border-color: #2d3038; transform: translateY(-1px); }
+  .sports-outcome.selected.W { border-color: #b2ed68; background: rgba(178,237,104,0.08); }
+  .sports-outcome.selected.D { border-color: #f0b557; background: rgba(240,181,87,0.08); }
+  .sports-outcome.selected.L { border-color: #ef6b6b; background: rgba(239,107,107,0.08); }
+  .sports-outcome .pct { font-family: "Space Mono", monospace; font-size: 26px; font-weight: 700; color: #e8eaee; line-height: 1; margin-bottom: 4px; }
+  .sports-outcome .label { font-size: 12px; color: #8a8f99; margin-bottom: 12px; }
+  .sports-outcome .price-line { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; border-top: 1px solid #1f2229; font-family: "Space Mono", monospace; }
+  .sports-outcome .price-line .px { font-size: 13px; color: #e8eaee; font-weight: 700; }
+  .sports-outcome .price-line .delta { font-size: 11px; }
+  .sports-outcome .price-line .delta.up { color: #b2ed68; }
+  .sports-outcome .price-line .delta.dn { color: #ef6b6b; }
+  .sports-outcome .bar { height: 3px; background: #1f2229; margin-bottom: 12px; position: relative; overflow: hidden; }
+  .sports-outcome .bar .fill { position: absolute; left: 0; top: 0; height: 100%; }
+  .sports-outcome.W .bar .fill { background: #b2ed68; }
+  .sports-outcome.D .bar .fill { background: #f0b557; }
+  .sports-outcome.L .bar .fill { background: #ef6b6b; }
+
+  .sports-result {
+    margin-top: 22px; padding: 22px;
+    background: linear-gradient(135deg, #0a0c10 0%, #11141a 100%);
+    border: 1px solid #b2ed68; border-left-width: 3px;
+    display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center;
+  }
+  .sports-result .k { font-family: "Space Mono", monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #5a5f6a; margin-bottom: 6px; }
+  .sports-result .lhs .v { font-size: 28px; font-weight: 600; color: #e8eaee; line-height: 1; transition: color 0.2s; font-variant-numeric: tabular-nums; }
+  .sports-result .lhs .sub { font-size: 13px; color: #8a8f99; margin-top: 6px; }
+  .sports-result .lhs .sub b { color: #b2ed68; font-family: "Space Mono", monospace; }
+  .sports-result .rhs { text-align: right; }
+  .sports-result .rhs .v { font-family: "Space Mono", monospace; font-size: 26px; color: #b2ed68; font-weight: 700; }
+
+  .sports-position {
+    margin-top: 12px;
+    padding: 18px 22px;
+    background: #11141a;
+    border: 1px solid #1f2229;
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+  .sports-position .item .k { font-size: 10px; letter-spacing: 0.2em; color: #5a5f6a; text-transform: uppercase; margin-bottom: 4px; font-family: "Space Mono", monospace; }
+  .sports-position .item .v { font-size: 18px; font-weight: 600; color: #e8eaee; font-variant-numeric: tabular-nums; }
+  .sports-position .item.pnl { text-align: right; padding-left: 16px; border-left: 1px solid #1f2229; }
+  .sports-position .item.pnl .k { color: #b2ed68; }
+  .sports-position .item.pnl .v { font-size: 26px; font-weight: 700; font-family: "Space Mono", monospace; }
+  .sports-position .item.pnl .v.up { color: #b2ed68; }
+  .sports-position .item.pnl .v.dn { color: #ef6b6b; }
+
+  /* ════════════════════════════════════════════════════════════
+     VARIANT 4 — PARLAY
+     ════════════════════════════════════════════════════════════ */
+  .parlay { background: linear-gradient(180deg, #11141a 0%, #0c0e12 100%); border: 1px solid #1f2229; padding: 0; font-family: "Inter", sans-serif; overflow: hidden; }
+  .parlay-head { background: linear-gradient(135deg, #1a1f28 0%, #11141a 100%); padding: 20px 24px; border-bottom: 1px solid #1f2229; display: flex; justify-content: space-between; align-items: center; }
+  .parlay-head .title { font-family: "Bebas Neue", sans-serif; font-size: 28px; letter-spacing: 0.05em; color: #e8eaee; }
+  .parlay-head .title span { color: #b2ed68; }
+  .parlay-head .legs-count { font-size: 11px; color: #8a8f99; text-align: right; letter-spacing: 0.15em; text-transform: uppercase; }
+  .parlay-head .legs-count b { display: block; color: #b2ed68; font-size: 22px; font-weight: 700; letter-spacing: 0; margin-top: 2px; transition: color 0.2s; font-family: "Bebas Neue", sans-serif; }
+
+  .parlay-leg {
+    padding: 16px 24px; border-bottom: 1px solid #1f2229;
+    display: grid; grid-template-columns: 32px 1fr auto; gap: 16px; align-items: center;
+  }
+  .parlay-leg .num {
+    width: 28px; height: 28px; background: #1f2229; color: #b2ed68;
+    font-family: "Bebas Neue", sans-serif; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .parlay-leg .body .match { font-size: 14px; font-weight: 600; color: #e8eaee; margin-bottom: 3px; }
+  .parlay-leg .body .meta { font-size: 11px; color: #5a5f6a; }
+
+  .parlay-pickers { display: flex; gap: 4px; }
+  .parlay-pick {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 13px; letter-spacing: 0.1em; padding: 6px 12px;
+    background: #11141a; border: 1px solid #1f2229; color: #5a5f6a;
+    cursor: pointer; transition: all 0.12s ease; min-width: 80px; text-align: center;
+    user-select: none;
+  }
+  .parlay-pick:hover { border-color: #2d3038; color: #8a8f99; }
+  .parlay-pick.prob { font-family: "Inter", sans-serif; font-size: 10px; letter-spacing: 0; display: block; margin-top: 2px; opacity: 0.7; font-weight: 500; }
+  .parlay-pick.W.selected { background: rgba(178,237,104,0.15); border-color: #b2ed68; color: #b2ed68; }
+  .parlay-pick.D.selected { background: rgba(240,181,87,0.15); border-color: #f0b557; color: #f0b557; }
+  .parlay-pick.L.selected { background: rgba(239,107,107,0.15); border-color: #ef6b6b; color: #ef6b6b; }
+
+  .parlay-position {
+    background: linear-gradient(135deg, #0e1116 0%, #0a0c10 100%);
+    border-top: 1px solid #1f2229;
+    padding: 18px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+  .parlay-position .item .k {
+    font-family: "Inter", sans-serif;
+    font-size: 10px; letter-spacing: 0.2em; color: #5a5f6a; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .parlay-position .item .v {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 22px; color: #e8eaee; line-height: 1; letter-spacing: 0.02em;
+  }
+
+  .parlay-result { background: #0a0c10; padding: 24px; border-top: 2px solid #b2ed68; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+  .parlay-result .lhs .k { font-family: "Inter", sans-serif; font-size: 10px; letter-spacing: 0.25em; color: #5a5f6a; text-transform: uppercase; margin-bottom: 6px; }
+  .parlay-result .lhs .v { font-family: "Bebas Neue", sans-serif; font-size: 38px; color: #b2ed68; line-height: 1; letter-spacing: 0.02em; transition: color 0.2s; }
+  .parlay-result .lhs .v.dn { color: #ef6b6b; }
+  .parlay-result .lhs .sub { font-family: "Inter", sans-serif; font-size: 12px; color: #8a8f99; margin-top: 4px; }
+  .parlay-result .rhs { text-align: right; }
+  .parlay-result .rhs .pct { font-family: "Inter", sans-serif; font-size: 11px; color: #5a5f6a; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+  .parlay-result .rhs .pct b { display: block; font-family: "Bebas Neue", sans-serif; font-size: 24px; color: #e8eaee; margin-top: 2px; letter-spacing: 0; transition: color 0.2s; }
+
+  .lbl { font-family: "Space Mono", monospace; font-size: 10px; letter-spacing: 0.2em; color: #5a5f6a; text-transform: uppercase; margin-bottom: 12px; }
+  .lbl::before { content: ""; display: inline-block; width: 14px; height: 1px; background: #b2ed68; vertical-align: middle; margin-right: 10px; }
+  .design-notes { margin-top: 14px; font-family: "Space Mono", monospace; font-size: 11px; color: #5a5f6a; line-height: 1.6; }
+  .design-notes strong { color: #8a8f99; }
+</style>
+</head>
+<body>
+
+<!-- ─── sticky shared state with controls ─── -->
+<div class="sticky-state">
+  <div class="inner">
+    <div>
+      <span class="label">Path:</span>
+      <span class="seq" id="state-seq"></span>
+    </div>
+    <div style="text-align: center;">
+      <span class="ctrl-group">
+        <span class="label">Size $</span>
+        <input type="number" class="size-input" id="size-input" value="100" min="10" step="10">
+      </span>
+      <span style="margin: 0 18px; color: #2d3038;">·</span>
+      <span class="ctrl-group">
+        <span class="label">Lev</span>
+        <span class="lev-pills" id="lev-pills">
+          <button data-lev="1">1×</button>
+          <button data-lev="2">2×</button>
+          <button data-lev="5" class="active">5×</button>
+          <button data-lev="10">10×</button>
+          <button data-lev="20">20×</button>
+        </span>
+      </span>
+    </div>
+    <div class="right">
+      <span><span class="label">Lands</span><span class="price" id="state-price">$293.50</span></span>
+      <span><span class="label">PnL</span><span class="pnl" id="state-pnl">−$8.05</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ VARIANT 1: PERP ═══════════════ -->
+<div class="divider"><span class="num">01</span> <span class="for">FOR</span> · perp trader · funding-rate vibes</div>
+<div class="scene">
+  <div class="lbl">Variant 01 / projections / perp</div>
+  <div class="perp" id="perp">
+    <div class="perp-head">
+      <div>
+        <div class="pair">ARS<span>/USDC</span></div>
+        <div style="color:#5a5f6a;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;margin-top:4px">arsenal · 3-leg projection</div>
+      </div>
+      <div class="price" id="perp-price">298.30</div>
+      <div class="meta">
+        <div class="pulse">live</div>
+        <div style="margin-top:4px">3 matches · 10 days</div>
+      </div>
+    </div>
+
+    <div class="perp-grid">
+      <div id="perp-legs"></div>
+      <div class="perp-side">
+        <div class="perp-stats" id="perp-stats"></div>
+        <div class="perp-position" id="perp-position"></div>
+      </div>
+    </div>
+  </div>
+  <div class="design-notes"><strong>design notes —</strong>
+    Position panel sits below the stats panel, accent border in lime. Tracks size · lev · notional · PnL with the
+    dominant number being the dollar P&L. Liquidation warning fires when PnL ≤ −90% of margin.
+  </div>
+</div>
+
+<!-- ═══════════════ VARIANT 2: EQUITY ═══════════════ -->
+<div class="divider"><span class="num">02</span> <span class="for">FOR</span> · equity trader · options-chain</div>
+<div class="scene">
+  <div class="lbl">Variant 02 / projections / equity-style</div>
+  <div class="equity" id="equity">
+    <div class="equity-head">
+      <div>
+        <div class="ticker">ARS<span class="ext">·NTCH</span></div>
+        <div style="font-size:11px;color:#6b6862;margin-top:4px">Arsenal · 3-match forward chain</div>
+      </div>
+      <div class="last">
+        <div class="lbl-eq">Spot</div>
+        <div class="num">298.30</div>
+        <div class="chg">·</div>
+      </div>
+      <div class="timing">
+        <b>Selection · projected lock</b>
+        <div id="equity-projection-meta"></div>
+      </div>
+    </div>
+
+    <table class="equity-table">
+      <thead>
+        <tr>
+          <th>Outcome</th>
+          <th>Implied %</th>
+          <th>Theo. Settle</th>
+          <th>$ Δ</th>
+          <th>% Δ</th>
+          <th class="center">Cumul.</th>
+        </tr>
+      </thead>
+      <tbody id="equity-tbody"></tbody>
+    </table>
+
+    <div class="equity-position" id="equity-position"></div>
+  </div>
+  <div class="design-notes"><strong>design notes —</strong>
+    Inverted dark block below the chain — visually weighted, reads as the "P&L summary" that sits with the trade.
+    Notional first, then leverage, then total exposure, then the actual PnL number in green or red.
+  </div>
+</div>
+
+<!-- ═══════════════ VARIANT 3: SPORTS ═══════════════ -->
+<div class="divider"><span class="num">03</span> <span class="for">FOR</span> · sports trader · polymarket-style</div>
+<div class="scene">
+  <div class="lbl">Variant 03 / projections / sports market</div>
+  <div class="sports" id="sports">
+    <div class="sports-head">
+      <h3>Arsenal — pick your three results, see the price.</h3>
+      <div style="font-size:13px;color:#8a8f99;margin-top:4px">3 matches · settled prices locked at each kickoff</div>
+    </div>
+    <div id="sports-legs"></div>
+    <div class="sports-result">
+      <div class="lhs">
+        <div class="k">If your three picks all hit — price lands at</div>
+        <div class="v" id="sports-price">$298.30</div>
+        <div class="sub">Path: <b id="sports-path">— · — · —</b> · ±$2 precision after 3 matches</div>
+      </div>
+      <div class="rhs">
+        <div class="k">Combined</div>
+        <div class="v" id="sports-prob">—</div>
+      </div>
+    </div>
+    <div class="sports-position" id="sports-position"></div>
+  </div>
+  <div class="design-notes"><strong>design notes —</strong>
+    A flat row sits under the result panel — "stake / leverage / exposure / your PnL". PnL is the rightmost
+    column with a left divider and the lime accent label above. Reads as a cleaner consumer-style breakdown.
+  </div>
+</div>
+
+<!-- ═══════════════ VARIANT 4: PARLAY ═══════════════ -->
+<div class="divider"><span class="num">04</span> <span class="for">FOR</span> · parlay enjoyer · draftkings vibes</div>
+<div class="scene">
+  <div class="lbl">Variant 04 / projections / parlay-style</div>
+  <div class="parlay" id="parlay">
+    <div class="parlay-head">
+      <div class="title">ARSENAL <span>3-LEG</span></div>
+      <div class="legs-count">your path<b id="parlay-prob">—</b></div>
+    </div>
+
+    <div id="parlay-legs"></div>
+
+    <div class="parlay-position" id="parlay-position"></div>
+
+    <div class="parlay-result">
+      <div class="lhs">
+        <div class="k">If this path hits · projected payout</div>
+        <div class="v" id="parlay-payout">$—</div>
+        <div class="sub" id="parlay-sub">— from now · ±$2 over 3 matches</div>
+      </div>
+      <div class="rhs">
+        <div class="pct">Combined<br/>probability<b id="parlay-prob-2">—</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="design-notes"><strong>design notes —</strong>
+    Bebas Neue position bar between the legs and the result — same row style as DraftKings parlay slip
+    showing wager / odds / payout. Sportsbook-native rhythm: stake → multiplier → if-it-hits payout.
+  </div>
+</div>
+
+<div class="divider">END · CLICK ANY OUTCOME · ADJUST SIZE / LEVERAGE TOP-RIGHT</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+const ROOT = 298.30;
+
+const MATCHES = [
+  { id: 'M1', opp: 'Man City',         oppFull: 'Manchester City',  venue: 'Away', league: 'EPL', date: 'Sat 19 Apr · 15:30', probs: { W: 0.22, D: 0.26, L: 0.52 } },
+  { id: 'M2', opp: 'Newcastle',        oppFull: 'Newcastle',         venue: 'Home', league: 'EPL', date: 'Fri 25 Apr · 19:00', probs: { W: 0.69, D: 0.19, L: 0.12 } },
+  { id: 'M3', opp: 'Atletico Madrid',  oppFull: 'Atletico Madrid',   venue: 'Away', league: 'UCL', date: 'Tue 29 Apr · 20:00', probs: { W: 0.41, D: 0.28, L: 0.31 } },
+];
+
+const COUNT_PRICE = {
+  '3-0-0': 334.09, '2-1-0': 319.97, '2-0-1': 306.45,
+  '1-2-0': 306.45, '1-1-1': 293.50, '0-3-0': 293.50,
+  '1-0-2': 281.10, '0-2-1': 281.10, '0-1-2': 269.22, '0-0-3': 257.85,
+};
+
+const LEG_DELTAS = [
+  { W: +18.88, D: +4.55, L: -10.52 },
+  { W: +7.77,  D: -8.68, L: -18.56 },
+  { W: +10.90, D: -2.05, L: -14.45 },
+];
+
+const STATE = { picks: ['L', 'W', 'D'], size: 100, leverage: 5 };
+
+// ═══════════════════════════════════════════════════════════════
+// DERIVED
+// ═══════════════════════════════════════════════════════════════
+function priceAfter(legIdx) {
+  let p = ROOT;
+  for (let i = 0; i <= legIdx; i++) p += LEG_DELTAS[i][STATE.picks[i]];
+  return p;
+}
+function finalPrice() {
+  const c = { W:0, D:0, L:0 };
+  STATE.picks.forEach(p => c[p]++);
+  return COUNT_PRICE[`${c.W}-${c.D}-${c.L}`];
+}
+function jointProb() {
+  return STATE.picks.reduce((acc, p, i) => acc * MATCHES[i].probs[p], 1);
+}
+function pnl() {
+  const final = finalPrice();
+  const notional = STATE.size * STATE.leverage;
+  const dollars = notional * (final - ROOT) / ROOT;
+  const pct = (final - ROOT) / ROOT;
+  const liquidated = dollars <= -STATE.size * 0.9;
+  return { notional, dollars, pct, liquidated, final };
+}
+
+const fmtPrice = p => '$' + p.toFixed(2);
+const fmtDelta = d => (d >= 0 ? '+' : '') + d.toFixed(2);
+const fmtDollars = d => (d >= 0 ? '+$' : '−$') + Math.abs(d).toFixed(2);
+const fmtPctNum = p => (p * 100).toFixed(p < 0.01 ? 2 : 1) + '%';
+
+// ═══════════════════════════════════════════════════════════════
+// RENDERERS
+// ═══════════════════════════════════════════════════════════════
+
+function renderStickyState() {
+  const seq = document.getElementById('state-seq');
+  seq.innerHTML = STATE.picks.map((p, i) =>
+    `<span class="leg ${p}">${MATCHES[i].id} <b>${p}</b></span>`
+  ).join('');
+  document.getElementById('state-price').textContent = fmtPrice(finalPrice());
+  const pnlData = pnl();
+  const pnlEl = document.getElementById('state-pnl');
+  pnlEl.textContent = fmtDollars(pnlData.dollars);
+  pnlEl.className = 'pnl ' + (pnlData.dollars >= 0 ? 'up' : 'dn');
+}
+
+// ─── PERP ───
+function renderPerp() {
+  const legsEl = document.getElementById('perp-legs');
+  legsEl.innerHTML = '';
+  MATCHES.forEach((m, idx) => {
+    const sel = STATE.picks[idx];
+    const cumPrice = priceAfter(idx);
+    const block = document.createElement('div');
+    block.className = 'perp-leg';
+    block.innerHTML = `
+      <div class="perp-leg-h">
+        <span><b>M${idx+1}</b> · ${m.opp} · ${m.venue.toLowerCase()} · ${m.date}</span>
+        <span class="seq">cum after pick: <b>${fmtPrice(cumPrice)}</b></span>
+      </div>
+    `;
+    ['W','D','L'].forEach(o => {
+      const dB = LEG_DELTAS[idx][o];
+      const px = ROOT + (idx > 0 ? LEG_DELTAS.slice(0, idx).reduce((a,d,i) => a + d[STATE.picks[i]], 0) : 0) + dB;
+      const row = document.createElement('div');
+      row.className = `perp-row ${o}` + (sel === o ? ' selected' : '');
+      const oppName = o === 'W' ? 'Arsenal wins' : o === 'D' ? 'Draw' : 'Arsenal loses';
+      row.innerHTML = `
+        <span class="badge">${o}</span>
+        <span class="prob">${fmtPctNum(m.probs[o])}</span>
+        <span class="opp">${oppName}</span>
+        <span class="px">${fmtPrice(px)}</span>
+        <span class="delta ${dB >= 0 ? 'up' : 'dn'}">${fmtDelta(dB)}</span>
+      `;
+      row.addEventListener('click', () => { STATE.picks[idx] = o; renderAll(); });
+      block.appendChild(row);
+    });
+    legsEl.appendChild(block);
+  });
+
+  const final = finalPrice();
+  const totalDelta = final - ROOT;
+  document.getElementById('perp-price').textContent = final.toFixed(2);
+  document.getElementById('perp-price').style.color = totalDelta >= 0 ? '#b2ed68' : '#ef6b6b';
+
+  // distribution stats
+  const allPaths = [];
+  for (const a of ['W','D','L']) for (const b of ['W','D','L']) for (const c of ['W','D','L']) {
+    const cnt = { W:0, D:0, L:0 };
+    [a,b,c].forEach(x => cnt[x]++);
+    const px = COUNT_PRICE[`${cnt.W}-${cnt.D}-${cnt.L}`];
+    const prob = MATCHES[0].probs[a] * MATCHES[1].probs[b] * MATCHES[2].probs[c];
+    allPaths.push({ px, prob });
+  }
+  const evP = allPaths.reduce((s, p) => s + p.px * p.prob, 0);
+  const variance = allPaths.reduce((s, p) => s + p.prob * (p.px - evP) ** 2, 0);
+  const stddev = Math.sqrt(variance);
+
+  document.getElementById('perp-stats').innerHTML = `
+    <h4>Distribution</h4>
+    <div class="stat"><div class="k">Selected ΔP</div>
+      <div class="v ${totalDelta >= 0 ? 'up' : 'dn'}">${fmtDelta(totalDelta)} <span class="sub">USDC</span></div>
+    </div>
+    <div class="stat"><div class="k">Joint probability</div>
+      <div class="v">${fmtPctNum(jointProb())}</div>
+    </div>
+    <div class="stat"><div class="k">Path EV (neutral)</div>
+      <div class="v">${evP.toFixed(2)}</div>
+    </div>
+    <div class="stat"><div class="k">Distribution σ</div>
+      <div class="v">${stddev.toFixed(2)} <span class="sub">USDC</span></div>
+    </div>
+  `;
+
+  // position panel
+  const pnlData = pnl();
+  document.getElementById('perp-position').innerHTML = `
+    <h4>★ Position</h4>
+    <div class="stat"><div class="k">Margin</div>
+      <div class="v">$${STATE.size.toFixed(2)}</div>
+    </div>
+    <div class="stat"><div class="k">Leverage</div>
+      <div class="v">${STATE.leverage}× <span class="sub">long</span></div>
+    </div>
+    <div class="stat"><div class="k">Notional</div>
+      <div class="v">$${pnlData.notional.toFixed(2)}</div>
+    </div>
+    <div class="stat"><div class="k">Estimated PnL</div>
+      <div class="v big ${pnlData.dollars >= 0 ? 'up' : 'dn'}">${fmtDollars(pnlData.dollars)}</div>
+      <div class="v" style="font-size:11px;font-weight:400;color:#5a5f6a;margin-top:4px">${(pnlData.pct*100).toFixed(2)}% on price</div>
+      ${pnlData.liquidated ? '<div class="liq-warn">⚠ liquidation risk · PnL ≤ −90% margin</div>' : ''}
+    </div>
+  `;
+}
+
+// ─── EQUITY ───
+function renderEquity() {
+  const tbody = document.getElementById('equity-tbody');
+  tbody.innerHTML = '';
+
+  MATCHES.forEach((m, idx) => {
+    const sectionRow = document.createElement('tr');
+    sectionRow.className = 'section';
+    sectionRow.innerHTML = `<td colspan="6">M${idx+1} · ${m.venue} v ${m.oppFull} · ${m.league} · ${m.date}</td>`;
+    tbody.appendChild(sectionRow);
+
+    ['W','D','L'].forEach(o => {
+      const dB = LEG_DELTAS[idx][o];
+      const sel = STATE.picks[idx] === o;
+      const cumPx = sel ? priceAfter(idx) : '—';
+      const tr = document.createElement('tr');
+      tr.className = 'outcome' + (sel ? ' selected' : '');
+      const oppName = o === 'W' ? 'ARS Win' : o === 'D' ? 'Draw' : 'ARS Loss';
+      const dBPct = (dB / ROOT * 100);
+      tr.innerHTML = `
+        <td class="sym">${oppName}</td>
+        <td><span class="prob-bar"><span class="fill" style="width:${m.probs[o]*100}%"></span></span> ${(m.probs[o]*100).toFixed(2)}%</td>
+        <td>${fmtPrice(ROOT + dB)}</td>
+        <td class="${dB >= 0 ? 'pos' : 'neg'}">${fmtDelta(dB)}</td>
+        <td class="${dB >= 0 ? 'pos' : 'neg'}">${dB >= 0 ? '+' : ''}${dBPct.toFixed(2)}%</td>
+        <td class="center">${typeof cumPx === 'number' ? fmtPrice(cumPx) : cumPx}</td>
+      `;
+      tr.addEventListener('click', () => { STATE.picks[idx] = o; renderAll(); });
+      tbody.appendChild(tr);
+    });
+  });
+
+  const summaryRow = document.createElement('tr');
+  summaryRow.className = 'summary';
+  const totalDelta = finalPrice() - ROOT;
+  summaryRow.innerHTML = `
+    <td colspan="2">Final · path ${STATE.picks.join('→')}</td>
+    <td>${fmtPrice(finalPrice())}</td>
+    <td class="${totalDelta >= 0 ? 'pos' : 'neg'}">${fmtDelta(totalDelta)}</td>
+    <td class="${totalDelta >= 0 ? 'pos' : 'neg'}">${(totalDelta/ROOT*100).toFixed(2)}%</td>
+    <td class="center">${fmtPctNum(jointProb())} prob</td>
+  `;
+  tbody.appendChild(summaryRow);
+
+  document.getElementById('equity-projection-meta').innerHTML =
+    `Path ${STATE.picks.join('→')}<br/>` +
+    `<span style="opacity:0.7">${MATCHES.map(m => m.date.split(' · ')[0]).join(' → ')}</span>`;
+
+  // position panel
+  const pnlData = pnl();
+  document.getElementById('equity-position').innerHTML = `
+    <div class="item">
+      <div class="k">Margin</div>
+      <div class="v">$${STATE.size.toFixed(2)}</div>
+    </div>
+    <div class="item">
+      <div class="k">Leverage</div>
+      <div class="v">${STATE.leverage}×</div>
+    </div>
+    <div class="item">
+      <div class="k">Notional Exposure</div>
+      <div class="v">$${pnlData.notional.toFixed(2)}</div>
+    </div>
+    <div class="item pnl">
+      <div class="k">Net P&amp;L on Path</div>
+      <div class="v ${pnlData.dollars >= 0 ? 'up' : 'dn'}">${fmtDollars(pnlData.dollars)}</div>
+      <div class="sub">${(pnlData.pct*100).toFixed(2)}% on price · ${(pnlData.dollars / STATE.size * 100).toFixed(1)}% on margin</div>
+    </div>
+  `;
+}
+
+// ─── SPORTS ───
+function renderSports() {
+  const legsEl = document.getElementById('sports-legs');
+  legsEl.innerHTML = '';
+  MATCHES.forEach((m, idx) => {
+    const block = document.createElement('div');
+    block.className = 'sports-leg';
+    block.innerHTML = `
+      <div class="sports-leg-h">
+        <span><span class="num">${idx+1}</span><span class="match">${m.venue === 'Home' ? 'Arsenal vs ' + m.opp : 'Arsenal @ ' + m.opp}</span></span>
+        <span class="meta">${m.league} · ${m.date}</span>
+      </div>
+    `;
+    const grid = document.createElement('div');
+    grid.className = 'sports-outcomes';
+    ['W','D','L'].forEach(o => {
+      const dB = LEG_DELTAS[idx][o];
+      const sel = STATE.picks[idx] === o;
+      const card = document.createElement('div');
+      card.className = `sports-outcome ${o}` + (sel ? ' selected' : '');
+      const lbl = o === 'W' ? 'Arsenal wins' : o === 'D' ? 'Draw' : 'Arsenal loses';
+      card.innerHTML = `
+        <div class="pct">${(m.probs[o]*100).toFixed(0)}%</div>
+        <div class="label">${lbl}</div>
+        <div class="bar"><div class="fill" style="width:${m.probs[o]*100}%"></div></div>
+        <div class="price-line">
+          <span class="px">${fmtPrice(ROOT + dB)}</span>
+          <span class="delta ${dB >= 0 ? 'up' : 'dn'}">${fmtDelta(dB)}</span>
+        </div>
+      `;
+      card.addEventListener('click', () => { STATE.picks[idx] = o; renderAll(); });
+      grid.appendChild(card);
+    });
+    block.appendChild(grid);
+    legsEl.appendChild(block);
+  });
+
+  const totalDelta = finalPrice() - ROOT;
+  document.getElementById('sports-price').textContent = fmtPrice(finalPrice());
+  document.getElementById('sports-price').style.color = totalDelta >= 0 ? '#b2ed68' : '#ef6b6b';
+  document.getElementById('sports-path').textContent = STATE.picks.map((p, i) => `M${i+1} ${p}`).join(' · ');
+  document.getElementById('sports-prob').textContent = fmtPctNum(jointProb());
+
+  const pnlData = pnl();
+  document.getElementById('sports-position').innerHTML = `
+    <div class="item">
+      <div class="k">Stake</div>
+      <div class="v">$${STATE.size.toFixed(0)}</div>
+    </div>
+    <div class="item">
+      <div class="k">Leverage</div>
+      <div class="v">${STATE.leverage}×</div>
+    </div>
+    <div class="item">
+      <div class="k">Exposure</div>
+      <div class="v">$${pnlData.notional.toFixed(0)}</div>
+    </div>
+    <div class="item pnl">
+      <div class="k">Your P&amp;L if path hits</div>
+      <div class="v ${pnlData.dollars >= 0 ? 'up' : 'dn'}">${fmtDollars(pnlData.dollars)}</div>
+    </div>
+  `;
+}
+
+// ─── PARLAY ───
+function renderParlay() {
+  const legsEl = document.getElementById('parlay-legs');
+  legsEl.innerHTML = '';
+
+  MATCHES.forEach((m, idx) => {
+    const leg = document.createElement('div');
+    leg.className = 'parlay-leg';
+    const matchTxt = m.venue === 'Home' ? `Arsenal vs ${m.oppFull}` : `Arsenal @ ${m.oppFull}`;
+    leg.innerHTML = `
+      <div class="num">${idx+1}</div>
+      <div class="body">
+        <div class="match">${matchTxt}</div>
+        <div class="meta">${m.league} · ${m.date}</div>
+      </div>
+      <div class="parlay-pickers">
+        ${['W','D','L'].map(o => {
+          const sel = STATE.picks[idx] === o ? 'selected' : '';
+          const lbl = o === 'W' ? 'WIN' : o === 'D' ? 'DRAW' : 'LOSS';
+          return `<div class="parlay-pick ${o} ${sel}" data-leg="${idx}" data-pick="${o}">
+            ${lbl}<span class="parlay-pick prob">${(m.probs[o]*100).toFixed(0)}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    legsEl.appendChild(leg);
+  });
+
+  legsEl.querySelectorAll('.parlay-pick[data-leg]').forEach(el => {
+    el.addEventListener('click', () => {
+      STATE.picks[+el.dataset.leg] = el.dataset.pick;
+      renderAll();
+    });
+  });
+
+  const totalDelta = finalPrice() - ROOT;
+  const pnlData = pnl();
+
+  document.getElementById('parlay-prob').textContent = fmtPctNum(jointProb());
+  document.getElementById('parlay-prob-2').textContent = fmtPctNum(jointProb());
+
+  // position bar between legs and result
+  document.getElementById('parlay-position').innerHTML = `
+    <div class="item">
+      <div class="k">Wager</div>
+      <div class="v">$${STATE.size.toFixed(0)}</div>
+    </div>
+    <div class="item">
+      <div class="k">Multiplier</div>
+      <div class="v">${STATE.leverage}×</div>
+    </div>
+    <div class="item">
+      <div class="k">At Risk</div>
+      <div class="v">$${pnlData.notional.toFixed(0)}</div>
+    </div>
+  `;
+
+  // payout result
+  const payoutEl = document.getElementById('parlay-payout');
+  payoutEl.textContent = fmtDollars(pnlData.dollars);
+  payoutEl.className = 'v ' + (pnlData.dollars >= 0 ? '' : 'dn');
+  document.getElementById('parlay-sub').textContent =
+    `${fmtDelta(totalDelta)} on price · ${(pnlData.dollars / STATE.size * 100).toFixed(1)}% return on wager`;
+}
+
+function renderAll() {
+  renderStickyState();
+  renderPerp();
+  renderEquity();
+  renderSports();
+  renderParlay();
+}
+
+// ─── input wiring ───
+document.getElementById('size-input').addEventListener('input', e => {
+  const v = parseFloat(e.target.value);
+  if (!isNaN(v) && v > 0) { STATE.size = v; renderAll(); }
+});
+document.querySelectorAll('#lev-pills button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#lev-pills button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.leverage = parseFloat(btn.dataset.lev);
+    renderAll();
+  });
+});
+
+renderAll();
+</script>
+
+</body>
+</html>
