@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JOJO · Engine Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0c0e12;
+    --surface: #11141a;
+    --surface-2: #161a22;
+    --border: #1f2229;
+    --border-2: #2d3038;
+    --accent: #b2ed68;
+    --accent-dim: rgba(178, 237, 104, 0.18);
+    --orange: #f0b557;
+    --red: #ef6b6b;
+    --blue: #6ba9ef;
+    --purple: #b388f6;
+    --yellow: #f0d557;
+    --text: #e8eaee;
+    --muted: #8a8f99;
+    --dim: #5a5f6a;
+    --very-dim: #3d4148;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: "DM Sans", "Helvetica Neue", sans-serif; }
+  body { overflow-x: hidden; }
+
+  .nav {
+    position: fixed; left: 24px; top: 50%; transform: translateY(-50%);
+    z-index: 100; display: flex; flex-direction: column; gap: 4px;
+  }
+  .nav button {
+    background: none; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0; opacity: 0.4; transition: opacity 0.2s;
+    font-family: inherit;
+  }
+  .nav button.active { opacity: 1; }
+  .nav .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background 0.2s; }
+  .nav button.active .dot { background: var(--accent); }
+  .nav .lbl { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .nav button.active .lbl { color: var(--text); }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 60px 40px 120px 160px; }
+  @media (max-width: 900px) {
+    .nav { display: none; }
+    .container { padding: 40px 24px 80px; }
+  }
+
+  section { margin-bottom: 80px; scroll-margin-top: 24px; }
+  section.hero { margin-bottom: 100px; padding-top: 40px; }
+
+  .pill {
+    display: inline-block; background: var(--accent-dim);
+    border-radius: 20px; padding: 4px 14px; font-size: 11px;
+    color: var(--accent); font-weight: 700; letter-spacing: 0.1em;
+    margin-bottom: 20px; font-family: "Space Mono", monospace;
+  }
+  h1 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 48px; font-weight: 800; line-height: 1.1;
+    margin: 0 0 20px; letter-spacing: -0.02em;
+  }
+  h1 .ac { color: var(--accent); }
+  .lead { color: var(--muted); font-size: 17px; line-height: 1.7; max-width: 600px; margin: 0 0 40px; }
+
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 24px; text-align: center;
+    flex: 1; min-width: 140px;
+  }
+  .stat .v { font-family: "Space Mono", monospace; font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat .v.blue { color: var(--blue); }
+  .stat .v.orange { color: var(--orange); }
+  .stat .v.purple { color: var(--purple); }
+  .stat .k { color: var(--muted); font-size: 11px; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  .sec-head { margin-bottom: 32px; }
+  .sec-head h2 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 26px; font-weight: 800; margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .sec-head .sub { color: var(--muted); font-size: 14px; margin: 8px 0 0; line-height: 1.6; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+  .card.flat { padding: 20px; }
+  .card p { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 0 0 16px; }
+  .card p:last-child { margin-bottom: 0; }
+  .card p strong { color: var(--text); }
+  .card p em { color: var(--text); font-style: italic; }
+  .card p .num { color: var(--accent); font-family: "Space Mono", monospace; }
+
+  .pipeline {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; flex-wrap: wrap; margin-bottom: 32px;
+  }
+  .pnode {
+    border-radius: 10px; padding: 14px 18px; min-width: 140px;
+    text-align: center; border: 1px solid;
+  }
+  .pnode .ic { font-size: 22px; margin-bottom: 4px; }
+  .pnode .lbl { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; }
+  .pnode .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .pnode.green { background: rgba(178,237,104,0.06); border-color: rgba(178,237,104,0.3); }
+  .pnode.green .lbl { color: var(--accent); }
+  .pnode.blue { background: rgba(107,169,239,0.06); border-color: rgba(107,169,239,0.3); }
+  .pnode.blue .lbl { color: var(--blue); }
+  .pnode.orange { background: rgba(240,181,87,0.06); border-color: rgba(240,181,87,0.3); }
+  .pnode.orange .lbl { color: var(--orange); }
+  .pnode.yellow { background: rgba(240,213,87,0.06); border-color: rgba(240,213,87,0.3); }
+  .pnode.yellow .lbl { color: var(--yellow); }
+  .pnode.purple { background: rgba(179,136,246,0.06); border-color: rgba(179,136,246,0.3); }
+  .pnode.purple .lbl { color: var(--purple); }
+  .arr { display: flex; align-items: center; justify-content: center; padding: 0 4px; color: var(--accent); font-size: 20px; opacity: 0.6; }
+
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .row.mt { margin-top: 16px; }
+  .col {
+    flex: 1; min-width: 280px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .col h4 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .col h4.green { color: var(--accent); }
+  .col h4.blue { color: var(--blue); }
+  .col h4.orange { color: var(--orange); }
+  .col h4.yellow { color: var(--yellow); }
+  .col h4.purple { color: var(--purple); }
+  .col p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0; }
+
+  pre {
+    background: #0a0c10; border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; font-family: "Space Mono", monospace; font-size: 12px;
+    color: var(--accent); overflow-x: auto; line-height: 1.7; margin: 0;
+  }
+  pre .c { color: var(--dim); font-style: italic; }
+  pre .k { color: var(--orange); }
+  pre .s { color: var(--purple); }
+
+  .ratio {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-top: 20px;
+    display: flex; gap: 30px; align-items: center; flex-wrap: wrap;
+  }
+  .ratio .lhs { flex: 1; min-width: 200px; }
+  .ratio .lhs .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.13em; margin-bottom: 8px; }
+  .ratio .lhs p { color: var(--text); font-size: 13px; line-height: 1.6; margin: 0; }
+  .ratio .rhs { display: flex; gap: 20px; }
+  .ratio .rhs > div { text-align: center; }
+  .ratio .rhs .v { font-family: "Space Mono", monospace; font-size: 24px; font-weight: 700; }
+  .ratio .rhs .v.green { color: var(--accent); }
+  .ratio .rhs .v.orange { color: var(--orange); }
+  .ratio .rhs .k { color: var(--very-dim); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .checklist .item {
+    background: rgba(178,237,104,0.05);
+    border: 1px solid rgba(178,237,104,0.2);
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 13px; color: var(--text); line-height: 1.5;
+  }
+  .checklist .item .d { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+  .tech {
+    background: rgba(179,136,246,0.06);
+    border: 1px solid rgba(179,136,246,0.2);
+    border-radius: 12px; padding: 24px;
+  }
+  .tech h4 { color: var(--purple); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 14px; }
+  .tech .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px; color: var(--muted); font-size: 13px;
+  }
+  .tech .grid div strong { color: var(--text); display: block; margin-bottom: 2px; font-weight: 700; }
+
+  /* ─── design principle blocks ─── */
+  .principles { display: flex; flex-direction: column; gap: 16px; }
+  .principle {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px;
+    display: grid; grid-template-columns: 90px 1fr;
+    gap: 20px; align-items: start;
+  }
+  @media (max-width: 600px) {
+    .principle { grid-template-columns: 1fr; gap: 12px; }
+  }
+  .principle .num {
+    font-family: "Space Mono", monospace;
+    font-size: 11px; color: var(--very-dim);
+    letter-spacing: 0.1em; padding-top: 4px;
+  }
+  .principle .num b {
+    display: block; color: var(--accent); font-size: 24px;
+    font-weight: 700; line-height: 1; margin-bottom: 4px;
+    font-family: "Space Grotesk", sans-serif;
+  }
+  .principle h5 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 16px; color: var(--text); margin: 0 0 8px;
+    font-weight: 700; letter-spacing: -0.01em;
+  }
+  .principle p {
+    font-size: 13px; color: var(--muted);
+    margin: 0; line-height: 1.7;
+  }
+  .principle p strong { color: var(--text); }
+  .principle p .num-inline { color: var(--accent); font-family: "Space Mono", monospace; }
+</style>
+</head>
+<body>
+
+<div class="nav" id="nav">
+  <button data-target="overview" class="active"><span class="dot"></span><span class="lbl">OVERVIEW</span></button>
+  <button data-target="idea"><span class="dot"></span><span class="lbl">CORE IDEA</span></button>
+  <button data-target="architecture"><span class="dot"></span><span class="lbl">ARCHITECTURE</span></button>
+  <button data-target="lifecycle"><span class="dot"></span><span class="lbl">LIFECYCLE</span></button>
+  <button data-target="principles"><span class="dot"></span><span class="lbl">DESIGN PRINCIPLES</span></button>
+  <button data-target="ux"><span class="dot"></span><span class="lbl">UX PROJECTIONS</span></button>
+  <button data-target="status"><span class="dot"></span><span class="lbl">STATUS</span></button>
+</div>
+
+<div class="container">
+
+  <!-- ─── HERO ─── -->
+  <section class="hero" id="overview">
+    <span class="pill">JOJO · ENGINE ARCHITECTURE</span>
+    <h1>The Pricing Engine<br/><span class="ac">for Sports Perps</span></h1>
+    <p class="lead">
+      A perpetual pricing oracle that converts the global betting market into continuous team prices.
+      Smooth across matches, seasons, and event boundaries — with mechanical conservation guaranteed
+      at every settlement.
+    </p>
+    <div class="stats">
+      <div class="stat"><div class="v">98</div><div class="k">Tradeable Teams</div></div>
+      <div class="stat"><div class="v blue">5</div><div class="k">European Leagues</div></div>
+      <div class="stat"><div class="v orange">3</div><div class="k">State Layers</div></div>
+      <div class="stat"><div class="v purple">24/7</div><div class="k">Live Production</div></div>
+    </div>
+  </section>
+
+  <!-- ─── CORE IDEA ─── -->
+  <section id="idea">
+    <div class="sec-head">
+      <h2>The Core Idea</h2>
+      <p class="sub">Every team has a perpetual price. Result-driven base, market-driven overlay, live in-play layer. Three things stacked on top of each other, nothing else.</p>
+    </div>
+
+    <div class="card">
+      <p><strong>Problem:</strong> Sports betting expires. Every market — sportsbook, prediction-market, fantasy — resets to zero after each match. There's no persistent instrument that lets a fan or trader take a continuous position on a team's strength across a season.</p>
+      <p><strong>Solution:</strong> A perpetual price per team, anchored to bookmaker consensus, refined by results, smoothed across the calendar. Arsenal at <span class="num">$298.30</span> means the market rates them in the elite tier. After a 0-2 loss to Manchester City, the price drops to roughly <span class="num">$287.78</span>. After they beat Newcastle 2-1, it climbs back. The instrument never expires.</p>
+      <p><strong>Why it works:</strong> The global betting market reprices every football fixture continuously. JOJO converts that liquidity into a continuous pricing signal — using a transparent decomposition that lets traders see exactly which component moved, when, and why. Conservation is mechanical, not statistical: at every state transition, pre-event price equals post-event price.</p>
+    </div>
+  </section>
+
+  <!-- ─── ARCHITECTURE ─── -->
+  <section id="architecture">
+    <div class="sec-head">
+      <h2>Three-Layer State Model</h2>
+      <p class="sub">The published price is the sum of three independent layers, each with its own update cadence and authority.</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pnode green"><div class="ic">📐</div><div class="lbl">arch_b</div><div class="sub">result base</div></div>
+      <div class="arr">+</div>
+      <div class="pnode orange"><div class="ic">📊</div><div class="lbl">arch_m1</div><div class="sub">market overlay</div></div>
+      <div class="arr">+</div>
+      <div class="pnode blue"><div class="ic">⚡</div><div class="lbl">L</div><div class="sub">live layer</div></div>
+      <div class="arr">=</div>
+      <div class="pnode purple"><div class="ic">💰</div><div class="lbl">PUBLISHED</div><div class="sub">trader sees</div></div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 class="green">① arch_b · result base</h4>
+        <p>Updates only at settle. <span style="color:var(--accent);font-family:'Space Mono',monospace">ΔB = K × (S − E_KR)</span> where S is the realized outcome (1 / 0.5 / 0) and E_KR is the consensus expected score locked at kickoff. Permanent. The "earnings" of a team's price.</p>
+      </div>
+      <div class="col">
+        <h4 class="orange">② arch_m1 · market overlay</h4>
+        <p>Drifts continuously between matches via Option-K absorption from market repricing on the next-next fixture. Acts as a slow-moving consensus correction layer. Bounded by ±M1_CLAMP for safety.</p>
+      </div>
+    </div>
+
+    <div class="row mt">
+      <div class="col">
+        <h4 class="blue">③ L · live layer</h4>
+        <p>Active only during the 90 minutes. Updates every 2-5 seconds from in-play bookmaker odds. Resets at settle. The reason the chart visibly responds to goals, red cards, and momentum swings in real time.</p>
+      </div>
+      <div class="col">
+        <h4 class="purple">Conservation invariant</h4>
+        <p>At settle: <span style="color:var(--accent);font-family:'Space Mono',monospace">arch_b += ΔB · arch_m1 += (L_FT − ΔB)</span>. The residual is mechanically absorbed into arch_m1, so the published price is continuous across the settle event.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── LIFECYCLE ─── -->
+  <section id="lifecycle">
+    <div class="sec-head">
+      <h2>The Match Lifecycle</h2>
+      <p class="sub">A single match passes through three phases. Each layer has different authority in each phase.</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pnode green"><div class="ic">📅</div><div class="lbl">PRE-MATCH</div><div class="sub">arch_m1 drifts</div></div>
+      <div class="arr">→</div>
+      <div class="pnode yellow"><div class="ic">🚀</div><div class="lbl">KICKOFF</div><div class="sub">E_KR locks</div></div>
+      <div class="arr">→</div>
+      <div class="pnode blue"><div class="ic">⚽</div><div class="lbl">IN-PLAY</div><div class="sub">L grows</div></div>
+      <div class="arr">→</div>
+      <div class="pnode orange"><div class="ic">🏁</div><div class="lbl">FT</div><div class="sub">L_FT captured</div></div>
+      <div class="arr">→</div>
+      <div class="pnode purple"><div class="ic">⚙️</div><div class="lbl">SETTLE</div><div class="sub">ΔB applied</div></div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <h4 class="green">① Pre-match · continuous</h4>
+        <p>Bookmakers price the fixture starting ~14 days before kickoff. arch_m1 absorbs market drift continuously. Pre-match outcome projections become available the moment any book publishes lines.</p>
+      </div>
+      <div class="col">
+        <h4 class="yellow">② Kickoff · E_KR locks</h4>
+        <p>At KO, the consensus expected-score snapshots into the oracle. This locks the result formula's pivot. ΔB(S, E_KR) is now deterministic for each S ∈ {0, 0.5, 1}.</p>
+      </div>
+    </div>
+
+    <div class="row mt">
+      <div class="col">
+        <h4 class="blue">③ In-play · L drives the chart</h4>
+        <p>For 90+ minutes, L responds tick-by-tick to live odds. Goals push L up or down sharply. Red cards bend the trajectory. arch_b and arch_m1 stay frozen — visible chart movement during this phase is L alone.</p>
+      </div>
+      <div class="col">
+        <h4 class="purple">④ Settle · atomic conservation</h4>
+        <p>S becomes truth. ΔB applies to arch_b. (L_FT − ΔB) absorbs into arch_m1. L resets. Pre-settle published price equals post-settle published price by construction.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DESIGN PRINCIPLES ─── -->
+  <section id="principles">
+    <div class="sec-head">
+      <h2>Design Principles</h2>
+      <p class="sub">Four principles that make the engine state stable, predictable, and immune to common pricing-oracle failure modes.</p>
+    </div>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="num">PRINCIPLE<b>01</b></div>
+        <div>
+          <h5>Result-anchored state · solver-decoupled</h5>
+          <p>JOJO uses a Bradley-Terry solver as a <strong>reference signal</strong>, not as authority over engine state. Solver convergence drift, iteration noise, and intermediate re-fits never propagate into the published price. The only things that modify state are <strong>realized match results</strong> (through ΔB) and <strong>continuous market drift</strong> on upcoming fixtures (through Option-K). This separation means JOJO's price evolution is deterministic and inspectable — every state change has a single, identifiable economic cause.</p>
+        </div>
+      </div>
+
+      <div class="principle">
+        <div class="num">PRINCIPLE<b>02</b></div>
+        <div>
+          <h5>Conservation at every event boundary</h5>
+          <p>At settlement, the engine doesn't compute a "best new price" — it conserves. <span class="num-inline">arch_b += ΔB</span>, then <span class="num-inline">arch_m1 += (L_FT − ΔB)</span>. The pre-settle published price equals the post-settle published price by construction. No optimization, no smoothing, no estimation. Mechanical equality. Verified across 191 settlements. This is what allows JOJO to give traders a hard pre-match contract: <em>"if your team wins, settle at X; if draw, Y; if loss, Z"</em> — the numbers are guaranteed by the architecture, not promised by a model.</p>
+        </div>
+      </div>
+
+      <div class="principle">
+        <div class="num">PRINCIPLE<b>03</b></div>
+        <div>
+          <h5>Settlement-time hygiene · two-condition certainty</h5>
+          <p>When a result is final, JOJO snaps the live-odds input on the realized outcome before computing the FT layer. Two conditions must both hold: <strong>(a)</strong> the engine has confirmed the settle event, and <strong>(b)</strong> the market itself shows ≥95% on the same outcome at the final tick. Both engine and market agreeing the result is decided is what licenses cleaning the residual 1-5% of bookmaker spread that otherwise leaks noise into the L_FT computation. Median residual on converged matches drops to zero. Coverage: ~64% of all settlements.</p>
+        </div>
+      </div>
+
+      <div class="principle">
+        <div class="num">PRINCIPLE<b>04</b></div>
+        <div>
+          <h5>Cluster-aware peer settlement</h5>
+          <p>Saturday afternoons in the EPL produce clusters of 60+ teams settling within a 5-minute window. Naive designs propagate every peer-team's solver shift into every other team's state, producing correlated artifacts across an entire league at once. JOJO routes peer-cluster shifts through a separate accumulator and releases them cleanly at each team's own next settlement — never mixing peer-cluster turbulence into the active in-play state. Maximum release magnitude bounded under one dollar at the league's busiest moments.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ratio">
+      <div class="lhs">
+        <div class="k">What this buys you</div>
+        <p>Together these principles give traders something rare in oracle-anchored markets: <strong>a price they can predict before the match</strong> and <strong>a chart that only moves for reasons they can name</strong>. Every dollar of price movement maps to a result, a market drift, or a goal — never to solver iterations, settlement timing, or peer-team noise. That's the foundation a perpetual instrument needs.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── UX PROJECTIONS ─── -->
+  <section id="ux">
+    <div class="sec-head">
+      <h2>UX · Settlement Projections</h2>
+      <p class="sub">The user-visible payoff of the architecture. Pre-match outcome projections, locked at kickoff, accurate within ±$1.50 over a two-week window.</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+      <p>For each upcoming match, JOJO computes the post-settle price for every outcome before kickoff:</p>
+      <pre style="margin-top: 12px;"><span class="c">// For each outcome S ∈ {win=1, draw=0.5, loss=0}</span>
+projected = current_arch_b + current_arch_m1 + ΔB(S, E_KR)
+
+<span class="c">// E_KR estimable from pre-KO odds, locks at kickoff</span>
+<span class="c">// Conservation guarantees actual ≈ projected within ±$1</span></pre>
+    </div>
+
+    <div class="ratio">
+      <div class="lhs">
+        <div class="k">A surprising empirical finding</div>
+        <p><strong>E_KR doesn't tighten meaningfully in the last 24 hours before kickoff.</strong> Median projection error is roughly constant from 14 days out to 4 hours out — about $1 median. Bookmaker consensus is essentially set 1-2 weeks ahead. The projection card displays the same numbers for a week with high stability — turning the projection into a stable forward forecast, not an estimate that sharpens toward KO.</p>
+      </div>
+      <div class="rhs">
+        <div><div class="v green">±$1</div><div class="k">14d → 4h before KO</div></div>
+        <div><div class="v orange">~$0</div><div class="k">After KO (locked)</div></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <h4 style="color: var(--text); font-size: 14px; margin-bottom: 12px;">User-facing contract</h4>
+      <div class="card flat">
+        <p style="margin-bottom: 8px;">"If Arsenal wins, settle at <span class="num">$317.18</span>. If draw, <span class="num">$302.85</span>. If Arsenal loses, <span class="num">$287.78</span>."</p>
+        <p>Shown 14 days before kickoff. Stable until KO. Locked at KO. Met within <span class="num">±$1.50</span> at the actual settle event. Multi-match path projections (3-leg) extend the same machinery to 27 leaves with disclosed ±$2 precision.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STATUS ─── -->
+  <section id="status">
+    <div class="sec-head">
+      <h2>Current Status</h2>
+      <p class="sub">Engine is live in production. Core capabilities deployed.</p>
+    </div>
+
+    <div class="checklist" style="margin-bottom: 24px;">
+      <div class="item">
+        <strong>Three-layer state model</strong> live across 98 teams in 5 European leagues
+        <div class="d">Result base + market overlay + live layer · published continuously</div>
+      </div>
+      <div class="item">
+        <strong>Solver-decoupled state</strong> with continuous between-match drift
+        <div class="d">Engine state owned by realized results and market drift · BT solver as reference only</div>
+      </div>
+      <div class="item">
+        <strong>Conservation invariant</strong> verified across 191 settlements
+        <div class="d">Pre-settle published price = post-settle published price · mechanical equality</div>
+      </div>
+      <div class="item">
+        <strong>Settlement-time hygiene</strong> on converged matches
+        <div class="d">Two-condition snap rule · 64% coverage · median residual dropped to zero</div>
+      </div>
+      <div class="item">
+        <strong>Cluster-aware peer settlement</strong> for high-density league moments
+        <div class="d">Saturday EPL 16:00 mass-settle handled cleanly · peer shifts routed through dedicated accumulator</div>
+      </div>
+      <div class="item">
+        <strong>Continuous in-play updates</strong> every 2-5 seconds
+        <div class="d">Goals, red cards, momentum swings reflected in published price tick-by-tick</div>
+      </div>
+      <div class="item">
+        <strong>Pre-match outcome projections</strong> with disclosed precision band
+        <div class="d">14-day stable forecasts · ±$1.50 typical · locked at kickoff · met at settle</div>
+      </div>
+      <div class="item">
+        <strong>Multi-match path projections</strong> across 27-leaf decision tree
+        <div class="d">3-leg lookahead · joint-probability paths · per-path projected landing price</div>
+      </div>
+    </div>
+
+    <div class="tech">
+      <h4>TECH STACK</h4>
+      <div class="grid">
+        <div><strong>Engine</strong>TypeScript · arch-monitor · oracle-v3-live</div>
+        <div><strong>Pricing</strong>KOPS oracle · Bradley-Terry · 14d half-life · Bayesian prior</div>
+        <div><strong>Backend</strong>Supabase (PostgreSQL) · Railway scheduler</div>
+        <div><strong>Settlement</strong>Conservation invariant · two-condition snap</div>
+        <div><strong>Data</strong>Bookmaker consensus · live in-play feeds · settlement_log</div>
+        <div><strong>Target chain</strong>Solana · Pyth oracle integration</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('#nav button');
+  const sections = Array.from(buttons).map(b => document.getElementById(b.dataset.target));
+
+  function updateActive() {
+    let active = sections[0];
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 200) active = s;
+    }
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.target === active.id));
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  buttons.forEach(b => b.addEventListener('click', () => {
+    document.getElementById(b.dataset.target).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+  updateActive();
+</script>
+
+</body>
+</html>
