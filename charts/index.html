@@ -162,16 +162,18 @@
   }
 
   /* Chart layout */
-  .row{display:grid;grid-template-columns:1fr 320px;gap:0;background:var(--border-soft);border:1px solid var(--border-soft);align-items:start}
-  .left-col{display:flex;flex-direction:column;gap:1px;min-width:0;background:var(--border-soft)}
+  .row{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+  .left-col{display:flex;flex-direction:column;gap:14px;min-width:0}
   .canvas-wrap{
     background:#16181c;
+    border:1px solid var(--border-soft);
     padding:14px;
     height:480px;
     position:relative;
   }
   .legend-card{
     background:var(--bg-card);
+    border:1px solid var(--border-soft);
     padding:18px 20px;
     font-family:'Space Grotesk',sans-serif;
     font-size:12px;color:var(--t1);
