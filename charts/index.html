@@ -45,15 +45,15 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* Pre-match card */
+  /* Pre-match card (sits below chart) */
   .pre-match-card {
     background: #16181c;
     border: 1px solid #2a2d32;
     border-radius: 8px;
     padding: 14px 18px;
-    margin-bottom: 14px;
+    margin-top: 14px;
   }
-  .pmc-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+  .pmc-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
   .pmc-header .league {
     font-size: 9px; padding: 2px 6px; border-radius: 3px;
     background: rgba(178,237,104,0.1); color: #b2ed68;
@@ -65,32 +65,46 @@
 
   .pmc-grid {
     display: grid;
-    grid-template-columns: 1fr 60px 1fr;
-    gap: 18px;
-    align-items: start;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 16px;
+    align-items: stretch;
   }
-  .pmc-team .name { font-size: 13px; font-weight: bold; color: #e6e6e6; margin-bottom: 2px; }
+  .pmc-team {
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.015);
+  }
+  .pmc-team .name { font-size: 13px; font-weight: bold; color: #e6e6e6; margin-bottom: 3px; }
   .pmc-team .price { font-size: 11px; color: #888; font-family: 'SF Mono', monospace; }
   .pmc-team .price strong { color: #ddd; }
 
   .pmc-impacts { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
   .pmc-impact {
-    display: flex; justify-content: space-between; align-items: baseline;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: baseline;
     padding: 3px 0; font-size: 11px;
   }
-  .pmc-impact-right { flex-direction: row-reverse; }
+  .pmc-impact-right {
+    grid-template-columns: auto auto 1fr;
+    direction: rtl;
+  }
+  .pmc-impact-right > * { direction: ltr; }
   .pmc-impact .lbl { color: #888; }
   .pmc-impact .target { font-family: 'SF Mono', monospace; color: #ccc; font-size: 10.5px; }
-  .pmc-impact .delta { font-family: 'SF Mono', monospace; font-weight: bold; font-size: 10.5px; }
+  .pmc-impact .delta { font-family: 'SF Mono', monospace; font-weight: bold; font-size: 10.5px; text-align: right; white-space: nowrap; }
   .pmc-impact.win .delta { color: #4ade80; }
   .pmc-impact.draw .delta { color: #fbbf24; }
   .pmc-impact.loss .delta { color: #f87171; }
   .pmc-impact.realized .delta { text-decoration: underline; }
 
   .pmc-vs {
-    text-align: center; padding-top: 4px;
-    font-size: 13px; font-weight: bold; color: #555;
-    letter-spacing: 0.1em;
+    align-self: center;
+    text-align: center;
+    font-size: 12px; font-weight: bold; color: #555;
+    letter-spacing: 0.15em;
   }
 
   .pmc-not-tracked {
@@ -111,7 +125,7 @@
   }
 
   /* Chart layout */
-  .row { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
+  .row { display: grid; grid-template-columns: 1fr 320px; gap: 18px; align-items: start; }
   .canvas-wrap {
     background: #16181c;
     border: 1px solid #2a2d32;
@@ -154,62 +168,7 @@
 <!-- ────────────────  TAB 1: Forest vs Villa  ──────────────── -->
 <div id="forest" class="tab-panel active">
 
-  <!-- Pre-match card -->
-  <div class="pre-match-card">
-    <div class="pmc-header">
-      <span class="league">Europa League</span>
-      <span class="when">Apr 30 · KO 19:00 UTC</span>
-      <span class="label">Match Start T-3h preview</span>
-    </div>
-    <div class="pmc-grid">
-      <div class="pmc-team">
-        <div class="name">Nottingham Forest</div>
-        <div class="price"><strong>$118.22</strong> · Idx 1658 · Win prob 33.9%</div>
-        <div class="pmc-impacts">
-          <div class="pmc-impact win realized">
-            <span class="lbl">Forest Win <span style="color:#666">(↑ realized)</span></span>
-            <span class="target">$123.65</span>
-            <span class="delta">+$5.43 / +4.6% ↑</span>
-          </div>
-          <div class="pmc-impact draw">
-            <span class="lbl">Draw</span>
-            <span class="target">$118.32</span>
-            <span class="delta">+$0.10 / +0.1% ·</span>
-          </div>
-          <div class="pmc-impact loss">
-            <span class="lbl">Forest Loss</span>
-            <span class="target">$113.41</span>
-            <span class="delta">−$4.81 / −4.1% ↓</span>
-          </div>
-        </div>
-      </div>
-      <div class="pmc-vs">VS</div>
-      <div class="pmc-team">
-        <div class="name" style="text-align:right">Aston Villa</div>
-        <div class="price" style="text-align:right"><strong>$197.49</strong> · Idx 1836 · Win prob 36.7%</div>
-        <div class="pmc-impacts">
-          <div class="pmc-impact win pmc-impact-right">
-            <span class="lbl">Villa Win</span>
-            <span class="target">$206.04</span>
-            <span class="delta">+$8.55 / +4.3% ↑</span>
-          </div>
-          <div class="pmc-impact draw pmc-impact-right">
-            <span class="lbl">Draw</span>
-            <span class="target">$197.27</span>
-            <span class="delta">−$0.22 / −0.1% ·</span>
-          </div>
-          <div class="pmc-impact loss pmc-impact-right realized">
-            <span class="lbl">Villa Loss <span style="color:#666">(↓ realized)</span></span>
-            <span class="target">$188.83</span>
-            <span class="delta">−$8.66 / −4.4% ↓</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection</div>
-  </div>
-
-  <!-- Chart + legend -->
+  <!-- Chart + legend (top) -->
   <div class="row">
     <div class="canvas-wrap"><canvas id="chart-forest"></canvas></div>
     <div class="legend-card">
@@ -235,65 +194,65 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- ────────────────  TAB 2: Man Utd vs Liverpool  ──────────────── -->
-<div id="liverpool" class="tab-panel">
-
-  <!-- Pre-match card -->
+  <!-- Pre-match card (below chart) -->
   <div class="pre-match-card">
     <div class="pmc-header">
-      <span class="league">Premier League</span>
-      <span class="when">May 3 · KO 14:30 UTC · Old Trafford</span>
+      <span class="league">Europa League</span>
+      <span class="when">Apr 30 · KO 19:00 UTC</span>
       <span class="label">Match Start T-3h preview</span>
     </div>
     <div class="pmc-grid">
       <div class="pmc-team">
-        <div class="name">Manchester United</div>
-        <div class="price"><strong>$179.87</strong> · Idx 1804 · Win prob 40.7%</div>
+        <div class="name">Nottingham Forest</div>
+        <div class="price"><strong>$118.22</strong> · Idx 1658 · Win 33.9%</div>
         <div class="pmc-impacts">
           <div class="pmc-impact win realized">
-            <span class="lbl">MUN Win <span style="color:#666">(↑ realized)</span></span>
-            <span class="target">$187.18</span>
-            <span class="delta">+$7.31 / +4.1% ↑</span>
+            <span class="lbl">Forest Win <span style="color:#666">(↑ realized)</span></span>
+            <span class="target">$123.65</span>
+            <span class="delta">+4.6% ↑</span>
           </div>
           <div class="pmc-impact draw">
             <span class="lbl">Draw</span>
-            <span class="target">$179.40</span>
-            <span class="delta">−$0.47 / −0.3% ·</span>
+            <span class="target">$118.32</span>
+            <span class="delta">+0.1% ·</span>
           </div>
           <div class="pmc-impact loss">
-            <span class="lbl">MUN Loss</span>
-            <span class="target">$171.93</span>
-            <span class="delta">−$7.94 / −4.4% ↓</span>
+            <span class="lbl">Forest Loss</span>
+            <span class="target">$113.41</span>
+            <span class="delta">−4.1% ↓</span>
           </div>
         </div>
       </div>
       <div class="pmc-vs">VS</div>
       <div class="pmc-team">
-        <div class="name" style="text-align:right">Liverpool</div>
-        <div class="price" style="text-align:right"><strong>$185.34</strong> · Idx 1814 · Win prob 33.9%</div>
+        <div class="name" style="text-align:right">Aston Villa</div>
+        <div class="price" style="text-align:right"><strong>$197.49</strong> · Idx 1836 · Win 36.7%</div>
         <div class="pmc-impacts">
           <div class="pmc-impact win pmc-impact-right">
-            <span class="lbl">LIV Win</span>
-            <span class="target">$194.00</span>
-            <span class="delta">+$8.66 / +4.7% ↑</span>
+            <span class="lbl">Villa Win</span>
+            <span class="target">$206.04</span>
+            <span class="delta">+4.3% ↑</span>
           </div>
           <div class="pmc-impact draw pmc-impact-right">
             <span class="lbl">Draw</span>
-            <span class="target">$185.94</span>
-            <span class="delta">+$0.60 / +0.3% ·</span>
+            <span class="target">$197.27</span>
+            <span class="delta">−0.1% ·</span>
           </div>
           <div class="pmc-impact loss pmc-impact-right realized">
-            <span class="lbl">LIV Loss <span style="color:#666">(↓ realized)</span></span>
-            <span class="target">$178.05</span>
-            <span class="delta">−$7.29 / −3.9% ↓</span>
+            <span class="lbl">Villa Loss <span style="color:#666">(↓ realized)</span></span>
+            <span class="target">$188.83</span>
+            <span class="delta">−4.4% ↓</span>
           </div>
         </div>
       </div>
     </div>
     <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection</div>
   </div>
+</div>
+
+<!-- ────────────────  TAB 2: Man Utd vs Liverpool  ──────────────── -->
+<div id="liverpool" class="tab-panel">
 
   <div class="row">
     <div class="canvas-wrap"><canvas id="chart-liverpool"></canvas></div>
@@ -327,65 +286,65 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- ────────────────  TAB 4: Everton vs Manchester City  ──────────────── -->
-<div id="everton" class="tab-panel">
-
-  <!-- Pre-match card -->
+  <!-- Pre-match card (below chart) -->
   <div class="pre-match-card">
     <div class="pmc-header">
       <span class="league">Premier League</span>
-      <span class="when">May 4 · KO 19:00 UTC · Goodison Park</span>
-      <span class="label">Match Start T-1h preview</span>
+      <span class="when">May 3 · KO 14:30 UTC · Old Trafford</span>
+      <span class="label">Match Start T-3h preview</span>
     </div>
     <div class="pmc-grid">
       <div class="pmc-team">
-        <div class="name">Everton</div>
-        <div class="price"><strong>$115.51</strong> · Idx 1650 · Win prob 14.1%</div>
+        <div class="name">Manchester United</div>
+        <div class="price"><strong>$179.87</strong> · Idx 1804 · Win 40.7%</div>
         <div class="pmc-impacts">
-          <div class="pmc-impact win">
-            <span class="lbl">Everton Win</span>
-            <span class="target">$122.86</span>
-            <span class="delta">+$7.35 / +6.4% ↑</span>
+          <div class="pmc-impact win realized">
+            <span class="lbl">MUN Win <span style="color:#666">(↑ realized)</span></span>
+            <span class="target">$187.18</span>
+            <span class="delta">+4.1% ↑</span>
           </div>
-          <div class="pmc-impact draw realized">
-            <span class="lbl">Draw <span style="color:#666">(↑ realized)</span></span>
-            <span class="target">$117.74</span>
-            <span class="delta">+$2.23 / +1.9% ↑</span>
+          <div class="pmc-impact draw">
+            <span class="lbl">Draw</span>
+            <span class="target">$179.40</span>
+            <span class="delta">−0.3% ·</span>
           </div>
           <div class="pmc-impact loss">
-            <span class="lbl">Everton Loss</span>
-            <span class="target">$112.69</span>
-            <span class="delta">−$2.82 / −2.4% ↓</span>
+            <span class="lbl">MUN Loss</span>
+            <span class="target">$171.93</span>
+            <span class="delta">−4.4% ↓</span>
           </div>
         </div>
       </div>
       <div class="pmc-vs">VS</div>
       <div class="pmc-team">
-        <div class="name" style="text-align:right">Manchester City</div>
-        <div class="price" style="text-align:right"><strong>$197.57</strong> · Idx 1837 · Win prob 71.5%</div>
+        <div class="name" style="text-align:right">Liverpool</div>
+        <div class="price" style="text-align:right"><strong>$185.34</strong> · Idx 1814 · Win 33.9%</div>
         <div class="pmc-impacts">
           <div class="pmc-impact win pmc-impact-right">
-            <span class="lbl">City Win</span>
-            <span class="target">$206.28</span>
-            <span class="delta">+$8.71 / +4.4% ↑</span>
+            <span class="lbl">LIV Win</span>
+            <span class="target">$194.00</span>
+            <span class="delta">+4.7% ↑</span>
           </div>
-          <div class="pmc-impact draw pmc-impact-right realized">
-            <span class="lbl">Draw <span style="color:#666">(↓ realized)</span></span>
-            <span class="target">$193.45</span>
-            <span class="delta">−$4.12 / −2.1% ↓</span>
+          <div class="pmc-impact draw pmc-impact-right">
+            <span class="lbl">Draw</span>
+            <span class="target">$185.94</span>
+            <span class="delta">+0.3% ·</span>
           </div>
-          <div class="pmc-impact loss pmc-impact-right">
-            <span class="lbl">City Loss</span>
-            <span class="target">$182.61</span>
-            <span class="delta">−$14.96 / −7.6% ↓</span>
+          <div class="pmc-impact loss pmc-impact-right realized">
+            <span class="lbl">LIV Loss <span style="color:#666">(↓ realized)</span></span>
+            <span class="target">$178.05</span>
+            <span class="delta">−3.9% ↓</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection · realized = DRAW (3-3 after Doku 90+7' equalizer)</div>
+    <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection</div>
   </div>
+</div>
+
+<!-- ────────────────  TAB 4: Everton vs Manchester City  ──────────────── -->
+<div id="everton" class="tab-panel">
 
   <!-- Chart + legend -->
   <div class="row">
@@ -421,6 +380,61 @@
         <strong>Stream activity during match:</strong> 4392 polymarket ticks, 393 kalshi ticks, 374 trad-book ticks across 24 books. All sources stayed alive end-to-end. <strong>This is the system working as designed</strong> — chaotic match, all swings tracked, settle within $0.44 of projection on the realized outcome.
       </div>
     </div>
+  </div>
+
+  <!-- Pre-match card (below chart) -->
+  <div class="pre-match-card">
+    <div class="pmc-header">
+      <span class="league">Premier League</span>
+      <span class="when">May 4 · KO 19:00 UTC · Goodison Park</span>
+      <span class="label">Match Start T-1h preview</span>
+    </div>
+    <div class="pmc-grid">
+      <div class="pmc-team">
+        <div class="name">Everton</div>
+        <div class="price"><strong>$115.51</strong> · Idx 1650 · Win 14.1%</div>
+        <div class="pmc-impacts">
+          <div class="pmc-impact win">
+            <span class="lbl">Everton Win</span>
+            <span class="target">$122.86</span>
+            <span class="delta">+6.4% ↑</span>
+          </div>
+          <div class="pmc-impact draw realized">
+            <span class="lbl">Draw <span style="color:#666">(↑ realized)</span></span>
+            <span class="target">$117.74</span>
+            <span class="delta">+1.9% ↑</span>
+          </div>
+          <div class="pmc-impact loss">
+            <span class="lbl">Everton Loss</span>
+            <span class="target">$112.69</span>
+            <span class="delta">−2.4% ↓</span>
+          </div>
+        </div>
+      </div>
+      <div class="pmc-vs">VS</div>
+      <div class="pmc-team">
+        <div class="name" style="text-align:right">Manchester City</div>
+        <div class="price" style="text-align:right"><strong>$197.57</strong> · Idx 1837 · Win 71.5%</div>
+        <div class="pmc-impacts">
+          <div class="pmc-impact win pmc-impact-right">
+            <span class="lbl">City Win</span>
+            <span class="target">$206.28</span>
+            <span class="delta">+4.4% ↑</span>
+          </div>
+          <div class="pmc-impact draw pmc-impact-right realized">
+            <span class="lbl">Draw <span style="color:#666">(↓ realized)</span></span>
+            <span class="target">$193.45</span>
+            <span class="delta">−2.1% ↓</span>
+          </div>
+          <div class="pmc-impact loss pmc-impact-right">
+            <span class="lbl">City Loss</span>
+            <span class="target">$182.61</span>
+            <span class="delta">−7.6% ↓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection · realized = DRAW (3-3, Doku 90+7')</div>
   </div>
 </div>
 
