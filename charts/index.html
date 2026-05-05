@@ -2,167 +2,248 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>JOJO match deep-dives — Apr 30 + May 3-4 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notch · Match deep-dives</title>
+<meta name="theme-color" content="#0c0e12" />
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
-  body {
-    background: #0c0d10;
-    color: #e6e6e6;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Mono", Menlo, monospace;
-    margin: 0;
-    padding: 20px 28px;
+  :root{
+    --bg:#0c0e12;
+    --bg-card:#0a0c10;
+    --bg-inset:#11141a;
+    --border:#242629;
+    --border-soft:#1f2229;
+    --hover:#181b20;
+    --w:#eef1f6;
+    --t1:#b0b5be;
+    --t2:#8a8f98;
+    --t3:#5a5f6a;
+    --lime:#b2ed68;
+    --lime-bg:rgba(178,237,104,.06);
+    --amber:#f5c542;
+    --red:#ef6b6b;
   }
-  h1 { font-size: 16px; letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 4px; color:#ddd;}
-  .sub { color: #777; font-size: 11px; margin-bottom: 18px; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--t1);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:32px 28px 56px;
+  }
+  .mono{font-family:'Space Mono',monospace}
+
+  /* Header */
+  .page-head{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+  .page-head svg.logo{height:18px;width:auto}
+  .page-head .crumb{
+    font-family:'Space Mono',monospace;font-size:10px;
+    color:var(--t3);letter-spacing:.2em;text-transform:uppercase;
+  }
+  .page-head .crumb b{color:var(--t1);font-weight:400}
+  h1.page-title{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;
+    font-size:22px;line-height:1.2;color:var(--w);
+    letter-spacing:-.01em;margin-top:8px;
+  }
+  .sub{
+    font-family:'Space Mono',monospace;font-size:11px;
+    color:var(--t2);margin-top:8px;margin-bottom:24px;line-height:1.6;
+    max-width:880px;
+  }
 
   /* Tabs */
-  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #2a2d32; }
-  .tab {
-    padding: 10px 18px;
-    background: transparent;
-    border: 1px solid transparent;
-    border-bottom: none;
-    color: #888;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 0.15s;
-    border-radius: 6px 6px 0 0;
-    margin-bottom: -1px;
+  .tabs{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border)}
+  .tab{
+    padding:12px 20px;
+    background:transparent;border:none;
+    color:var(--t2);
+    font-family:'Space Mono',monospace;font-size:11px;
+    font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+    cursor:pointer;transition:color .12s,border-color .12s;
+    border-bottom:1px solid transparent;margin-bottom:-1px;
   }
-  .tab:hover { color: #ccc; }
-  .tab.active {
-    color: #b2ed68;
-    background: #16181c;
-    border-color: #2a2d32;
-    border-bottom: 1px solid #16181c;
-  }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  .tab:hover{color:var(--t1)}
+  .tab.active{color:var(--lime);border-bottom-color:var(--lime)}
+  .tab .meta{font-weight:400;color:var(--t3);letter-spacing:.08em;margin-left:6px}
+  .tab.active .meta{color:var(--t2)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
 
   /* Pre-match card (sits below chart, matches chart width) */
-  .pre-match-card {
-    background: #16181c;
-    border: 1px solid #2a2d32;
-    border-radius: 8px;
-    padding: 14px 18px;
+  .pre-match-card{
+    background:var(--bg-card);
+    border:1px solid var(--border-soft);
+    padding:18px 22px;
   }
-  .pmc-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
-  .pmc-header .league {
-    font-size: 9px; padding: 2px 6px; border-radius: 3px;
-    background: rgba(178,237,104,0.1); color: #b2ed68;
-    border: 1px solid rgba(178,237,104,0.25);
-    text-transform: uppercase; letter-spacing: 0.05em; font-weight: bold;
+  .pmc-header{
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:14px;padding-bottom:12px;
+    border-bottom:1px solid var(--border-soft);
   }
-  .pmc-header .when { font-size: 10px; color: #888; }
-  .pmc-header .label { font-size: 9px; color: #555; margin-left: auto; text-transform: uppercase; letter-spacing: 0.1em; }
-
-  .pmc-grid {
-    display: grid;
-    grid-template-columns: 1fr 40px 1fr;
-    gap: 16px;
-    align-items: stretch;
+  .pmc-header .league{
+    font-family:'Space Mono',monospace;font-size:10px;
+    padding:3px 8px;
+    background:var(--lime-bg);color:var(--lime);
+    border:1px solid rgba(178,237,104,.25);
+    text-transform:uppercase;letter-spacing:.12em;font-weight:700;
   }
-  .pmc-team {
-    padding: 10px 12px;
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 6px;
-    background: rgba(255,255,255,0.015);
+  .pmc-header .when{
+    font-family:'Space Mono',monospace;font-size:11px;color:var(--t2);
+    letter-spacing:.04em;
   }
-  .pmc-team .name { font-size: 13px; font-weight: bold; color: #e6e6e6; margin-bottom: 3px; }
-  .pmc-team .price { font-size: 11px; color: #888; font-family: 'SF Mono', monospace; }
-  .pmc-team .price strong { color: #ddd; }
-
-  .pmc-impacts { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
-  .pmc-impact {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 10px;
-    align-items: baseline;
-    padding: 3px 0; font-size: 11px;
-  }
-  .pmc-impact-right {
-    grid-template-columns: auto auto 1fr;
-    direction: rtl;
-  }
-  .pmc-impact-right > * { direction: ltr; }
-  .pmc-impact .lbl { color: #888; }
-  .pmc-impact .target { font-family: 'SF Mono', monospace; color: #ccc; font-size: 10.5px; }
-  .pmc-impact .delta { font-family: 'SF Mono', monospace; font-weight: bold; font-size: 10.5px; text-align: right; white-space: nowrap; }
-  .pmc-impact.win .delta { color: #4ade80; }
-  .pmc-impact.draw .delta { color: #fbbf24; }
-  .pmc-impact.loss .delta { color: #f87171; }
-  .pmc-impact.realized .delta { text-decoration: underline; }
-
-  .pmc-vs {
-    align-self: center;
-    text-align: center;
-    font-size: 12px; font-weight: bold; color: #555;
-    letter-spacing: 0.15em;
+  .pmc-header .label{
+    font-family:'Space Mono',monospace;font-size:10px;color:var(--t3);
+    margin-left:auto;text-transform:uppercase;letter-spacing:.18em;
   }
 
-  .pmc-not-tracked {
-    text-align: center;
-    padding: 24px 10px;
-    color: #555;
-    font-size: 11px;
-    font-style: italic;
-    border: 1px dashed #2a2d32;
-    border-radius: 6px;
+  .pmc-grid{
+    display:grid;grid-template-columns:1fr 40px 1fr;
+    gap:16px;align-items:stretch;
+  }
+  .pmc-team{
+    padding:14px 16px;
+    background:var(--bg-inset);
+    border:1px solid var(--border-soft);
+  }
+  .pmc-team .name{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;
+    font-size:14px;color:var(--w);margin-bottom:4px;letter-spacing:-.01em;
+  }
+  .pmc-team .price{
+    font-family:'Space Mono',monospace;font-size:11px;color:var(--t2);
+    letter-spacing:.02em;
+  }
+  .pmc-team .price strong{color:var(--w);font-weight:700}
+
+  .pmc-impacts{margin-top:12px;padding-top:10px;border-top:1px solid var(--border-soft)}
+  .pmc-impact{
+    display:grid;grid-template-columns:1fr auto auto;
+    gap:12px;align-items:baseline;
+    padding:4px 0;font-size:11.5px;
+  }
+  .pmc-impact-right{grid-template-columns:auto auto 1fr;direction:rtl}
+  .pmc-impact-right > *{direction:ltr}
+  .pmc-impact .lbl{
+    font-family:'Space Mono',monospace;color:var(--t2);
+    font-size:11px;letter-spacing:.02em;
+  }
+  .pmc-impact .target{
+    font-family:'Space Mono',monospace;color:var(--t1);
+    font-size:11px;
+  }
+  .pmc-impact .delta{
+    font-family:'Space Mono',monospace;font-weight:700;
+    font-size:11px;text-align:right;white-space:nowrap;
+  }
+  .pmc-impact.win .delta{color:var(--lime)}
+  .pmc-impact.draw .delta{color:var(--amber)}
+  .pmc-impact.loss .delta{color:var(--red)}
+  .pmc-impact.realized{position:relative}
+  .pmc-impact.realized .delta{text-decoration:underline;text-underline-offset:3px}
+
+  .pmc-vs{
+    align-self:center;text-align:center;
+    font-family:'Space Mono',monospace;font-size:11px;
+    font-weight:700;color:var(--t3);letter-spacing:.25em;
   }
 
-  .pmc-disclosure {
-    margin-top: 10px; padding-top: 8px;
-    border-top: 1px solid #2a2d32;
-    font-size: 10px; color: #555;
-    text-align: center; font-style: italic;
+  .pmc-disclosure{
+    margin-top:14px;padding-top:10px;
+    border-top:1px solid var(--border-soft);
+    font-family:'Space Mono',monospace;font-size:10px;
+    color:var(--t3);text-align:center;
+    letter-spacing:.08em;text-transform:uppercase;
   }
 
   /* Chart layout */
-  .row { display: grid; grid-template-columns: 1fr 320px; gap: 18px; align-items: start; }
-  .left-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-  .canvas-wrap {
-    background: #16181c;
-    border: 1px solid #2a2d32;
-    border-radius: 8px;
-    padding: 14px;
-    height: 480px;
-    position: relative;
+  .row{display:grid;grid-template-columns:1fr 320px;gap:0;background:var(--border-soft);border:1px solid var(--border-soft);align-items:start}
+  .left-col{display:flex;flex-direction:column;gap:1px;min-width:0;background:var(--border-soft)}
+  .canvas-wrap{
+    background:#16181c;
+    padding:14px;
+    height:480px;
+    position:relative;
   }
-  .legend-card {
-    background: #16181c;
-    border: 1px solid #2a2d32;
-    border-radius: 8px;
-    padding: 14px;
-    font-size: 11px;
+  .legend-card{
+    background:var(--bg-card);
+    padding:18px 20px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;color:var(--t1);
+    line-height:1.5;
   }
-  .legend-card h2 { font-size: 10px; letter-spacing: 0.1em; color: #777; margin: 0 0 8px; text-transform: uppercase; }
-  .leg-row { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: baseline; font-size: 10.5px; }
-  .leg-label { color: #aaa; }
-  .leg-val { color: #e6e6e6; font-weight: bold; font-family: 'SF Mono', monospace; }
-  .events { margin-top: 12px; }
-  .ev { padding: 4px 0; border-top: 1px solid #2a2d32; font-size: 10px; line-height: 1.45; }
-  .ev .t { color: #777; font-weight: bold; }
-  .ev .h { color: #b2ed68; font-weight: bold; }
-  .ev .r { color: #f87171; font-weight: bold; }
-  .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
-  .footer { margin-top: 12px; font-size: 9.5px; color: #555; line-height: 1.6; }
+  .legend-card h2{
+    font-family:'Space Mono',monospace;font-size:10px;
+    letter-spacing:.18em;color:var(--t3);
+    margin:0 0 10px;text-transform:uppercase;font-weight:700;
+  }
+  .leg-row{
+    display:flex;justify-content:space-between;
+    margin-bottom:5px;align-items:baseline;font-size:11.5px;
+    font-family:'Space Mono',monospace;
+  }
+  .leg-label{color:var(--t2);letter-spacing:.02em}
+  .leg-val{color:var(--w);font-weight:700;font-family:'Space Mono',monospace}
+  .events{margin-top:14px}
+  .ev{
+    padding:6px 0;border-top:1px solid var(--border-soft);
+    font-family:'Space Mono',monospace;font-size:10.5px;
+    line-height:1.5;color:var(--t1);
+  }
+  .ev .t{color:var(--t3);font-weight:700;letter-spacing:.04em}
+  .ev .h{color:var(--lime);font-weight:700}
+  .ev .r{color:var(--red);font-weight:700}
+  .ev strong{color:var(--w);font-weight:700}
+  .footer{
+    margin-top:14px;padding-top:10px;
+    border-top:1px solid var(--border-soft);
+    font-family:'Space Mono',monospace;font-size:10px;
+    color:var(--t3);line-height:1.7;letter-spacing:.02em;
+  }
+  .footer strong{color:var(--t1);font-weight:700}
+
+  /* Mid-card explanatory paragraph in legend */
+  .legend-card .note{
+    font-size:11.5px;color:var(--t1);line-height:1.6;
+    margin-bottom:8px;font-family:'Space Grotesk',sans-serif;
+  }
+  .legend-card .note strong{color:var(--w);font-weight:600}
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border)}
 </style>
 </head>
 <body>
 
-<h1>JOJO Match Deep-Dives <span style="color:#888">— deploy verification</span></h1>
-<div class="sub">Three matches across the engine evolution. Phase 1 + snap_95 (Apr 30); + conservation gate (May 1+); + all-source snap_95 (May 5+). Pre-match card and outcome chart for each.</div>
+<div class="page-head">
+  <a href="../" aria-label="Notch home" style="display:inline-flex;align-items:center">
+    <svg class="logo" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Notch">
+      <path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="#eef1f6"/>
+      <path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="#eef1f6"/>
+      <path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="#eef1f6"/>
+      <path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="#eef1f6"/>
+      <path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="#eef1f6"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="#eef1f6"/>
+      <path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="#eef1f6"/>
+    </svg>
+  </a>
+  <span class="crumb">Engine · <b>Match deep-dives</b></span>
+</div>
+
+<h1 class="page-title">Three matches, three engine states.</h1>
+<div class="sub">Phase 1 + snap_95 (Apr 30) · plus conservation gate (May 1+) · plus all-source snap_95 (May 5+). Pre-match outcome card and live price track for each match.</div>
 
 <div class="tabs">
-  <button class="tab active" data-tab="forest">Forest vs Aston Villa <span style="color:#4ade80; font-weight:normal;">· Apr 30 · snap fired</span></button>
-  <button class="tab" data-tab="liverpool">Man Utd vs Liverpool <span style="color:#fb923c; font-weight:normal;">· May 3 · sub-gate residual</span></button>
-  <button class="tab" data-tab="everton">Everton vs Man City <span style="color:#38bdf8; font-weight:normal;">· May 4 · live tracked clean</span></button>
+  <button class="tab active" data-tab="forest">Forest × Aston Villa <span class="meta">Apr 30 · snap fired</span></button>
+  <button class="tab" data-tab="liverpool">Man Utd × Liverpool <span class="meta">May 3 · sub-gate residual</span></button>
+  <button class="tab" data-tab="everton">Everton × Man City <span class="meta">May 4 · live tracked clean</span></button>
 </div>
 
 <!-- ────────────────  TAB 1: Forest vs Villa  ──────────────── -->
@@ -243,7 +324,7 @@
         <div class="ev"><span class="t">21:05+</span> · <span style="color:#888">Phase 1 IGNORE</span> active. Price flat. No phantom.</div>
       </div>
       <div class="footer">
-        Solid green: JOJO price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
+        Solid green: Notch price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
         Horizontal dashed lines: pre-match outcome card projections.
       </div>
     </div>
@@ -510,7 +591,7 @@ const evertonOdds = [
   [115,73.8,24.9,1.4],  // 90+3 Haaland (3-2), 90+7 Doku (3-3) — trad still lagged at 74% EVE
   [120,73.8,24.9,1.4],[125,73.8,24.9,1.4]
 ];
-// Everton JOJO price 5-min buckets, real values from oracle_price_history
+// Everton Notch price 5-min buckets, real values from oracle_price_history
 const evertonPrice = [
   [-55,115.37],[-50,115.36],[-45,115.33],[-40,115.33],[-35,115.32],[-30,115.30],
   [-25,115.31],[-15,115.25],[-10,115.30],[-5,115.30],[0,115.21],[5,115.15],
@@ -521,7 +602,7 @@ const evertonPrice = [
   [130,119.20],[135,119.20],[140,119.21],[145,119.21]
 ];
 
-// Liverpool JOJO price 5-min buckets (T-1h to T+1h, KO 14:30 UTC)
+// Liverpool Notch price 5-min buckets (T-1h to T+1h, KO 14:30 UTC)
 const liverpoolPrice = [
   [-60,185.47],[-55,185.46],[-50,185.48],[-45,185.50],[-40,185.55],[-35,185.53],
   [-30,185.50],[-25,185.51],[-20,185.57],[-15,185.55],[-10,185.55],[-5,185.53],
@@ -541,7 +622,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
     data: {
       datasets: [
         {
-          label: 'JOJO Price ($)',
+          label: 'Notch Price ($)',
           data: priceData.map(([x,y]) => ({x,y})),
           borderColor: '#b2ed68',
           backgroundColor: 'rgba(178,237,104,0.08)',
@@ -655,7 +736,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
         },
         yPrice: {
           type: 'linear', position: 'left',
-          title: { display: true, text: 'JOJO price ($)', color: '#b2ed68', font: { size: 11 } },
+          title: { display: true, text: 'Notch price ($)', color: '#b2ed68', font: { size: 11 } },
           ticks: { color: '#b2ed68', font: { size: 10 }, callback: (v) => '$' + v.toFixed(2) },
           grid: { color: 'rgba(178,237,104,0.06)' },
           min: cfg.priceMin, max: cfg.priceMax,
