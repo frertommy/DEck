@@ -186,28 +186,6 @@
   .tab-panel.investor .legend-card h2{font-size:11px;margin-bottom:14px}
   .tab-panel.investor .leg-row{font-size:13px;margin-bottom:8px}
   .tab-panel.investor .ev{font-size:12px;padding:8px 0}
-  /* Variant sub-tabs (inside investor panel) */
-  .variant-tabs{
-    display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;
-  }
-  .vtab{
-    padding:9px 16px;
-    background:var(--bg-card);
-    border:1px solid var(--border-soft);
-    color:var(--t2);
-    font-family:'Space Mono',monospace;font-size:11px;
-    font-weight:700;text-transform:uppercase;letter-spacing:.1em;
-    cursor:pointer;transition:all .12s;
-  }
-  .vtab:hover{color:var(--t1);border-color:var(--border)}
-  .vtab.active{
-    color:var(--lime);
-    border-color:var(--lime);
-    background:var(--lime-bg);
-  }
-  .vpanel{display:none}
-  .vpanel.active{display:block}
-
   /* Outcome stat strip — investor headline numbers */
   .stat-strip{
     display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
@@ -305,15 +283,38 @@
   <button class="tab active" data-tab="forest">Forest × Aston Villa <span class="meta">Apr 30 · clean settle</span></button>
   <button class="tab" data-tab="liverpool">Man Utd × Liverpool <span class="meta">May 3 · settled near loss-line</span></button>
   <button class="tab" data-tab="everton">Everton × Man City <span class="meta">May 4 · live tracked clean</span></button>
-  <button class="tab" data-tab="everton-investor">Everton × Man City <span class="meta">Investor view</span></button>
 </div>
 
 <!-- ────────────────  TAB 1: Forest vs Villa  ──────────────── -->
-<div id="forest" class="tab-panel active">
+<div id="forest" class="tab-panel investor active">
 
   <div class="row">
     <div class="left-col">
       <div class="canvas-wrap"><canvas id="chart-forest"></canvas></div>
+
+      <div class="stat-strip">
+        <div class="stat-cell">
+          <div class="lbl">Predicted (Win)</div>
+          <div class="val">$123.47</div>
+          <div class="sub">Locked at KO</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">Actual settle</div>
+          <div class="val">$123.46</div>
+          <div class="sub">1-0 Forest · 89' goal</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">Prediction error</div>
+          <div class="val lime">$0.01</div>
+          <div class="sub">0.008% of settle</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">KO-holder P&amp;L</div>
+          <div class="val lime">+$5.37</div>
+          <div class="sub">+4.5% on $118.22 entry</div>
+        </div>
+      </div>
+
       <div class="pre-match-card">
         <div class="pmc-header">
           <span class="league">Europa League</span>
@@ -369,24 +370,17 @@
       </div>
     </div>
     <div class="legend-card">
-      <h2>Outcome — converged match</h2>
-      <div class="leg-row"><span class="leg-label">Predicted (Win)</span><span class="leg-val">$123.47</span></div>
-      <div class="leg-row"><span class="leg-label">Actual settle</span><span class="leg-val">$123.46</span></div>
-      <div class="leg-row"><span class="leg-label">Prediction error</span><span class="leg-val" style="color:#4ade80">$0.01 ✓</span></div>
-      <div class="leg-row"><span class="leg-label">KO-holder P&amp;L</span><span class="leg-val" style="color:#4ade80">+$5.37 (+4.5%)</span></div>
-
-      <h2 style="margin-top:18px">Timeline</h2>
+      <h2>Timeline</h2>
       <div class="events">
         <div class="ev"><span class="t">T-3h</span> · Card displays projections $113 / $118 / $124. Forest underdog at 33.9%.</div>
         <div class="ev"><span class="t">19:00</span> · KO. Live price track begins.</div>
         <div class="ev"><span class="t">85'</span> · Draw probability peaks at 52.5%. Price hugging draw line ~$120.</div>
-        <div class="ev"><span class="t">89'</span> · <span class="h">⚽ GOAL.</span> Win prob 23%→74%. Price detaches draw line, climbs.</div>
+        <div class="ev"><span class="t">89'</span> · <span class="h">⚽ Forest goal.</span> Win prob 23%→74%. Price detaches draw line, climbs.</div>
         <div class="ev"><span class="t">FT</span> · 1-0 Forest. Live price near win-line.</div>
         <div class="ev"><span class="t">21:00</span> · <span class="h">SETTLE.</span> Lands at $123.46. <strong>$0.01 off Win projection.</strong></div>
-        <div class="ev"><span class="t">21:05+</span> · <span style="color:#888">Settled.</span> Price flat post-FT.</div>
       </div>
       <div class="footer">
-        Solid green: Notch price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
+        Solid green: Notch price. Dashed: bookmaker probabilities (W = subject win, D = draw, L = subject loss).<br/>
         Horizontal dashed lines: pre-match outcome card projections.
       </div>
     </div>
@@ -395,11 +389,35 @@
 </div>
 
 <!-- ────────────────  TAB 2: Man Utd vs Liverpool  ──────────────── -->
-<div id="liverpool" class="tab-panel">
+<div id="liverpool" class="tab-panel investor">
 
   <div class="row">
     <div class="left-col">
       <div class="canvas-wrap"><canvas id="chart-liverpool"></canvas></div>
+
+      <div class="stat-strip">
+        <div class="stat-cell">
+          <div class="lbl">Predicted (LIV Loss)</div>
+          <div class="val">$178.05</div>
+          <div class="sub">Locked at KO</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">Actual settle</div>
+          <div class="val">$179.09</div>
+          <div class="sub">3-2 MUN · 77' Mainoo winner</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">Prediction error</div>
+          <div class="val amber">+$1.04</div>
+          <div class="sub">0.58% of settle</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">MUN error (predicted $187.18)</div>
+          <div class="val lime">+$0.22</div>
+          <div class="sub">0.12% of settle</div>
+        </div>
+      </div>
+
       <div class="pre-match-card">
         <div class="pmc-header">
           <span class="league">Premier League</span>
@@ -455,27 +473,20 @@
       </div>
     </div>
     <div class="legend-card">
-      <h2>Outcome — settled $1 above loss-line (LIV side)</h2>
-      <div class="leg-row"><span class="leg-label">Predicted (LIV Loss)</span><span class="leg-val">$178.05</span></div>
-      <div class="leg-row"><span class="leg-label">Actual settle</span><span class="leg-val">$179.09</span></div>
-      <div class="leg-row"><span class="leg-label">Prediction error</span><span class="leg-val" style="color:#fb923c">+$1.04 ⚠</span></div>
-      <div class="leg-row"><span class="leg-label">MUN error (predicted $187.18)</span><span class="leg-val" style="color:#4ade80">+$0.22 ✓</span></div>
-
-      <h2 style="margin-top:18px">Timeline</h2>
+      <h2>Timeline</h2>
       <div class="events">
         <div class="ev"><span class="t">T-3h</span> · Card: $194.00 / $185.94 / $178.05 (W/D/L). MUN slight home favorite (40.7%).</div>
         <div class="ev"><span class="t">14:30</span> · KO. Liverpool starts at $185.12.</div>
-        <div class="ev"><span class="t">6'</span> · <span class="r">⚽ Cunha (1-0 MUN).</span> LIV drops to $183.</div>
-        <div class="ev"><span class="t">14'</span> · <span class="r">⚽ Sesko (2-0 MUN).</span> LIV at $180. Stays there for 50 min.</div>
-        <div class="ev"><span class="t">47'</span> · <span class="h">⚽ Szoboszlai (2-1).</span> Liverpool back in it. Bounce to $182.</div>
-        <div class="ev"><span class="t">56'</span> · <span class="h">⚽ Gakpo (2-2).</span> Level. LIV jumps to $185 — at peak ($185.93 at min 67') above pre-KO!</div>
-        <div class="ev"><span class="t">77'</span> · <span class="r">⚽ Mainoo (3-2 MUN).</span> Late winner. LIV drops to $181.</div>
+        <div class="ev"><span class="t">6'</span> · <span class="r">⚽ Cunha (MUN 0:1).</span> LIV drops to $183.</div>
+        <div class="ev"><span class="t">14'</span> · <span class="r">⚽ Sesko (MUN 0:2).</span> LIV at $180. Stays there for 50 min.</div>
+        <div class="ev"><span class="t">47'</span> · <span class="h">⚽ Szoboszlai (LIV 1:2).</span> Liverpool back in it. Bounce to $182.</div>
+        <div class="ev"><span class="t">56'</span> · <span class="h">⚽ Gakpo (LIV 2:2).</span> Level. LIV peaks at $185.93 at min 67' — above pre-KO.</div>
+        <div class="ev"><span class="t">77'</span> · <span class="r">⚽ Mainoo (MUN 2:3).</span> Late winner. LIV drops to $181.</div>
         <div class="ev"><span class="t">FT</span> · LIV lost 3-2. Live price near loss-line.</div>
         <div class="ev"><span class="t">16:25</span> · <span style="color:#888">SETTLE.</span> <strong>Price unchanged across settle: $179.09 → $179.09.</strong></div>
-        <div class="ev"><span class="t">post</span> · Flat $179.09. Small residue decays smoothly over coming days.</div>
       </div>
       <div class="footer">
-        Solid green: Notch price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
+        Solid green: Notch price. Dashed: bookmaker probabilities (W/D/L from subject's perspective).<br/>
         Horizontal dashed lines: pre-match outcome card projections.
       </div>
     </div>
@@ -483,114 +494,12 @@
 
 </div>
 
-<!-- ────────────────  TAB 4: Everton vs Manchester City  ──────────────── -->
-<div id="everton" class="tab-panel">
+<!-- ────────────────  TAB 3: Everton vs Manchester City  ──────────────── -->
+<div id="everton" class="tab-panel investor">
 
   <div class="row">
     <div class="left-col">
       <div class="canvas-wrap"><canvas id="chart-everton"></canvas></div>
-      <div class="pre-match-card">
-        <div class="pmc-header">
-          <span class="league">Premier League</span>
-          <span class="when">May 4 · KO 19:00 UTC · Goodison Park</span>
-          <span class="label">Match Start T-1h preview</span>
-        </div>
-        <div class="pmc-grid">
-          <div class="pmc-team">
-            <div class="name">Everton</div>
-            <div class="price"><strong>$115.51</strong> · Idx 1650 · Win 14.1%</div>
-            <div class="pmc-impacts">
-              <div class="pmc-impact win">
-                <span class="lbl">Everton Win</span>
-                <span class="target">$122.86</span>
-                <span class="delta">+6.4% ↑</span>
-              </div>
-              <div class="pmc-impact draw realized">
-                <span class="lbl">Draw <span style="color:#666">(↑ realized)</span></span>
-                <span class="target">$117.74</span>
-                <span class="delta">+1.9% ↑</span>
-              </div>
-              <div class="pmc-impact loss">
-                <span class="lbl">Everton Loss</span>
-                <span class="target">$112.69</span>
-                <span class="delta">−2.4% ↓</span>
-              </div>
-            </div>
-          </div>
-          <div class="pmc-vs">VS</div>
-          <div class="pmc-team">
-            <div class="name" style="text-align:right">Manchester City</div>
-            <div class="price" style="text-align:right"><strong>$197.57</strong> · Idx 1837 · Win 71.5%</div>
-            <div class="pmc-impacts">
-              <div class="pmc-impact win pmc-impact-right">
-                <span class="lbl">City Win</span>
-                <span class="target">$206.28</span>
-                <span class="delta">+4.4% ↑</span>
-              </div>
-              <div class="pmc-impact draw pmc-impact-right realized">
-                <span class="lbl">Draw <span style="color:#666">(↓ realized)</span></span>
-                <span class="target">$193.45</span>
-                <span class="delta">−2.1% ↓</span>
-              </div>
-              <div class="pmc-impact loss pmc-impact-right">
-                <span class="lbl">City Loss</span>
-                <span class="target">$182.61</span>
-                <span class="delta">−7.6% ↓</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection · realized = DRAW (3-3, Doku 90+7')</div>
-      </div>
-    </div>
-    <div class="legend-card">
-      <h2>Outcome — chaotic 6-goal draw, live layer tracked perfectly</h2>
-      <div class="leg-row"><span class="leg-label">Predicted (Draw)</span><span class="leg-val">$117.74</span></div>
-      <div class="leg-row"><span class="leg-label">Actual settle</span><span class="leg-val">$117.30</span></div>
-      <div class="leg-row"><span class="leg-label">Prediction error</span><span class="leg-val" style="color:#4ade80">−$0.44 ✓</span></div>
-      <div class="leg-row"><span class="leg-label">City error (predicted $193.45)</span><span class="leg-val" style="color:#4ade80">+$0.30 ✓</span></div>
-
-      <h2 style="margin-top:18px">Timeline</h2>
-      <div class="events">
-        <div class="ev"><span class="t">T-1h</span> · Card: $122.86 / $117.74 / $112.69 (W/D/L). Everton heavy underdog at home (14.1%).</div>
-        <div class="ev"><span class="t">19:00</span> · KO. Everton starts at $115.21.</div>
-        <div class="ev"><span class="t">38'</span> · <span class="r">⚽ Doku (1-0 City).</span> Everton drops to $114.65.</div>
-        <div class="ev"><span class="t">HT</span> · 0-1 down. Everton at $113.89. Books say 4% Everton win prob.</div>
-        <div class="ev"><span class="t">70'</span> · <span class="h">⚽ Everton (1-1).</span> Books re-price draw to 44%.</div>
-        <div class="ev"><span class="t">78'</span> · <span class="h">⚽ Everton (2-1).</span> Everton ahead. Trad EVE 51%.</div>
-        <div class="ev"><span class="t">84'</span> · <span class="h">⚽ Everton (3-1).</span> Two-goal cushion. Kalshi has Everton at 89%.</div>
-        <div class="ev"><span class="t">90+3'</span> · <span class="r">⚽ Haaland (3-2).</span> City closing.</div>
-        <div class="ev"><span class="t">90+7'</span> · <span class="r">⚽ Doku (3-3).</span> Late equalizer denies Moyes. Poly snaps to draw 74% in seconds; trad books 4-5 min behind.</div>
-        <div class="ev"><span class="t">FT</span> · 3-3 draw. Trad books 53% draw / poly 74%.</div>
-        <div class="ev"><span class="t">20:57</span> · <span style="color:#4ade80">SETTLE.</span> Lands at $117.30 — draw projection was $117.74, off by $0.44.</div>
-        <div class="ev"><span class="t">post</span> · Drift to $119.21 over next hour as other PL matches settled. Same-day mirror: City lost $3.82, Everton gained $3.70.</div>
-      </div>
-      <div class="footer">
-        Solid green: Notch price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
-        Horizontal dashed lines: pre-match outcome card projections.
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ────────────────  TAB 5: Everton vs Man City — Investor view  ──────────────── -->
-<div id="everton-investor" class="tab-panel investor">
-
-  <div class="row">
-    <div class="left-col">
-      <div class="variant-tabs">
-        <button class="vtab active" data-v="a">A · Bright odds + score labels</button>
-        <button class="vtab" data-v="b">B · Faded odds, no goal labels</button>
-        <button class="vtab" data-v="c">C · Filled probability bands</button>
-        <button class="vtab" data-v="d">D · Realized line only (draw)</button>
-        <button class="vtab" data-v="e">E · No odds (price-only)</button>
-      </div>
-      <div class="vpanel active" data-v="a"><div class="canvas-wrap"><canvas id="chart-eviv-a"></canvas></div></div>
-      <div class="vpanel" data-v="b"><div class="canvas-wrap"><canvas id="chart-eviv-b"></canvas></div></div>
-      <div class="vpanel" data-v="c"><div class="canvas-wrap"><canvas id="chart-eviv-c"></canvas></div></div>
-      <div class="vpanel" data-v="d"><div class="canvas-wrap"><canvas id="chart-eviv-d"></canvas></div></div>
-      <div class="vpanel" data-v="e"><div class="canvas-wrap"><canvas id="chart-eviv-e"></canvas></div></div>
 
       <div class="stat-strip">
         <div class="stat-cell">
@@ -670,22 +579,23 @@
       </div>
     </div>
     <div class="legend-card">
-      <h2>Goal log</h2>
+      <h2>Timeline</h2>
       <div class="events">
+        <div class="ev"><span class="t">T-1h</span> · Card: $122.86 / $117.74 / $112.69 (W/D/L). Everton heavy underdog at home (14.1%).</div>
         <div class="ev"><span class="t">19:00</span> · KO. Everton starts at $115.21.</div>
-        <div class="ev"><span class="t">38'</span> · <span class="r">⚽ Doku (1-0 City).</span> Everton drops to $114.65.</div>
+        <div class="ev"><span class="t">38'</span> · <span class="r">⚽ Doku (CITY 0:1).</span> Everton drops to $114.65.</div>
         <div class="ev"><span class="t">HT</span> · 0-1 down. Everton at $113.89. Books say 4% Everton win prob.</div>
-        <div class="ev"><span class="t">70'</span> · <span class="h">⚽ Everton (1-1).</span> Books re-price draw to 44%.</div>
-        <div class="ev"><span class="t">78'</span> · <span class="h">⚽ Everton (2-1).</span> Everton ahead. Trad EVE 51%.</div>
-        <div class="ev"><span class="t">84'</span> · <span class="h">⚽ Everton (3-1).</span> Two-goal cushion. Kalshi has Everton at 89%.</div>
-        <div class="ev"><span class="t">90+3'</span> · <span class="r">⚽ Haaland (3-2).</span> City closing.</div>
-        <div class="ev"><span class="t">90+7'</span> · <span class="r">⚽ Doku (3-3).</span> Late equalizer.</div>
-        <div class="ev"><span class="t">FT</span> · 3-3 draw.</div>
-        <div class="ev"><span class="t">20:57</span> · <span style="color:#4ade80">SETTLE.</span> Lands at $117.30 — $0.44 from $117.74 draw projection.</div>
+        <div class="ev"><span class="t">70'</span> · <span class="h">⚽ Everton (EVE 1:1).</span> Books re-price draw to 44%.</div>
+        <div class="ev"><span class="t">78'</span> · <span class="h">⚽ Everton (EVE 2:1).</span> Everton ahead. Trad EVE 51%.</div>
+        <div class="ev"><span class="t">84'</span> · <span class="h">⚽ Everton (EVE 3:1).</span> Two-goal cushion. Kalshi has Everton at 89%.</div>
+        <div class="ev"><span class="t">90+3'</span> · <span class="r">⚽ Haaland (CITY 3:2).</span> City closing.</div>
+        <div class="ev"><span class="t">90+7'</span> · <span class="r">⚽ Doku (CITY 3:3).</span> Late equalizer denies Moyes. Poly snaps to draw 95% within ~22s; trad books still showing 75% Everton.</div>
+        <div class="ev"><span class="t">FT</span> · 3-3 draw. Poly = 98% draw, trad books frozen.</div>
+        <div class="ev"><span class="t">20:57</span> · <span style="color:#4ade80">SETTLE.</span> Lands at $117.30 — draw projection was $117.74, off by $0.44.</div>
       </div>
       <div class="footer">
-        Solid green line: live Notch price. Horizontal dashed lines: pre-match Win / Draw / Loss projections.<br/>
-        Vertical lines: goals (red = City, green = Everton), HT, FT/SETTLE.
+        Solid green: Notch price. Dashed: bookmaker probabilities (W = subject win, D = draw, L = subject loss).<br/>
+        Horizontal dashed lines: pre-match outcome card projections.
       </div>
     </div>
   </div>
@@ -700,11 +610,9 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.tab).classList.add('active');
-    // Lazy-render investor variant chart on first visit
-    if (btn.dataset.tab === 'everton-investor' && typeof ensureEvivChart === 'function') {
-      const activeV = document.querySelector('.vtab.active')?.dataset.v ?? 'a';
-      ensureEvivChart(activeV);
-    }
+    // Lazy-render this tab's chart on first visit (canvas only has correct dimensions
+    // once the panel is visible).
+    if (typeof ensureChart === 'function') ensureChart(btn.dataset.tab);
   });
 });
 
@@ -1053,113 +961,76 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
   });
 }
 
-// Forest: subject is home (idx 1), opponent is away (idx 3)
-makeChart('chart-forest', forestOdds, forestPrice, {
-  subjectName: 'Forest', subjectIdx: 1,
-  opponentName: 'Villa', opponentIdx: 3,
-  winPrice: 123.47, winProb: 32,
-  drawPrice: 118.31, drawProb: 30,
-  lossPrice: 113.30, lossProb: 38,
-  goalMin: 89, snapFired: true,
-  priceMin: 111, priceMax: 126,
-});
+// All 3 charts use investor styling: bigger fonts, sharp odds with W/D/L tags,
+// goal markers in blue/purple with team-letter score labels at top.
+const investorOpts = { bigFonts: true, oddsStyle: 'sharp', goalLabels: 'score-top' };
 
-// Liverpool: subject is AWAY (idx 3), opponent is HOME (idx 1)
-// Five goals — using real-time minutes from KO to align with our X-axis
-// Game-time → real-time mapping: HT break ~15 min, so 2nd half goals shift by ~15
-makeChart('chart-liverpool', liverpoolOdds, liverpoolPrice, {
-  subjectName: 'Liverpool', subjectIdx: 3,
-  opponentName: 'Man Utd', opponentIdx: 1,
-  winPrice: 194.00, winProb: 34,
-  drawPrice: 185.94, drawProb: 26,
-  lossPrice: 178.05, lossProb: 41,
-  goalMin: null,
-  goals: [
-    { min: 6,  label: '⚽ 6\' Cunha (1-0)',     color: 'home' },
-    { min: 14, label: '⚽ 14\' Sesko (2-0)',     color: 'home' },
-    { min: 62, label: '⚽ 47\' Szoboszlai (2-1)', color: 'away' },
-    { min: 71, label: '⚽ 56\' Gakpo (2-2)',      color: 'away' },
-    { min: 92, label: '⚽ 77\' Mainoo (3-2)',     color: 'home' },
-  ],
-  snapFired: false,
-  priceMin: 176, priceMax: 198,
-  xMin: -60, xMax: 175,
-});
-
-// Everton: subject is HOME (idx 1), opponent is AWAY (idx 3) — Everton (subject) is the underdog
-// Six-goal 3-3 thriller, Doku 38' opener, Everton scored 3 in 2H to lead 3-1, then Haaland 90+3' and Doku 90+7' equalized
-// Game-time → real-time mapping: HT break ~15 min for 2H goals
-makeChart('chart-everton', evertonOdds, evertonPrice, {
-  subjectName: 'Everton', subjectIdx: 1,
-  opponentName: 'Man City', opponentIdx: 3,
-  winPrice: 122.86, winProb: 14,
-  drawPrice: 117.74, drawProb: 20,
-  lossPrice: 112.69, lossProb: 66,
-  goalMin: null,
-  goals: [
-    { min: 38,  label: '⚽ 38\' Doku (1-0)',        color: 'away' },
-    { min: 85,  label: '⚽ 70\' Everton (1-1)',     color: 'home' },
-    { min: 93,  label: '⚽ 78\' Everton (2-1)',     color: 'home' },
-    { min: 99,  label: '⚽ 84\' Everton (3-1)',     color: 'home' },
-    { min: 108, label: '⚽ 90+3\' Haaland (3-2)',  color: 'away' },
-    { min: 112, label: '⚽ 90+7\' Doku (3-3)',     color: 'away' },
-  ],
-  snapFired: false,
-  priceMin: 111, priceMax: 124,
-  xMin: -60, xMax: 145,
-});
-
-// Everton — Investor view: 5 visual variants (a-e), each on a 720px chart.
-// Variant tabs swap which canvas is visible. Charts are rendered lazily on first view
-// so each canvas has correct dimensions when ChartJS measures it.
-const evivBase = {
-  bigFonts: true,
-  subjectName: 'Everton', subjectIdx: 1,
-  opponentName: 'Man City', opponentIdx: 3,
-  winPrice: 122.86, winProb: 14,
-  drawPrice: 117.74, drawProb: 20,
-  lossPrice: 112.69, lossProb: 66,
-  goalMin: null,
-  // Goals carry score-progression labels (used by variant A: 'score-top')
-  goals: [
-    { min: 38,  color: 'away', label: '0-1' },  // Doku → City lead
-    { min: 85,  color: 'home', label: '1-1' },  // EVE equalizes
-    { min: 93,  color: 'home', label: '2-1' },  // EVE leads
-    { min: 99,  color: 'home', label: '3-1' },  // EVE +2
-    { min: 108, color: 'away', label: '3-2' },  // Haaland pulls one back
-    { min: 112, color: 'away', label: '3-3' },  // Doku equalizes
-  ],
-  snapFired: false,
-  priceMin: 111, priceMax: 124,
-  xMin: -60, xMax: 145,
+// Lazy chart rendering: charts measure their canvas at creation, so a canvas inside
+// a display:none tab-panel measures 0×0 and never lays out correctly. Defer creation
+// until the tab is first activated.
+const chartFactories = {
+  forest: () => makeChart('chart-forest', forestOdds, forestPrice, {
+    ...investorOpts,
+    subjectName: 'Forest', subjectIdx: 1,
+    opponentName: 'Villa', opponentIdx: 3,
+    winPrice: 123.47, winProb: 32,
+    drawPrice: 118.31, drawProb: 30,
+    lossPrice: 113.30, lossProb: 38,
+    snapFired: true,
+    goals: [
+      { min: 89, color: 'home', label: '1-0' }, // Forest scored
+    ],
+    priceMin: 111, priceMax: 126,
+  }),
+  // Liverpool: subject is AWAY (idx 3), opponent is HOME (idx 1).
+  // Score labels are subject-first (LIV : MUN). 'home' = MUN scored, 'away' = LIV scored.
+  liverpool: () => makeChart('chart-liverpool', liverpoolOdds, liverpoolPrice, {
+    ...investorOpts,
+    subjectName: 'Liverpool', subjectIdx: 3,
+    opponentName: 'Man Utd', opponentIdx: 1,
+    winPrice: 194.00, winProb: 34,
+    drawPrice: 185.94, drawProb: 26,
+    lossPrice: 178.05, lossProb: 41,
+    snapFired: false,
+    goals: [
+      { min: 6,  color: 'home', label: '0-1' }, // Cunha (MUN)
+      { min: 14, color: 'home', label: '0-2' }, // Sesko (MUN)
+      { min: 62, color: 'away', label: '1-2' }, // Szoboszlai (LIV)
+      { min: 71, color: 'away', label: '2-2' }, // Gakpo (LIV)
+      { min: 92, color: 'home', label: '2-3' }, // Mainoo (MUN)
+    ],
+    priceMin: 176, priceMax: 198,
+    xMin: -60, xMax: 175,
+  }),
+  // Everton: subject is HOME (idx 1), opponent is AWAY (idx 3).
+  // 3-3 thriller, Doku 38', EVE scored 3 in 2H, Haaland 90+3' and Doku 90+7' equalized.
+  everton: () => makeChart('chart-everton', evertonOdds, evertonPrice, {
+    ...investorOpts,
+    subjectName: 'Everton', subjectIdx: 1,
+    opponentName: 'Man City', opponentIdx: 3,
+    winPrice: 122.86, winProb: 14,
+    drawPrice: 117.74, drawProb: 20,
+    lossPrice: 112.69, lossProb: 66,
+    snapFired: false,
+    goals: [
+      { min: 38,  color: 'away', label: '0-1' },
+      { min: 85,  color: 'home', label: '1-1' },
+      { min: 93,  color: 'home', label: '2-1' },
+      { min: 99,  color: 'home', label: '3-1' },
+      { min: 108, color: 'away', label: '3-2' },
+      { min: 112, color: 'away', label: '3-3' },
+    ],
+    priceMin: 111, priceMax: 124,
+    xMin: -60, xMax: 145,
+  }),
 };
-
-const evivVariants = {
-  a: { oddsStyle: 'sharp',         goalLabels: 'score-top' },
-  b: { oddsStyle: 'faded',         goalLabels: 'none' },
-  c: { oddsStyle: 'filled',        goalLabels: 'none' },
-  d: { oddsStyle: 'realized-draw', goalLabels: 'none' },
-  e: { oddsStyle: 'none',          goalLabels: 'none' },
-};
-const evivCharts = {};
-function ensureEvivChart(letter) {
-  if (evivCharts[letter]) return;
-  evivCharts[letter] = makeChart(
-    `chart-eviv-${letter}`,
-    evertonOdds, evertonPrice,
-    { ...evivBase, ...evivVariants[letter] }
-  );
+const renderedCharts = {};
+function ensureChart(tabId) {
+  if (renderedCharts[tabId] || !chartFactories[tabId]) return;
+  renderedCharts[tabId] = chartFactories[tabId]();
 }
-
-// Variant tab logic
-document.querySelectorAll('.vtab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const v = btn.dataset.v;
-    document.querySelectorAll('.vtab').forEach(b => b.classList.toggle('active', b === btn));
-    document.querySelectorAll('.vpanel').forEach(p => p.classList.toggle('active', p.dataset.v === v));
-    ensureEvivChart(v);
-  });
-});
+// Render the initially-active tab's chart now (it's visible at page load).
+ensureChart(document.querySelector('.tab.active')?.dataset.tab ?? 'forest');
 </script>
 </body>
 </html>
