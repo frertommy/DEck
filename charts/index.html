@@ -242,8 +242,8 @@
 <h1 class="page-title">Three matches, three engine states.</h1>
 
 <div class="tabs">
-  <button class="tab active" data-tab="forest">Forest × Aston Villa <span class="meta">Apr 30 · snap fired</span></button>
-  <button class="tab" data-tab="liverpool">Man Utd × Liverpool <span class="meta">May 3 · sub-gate residual</span></button>
+  <button class="tab active" data-tab="forest">Forest × Aston Villa <span class="meta">Apr 30 · clean settle</span></button>
+  <button class="tab" data-tab="liverpool">Man Utd × Liverpool <span class="meta">May 3 · settled near loss-line</span></button>
   <button class="tab" data-tab="everton">Everton × Man City <span class="meta">May 4 · live tracked clean</span></button>
 </div>
 
@@ -317,12 +317,12 @@
       <h2 style="margin-top:18px">Engine events</h2>
       <div class="events">
         <div class="ev"><span class="t">T-3h</span> · Card displays projections $113 / $118 / $124. Forest underdog at 33.9%.</div>
-        <div class="ev"><span class="t">19:00</span> · KO. L starts ticking from 0. E_KR locked at 0.483.</div>
+        <div class="ev"><span class="t">19:00</span> · KO. Live price track begins.</div>
         <div class="ev"><span class="t">85'</span> · Draw probability peaks at 52.5%. Price hugging draw line ~$120.</div>
         <div class="ev"><span class="t">89'</span> · <span class="h">⚽ GOAL.</span> Win prob 23%→74%. Price detaches draw line, climbs.</div>
-        <div class="ev"><span class="t">FT</span> · Last live tick: L=+14.58, p_realized=92.3%.</div>
-        <div class="ev"><span class="t">21:00</span> · <span class="h">SETTLE + snap_95.</span> Lands at $123.46. <strong>$0.01 off Win projection.</strong></div>
-        <div class="ev"><span class="t">21:05+</span> · <span style="color:#888">Phase 1 IGNORE</span> active. Price flat. No phantom.</div>
+        <div class="ev"><span class="t">FT</span> · 1-0 Forest. Live price near win-line.</div>
+        <div class="ev"><span class="t">21:00</span> · <span class="h">SETTLE.</span> Lands at $123.46. <strong>$0.01 off Win projection.</strong></div>
+        <div class="ev"><span class="t">21:05+</span> · <span style="color:#888">Settled.</span> Price flat post-FT.</div>
       </div>
       <div class="footer">
         Solid green: Notch price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
@@ -394,7 +394,7 @@
       </div>
     </div>
     <div class="legend-card">
-      <h2>Outcome — sub-gate residual (LIV side)</h2>
+      <h2>Outcome — settled $1 above loss-line (LIV side)</h2>
       <div class="leg-row"><span class="leg-label">Predicted (LIV Loss)</span><span class="leg-val">$178.05</span></div>
       <div class="leg-row"><span class="leg-label">Actual settle</span><span class="leg-val">$179.09</span></div>
       <div class="leg-row"><span class="leg-label">Prediction error</span><span class="leg-val" style="color:#fb923c">+$1.04 ⚠</span></div>
@@ -409,12 +409,13 @@
         <div class="ev"><span class="t">47'</span> · <span class="h">⚽ Szoboszlai (2-1).</span> Liverpool back in it. Bounce to $182.</div>
         <div class="ev"><span class="t">56'</span> · <span class="h">⚽ Gakpo (2-2).</span> Level. LIV jumps to $185 — at peak ($185.93 at min 67') above pre-KO!</div>
         <div class="ev"><span class="t">77'</span> · <span class="r">⚽ Mainoo (3-2 MUN).</span> Late winner. LIV drops to $181.</div>
-        <div class="ev"><span class="t">FT</span> · Last live tick: L=−12.27, p_LIV_loss=89.6%. Below 95% snap threshold.</div>
-        <div class="ev"><span class="t">16:25</span> · <span style="color:#888">SETTLE no snap.</span> ΔB=−14.40, L_FT=−12.27. Residual +2.14 < 3.0 gate threshold → conservation absorbs into m1. <strong>Price unchanged across settle: $179.09 → $179.09.</strong></div>
-        <div class="ev"><span class="t">post</span> · Flat $179.09 (deviation lives in m1, decays via Option-K over coming days).</div>
+        <div class="ev"><span class="t">FT</span> · LIV lost 3-2. Live price near loss-line.</div>
+        <div class="ev"><span class="t">16:25</span> · <span style="color:#888">SETTLE.</span> <strong>Price unchanged across settle: $179.09 → $179.09.</strong></div>
+        <div class="ev"><span class="t">post</span> · Flat $179.09. Small residue decays smoothly over coming days.</div>
       </div>
       <div class="footer">
-        <strong>Sub-gate residual</strong> — the gate threshold (3 Elo) is a tradeoff. Set lower (e.g. 2 Elo), this would have triggered → visible $1 jump down at settle → settle at $177.69 (truth). Current threshold prefers smooth UX over $1 mini-jumps; cost is occasional $1+ residue absorbed.
+        Solid green: Notch price. Dashed: bookmaker probabilities (median, ~14-22 books, poly excluded).<br/>
+        Horizontal dashed lines: pre-match outcome card projections.
       </div>
     </div>
   </div>
@@ -492,16 +493,16 @@
       <div class="events">
         <div class="ev"><span class="t">T-1h</span> · Card: $122.86 / $117.74 / $112.69 (W/D/L). Everton heavy underdog at home (14.1%).</div>
         <div class="ev"><span class="t">19:00</span> · KO. Everton starts at $115.21.</div>
-        <div class="ev"><span class="t">38'</span> · <span class="r">⚽ Doku (1-0 City).</span> Everton drops to $114.65. L=−3.95.</div>
+        <div class="ev"><span class="t">38'</span> · <span class="r">⚽ Doku (1-0 City).</span> Everton drops to $114.65.</div>
         <div class="ev"><span class="t">HT</span> · 0-1 down. Everton at $113.89. Books say 4% Everton win prob.</div>
-        <div class="ev"><span class="t">70'</span> · <span class="h">⚽ Everton (1-1).</span> Live L jumps from −4.6 to −0.2. Books re-price draw to 44%.</div>
-        <div class="ev"><span class="t">78'</span> · <span class="h">⚽ Everton (2-1).</span> Everton ahead! L jumps to +8. Trad EVE 51%.</div>
-        <div class="ev"><span class="t">84'</span> · <span class="h">⚽ Everton (3-1).</span> Two-goal cushion. L peaks at +18. Kalshi has Everton at 89%.</div>
-        <div class="ev"><span class="t">90+3'</span> · <span class="r">⚽ Haaland (3-2).</span> City closing. L drops back to ~+12.</div>
+        <div class="ev"><span class="t">70'</span> · <span class="h">⚽ Everton (1-1).</span> Books re-price draw to 44%.</div>
+        <div class="ev"><span class="t">78'</span> · <span class="h">⚽ Everton (2-1).</span> Everton ahead. Trad EVE 51%.</div>
+        <div class="ev"><span class="t">84'</span> · <span class="h">⚽ Everton (3-1).</span> Two-goal cushion. Kalshi has Everton at 89%.</div>
+        <div class="ev"><span class="t">90+3'</span> · <span class="r">⚽ Haaland (3-2).</span> City closing.</div>
         <div class="ev"><span class="t">90+7'</span> · <span class="r">⚽ Doku (3-3).</span> Late equalizer denies Moyes. Poly snaps to draw 74% in seconds; trad books 4-5 min behind.</div>
-        <div class="ev"><span class="t">FT</span> · Last live tick: L=+6.44, p_draw=53% (trad) / 74% (poly). Below 95% snap threshold.</div>
-        <div class="ev"><span class="t">20:57</span> · <span style="color:#4ade80">SETTLE no snap.</span> ΔB=+6.30, L_FT=+6.44, residual +0.145 ≪ 3.0 gate → conservation absorbs cleanly. Settle $117.30 = draw projection ($117.74) − $0.44.</div>
-        <div class="ev"><span class="t">post</span> · Drift to $119.21 over next hour from peer-BT releases on other PL settles. Same-day mirror: City lost $3.82, Everton gained $3.70.</div>
+        <div class="ev"><span class="t">FT</span> · 3-3 draw. Trad books 53% draw / poly 74%.</div>
+        <div class="ev"><span class="t">20:57</span> · <span style="color:#4ade80">SETTLE.</span> Lands at $117.30 — draw projection was $117.74, off by $0.44.</div>
+        <div class="ev"><span class="t">post</span> · Drift to $119.21 over next hour as other PL matches settled. Same-day mirror: City lost $3.82, Everton gained $3.70.</div>
       </div>
       <div class="footer">
         <strong>Stream activity during match:</strong> 4392 polymarket ticks, 393 kalshi ticks, 374 trad-book ticks across 24 books. All sources stayed alive end-to-end. <strong>This is the system working as designed</strong> — chaotic match, all swings tracked, settle within $0.44 of projection on the realized outcome.
@@ -709,7 +710,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
               type: 'line', xMin: 120, xMax: 120,
               borderColor: cfg.snapFired ? 'rgba(74,222,128,0.7)' : 'rgba(251,191,36,0.7)',
               borderWidth: 1.5,
-              label: { display: true, content: cfg.snapFired ? 'SETTLE · snap_95' : 'SETTLE · no snap',
+              label: { display: true, content: 'SETTLE',
                 position: 'start',
                 backgroundColor: cfg.snapFired ? 'rgba(178,237,104,0.15)' : 'rgba(251,191,36,0.15)',
                 color: cfg.snapFired ? '#b2ed68' : '#fbbf24', font: { size: 10, weight: 'bold' } }
