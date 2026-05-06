@@ -171,6 +171,46 @@
     height:480px;
     position:relative;
   }
+  /* Investor view: stack chart full-width, taller */
+  .tab-panel.investor .row{grid-template-columns:1fr}
+  .tab-panel.investor .canvas-wrap{height:720px;padding:22px 24px 18px}
+  .tab-panel.investor .pre-match-card{padding:22px 26px}
+  .tab-panel.investor .pmc-team{padding:18px 20px}
+  .tab-panel.investor .pmc-team .name{font-size:16px;margin-bottom:6px}
+  .tab-panel.investor .pmc-team .price{font-size:12px}
+  .tab-panel.investor .pmc-impact{font-size:12.5px;padding:6px 0}
+  .tab-panel.investor .pmc-impact .lbl,
+  .tab-panel.investor .pmc-impact .target,
+  .tab-panel.investor .pmc-impact .delta{font-size:12px}
+  .tab-panel.investor .legend-card{padding:24px 28px}
+  .tab-panel.investor .legend-card h2{font-size:11px;margin-bottom:14px}
+  .tab-panel.investor .leg-row{font-size:13px;margin-bottom:8px}
+  .tab-panel.investor .ev{font-size:12px;padding:8px 0}
+  /* Outcome stat strip — investor headline numbers */
+  .stat-strip{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+  }
+  .stat-cell{
+    background:var(--bg-card);
+    padding:20px 22px;
+  }
+  .stat-cell .lbl{
+    font-family:'Space Mono',monospace;font-size:10px;
+    color:var(--t3);letter-spacing:.18em;text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .stat-cell .val{
+    font-family:'Space Mono',monospace;font-size:24px;font-weight:700;
+    color:var(--w);letter-spacing:-.01em;
+  }
+  .stat-cell .val.lime{color:var(--lime)}
+  .stat-cell .val.amber{color:var(--amber)}
+  .stat-cell .sub{
+    font-family:'Space Mono',monospace;font-size:10.5px;
+    color:var(--t2);margin-top:4px;letter-spacing:.04em;
+  }
   .legend-card{
     background:var(--bg-card);
     border:1px solid var(--border-soft);
@@ -243,6 +283,7 @@
   <button class="tab active" data-tab="forest">Forest × Aston Villa <span class="meta">Apr 30 · clean settle</span></button>
   <button class="tab" data-tab="liverpool">Man Utd × Liverpool <span class="meta">May 3 · settled near loss-line</span></button>
   <button class="tab" data-tab="everton">Everton × Man City <span class="meta">May 4 · live tracked clean</span></button>
+  <button class="tab" data-tab="everton-investor">Everton × Man City <span class="meta">Investor view</span></button>
 </div>
 
 <!-- ────────────────  TAB 1: Forest vs Villa  ──────────────── -->
@@ -511,6 +552,113 @@
 
 </div>
 
+<!-- ────────────────  TAB 5: Everton vs Man City — Investor view  ──────────────── -->
+<div id="everton-investor" class="tab-panel investor">
+
+  <div class="row">
+    <div class="left-col">
+      <div class="canvas-wrap"><canvas id="chart-everton-investor"></canvas></div>
+
+      <div class="stat-strip">
+        <div class="stat-cell">
+          <div class="lbl">Predicted (Draw)</div>
+          <div class="val">$117.74</div>
+          <div class="sub">Locked at KO</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">Actual settle</div>
+          <div class="val">$117.30</div>
+          <div class="sub">3-3 final · 90+7' equalizer</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">Prediction error</div>
+          <div class="val lime">−$0.44</div>
+          <div class="sub">0.37% of settle</div>
+        </div>
+        <div class="stat-cell">
+          <div class="lbl">City error (predicted $193.45)</div>
+          <div class="val lime">+$0.30</div>
+          <div class="sub">0.15% of settle</div>
+        </div>
+      </div>
+
+      <div class="pre-match-card">
+        <div class="pmc-header">
+          <span class="league">Premier League</span>
+          <span class="when">May 4 · KO 19:00 UTC · Goodison Park</span>
+          <span class="label">Match Start T-1h preview</span>
+        </div>
+        <div class="pmc-grid">
+          <div class="pmc-team">
+            <div class="name">Everton</div>
+            <div class="price"><strong>$115.51</strong> · Idx 1650 · Win 14.1%</div>
+            <div class="pmc-impacts">
+              <div class="pmc-impact win">
+                <span class="lbl">Everton Win</span>
+                <span class="target">$122.86</span>
+                <span class="delta">+6.4% ↑</span>
+              </div>
+              <div class="pmc-impact draw realized">
+                <span class="lbl">Draw <span style="color:#666">(↑ realized)</span></span>
+                <span class="target">$117.74</span>
+                <span class="delta">+1.9% ↑</span>
+              </div>
+              <div class="pmc-impact loss">
+                <span class="lbl">Everton Loss</span>
+                <span class="target">$112.69</span>
+                <span class="delta">−2.4% ↓</span>
+              </div>
+            </div>
+          </div>
+          <div class="pmc-vs">VS</div>
+          <div class="pmc-team">
+            <div class="name" style="text-align:right">Manchester City</div>
+            <div class="price" style="text-align:right"><strong>$197.57</strong> · Idx 1837 · Win 71.5%</div>
+            <div class="pmc-impacts">
+              <div class="pmc-impact win pmc-impact-right">
+                <span class="lbl">City Win</span>
+                <span class="target">$206.28</span>
+                <span class="delta">+4.4% ↑</span>
+              </div>
+              <div class="pmc-impact draw pmc-impact-right realized">
+                <span class="lbl">Draw <span style="color:#666">(↓ realized)</span></span>
+                <span class="target">$193.45</span>
+                <span class="delta">−2.1% ↓</span>
+              </div>
+              <div class="pmc-impact loss pmc-impact-right">
+                <span class="lbl">City Loss</span>
+                <span class="target">$182.61</span>
+                <span class="delta">−7.6% ↓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pmc-disclosure">Locked at KO · final settle ±$1.00 of projection · realized = DRAW (3-3, Doku 90+7')</div>
+      </div>
+    </div>
+    <div class="legend-card">
+      <h2>Goal log</h2>
+      <div class="events">
+        <div class="ev"><span class="t">19:00</span> · KO. Everton starts at $115.21.</div>
+        <div class="ev"><span class="t">38'</span> · <span class="r">⚽ Doku (1-0 City).</span> Everton drops to $114.65.</div>
+        <div class="ev"><span class="t">HT</span> · 0-1 down. Everton at $113.89. Books say 4% Everton win prob.</div>
+        <div class="ev"><span class="t">70'</span> · <span class="h">⚽ Everton (1-1).</span> Books re-price draw to 44%.</div>
+        <div class="ev"><span class="t">78'</span> · <span class="h">⚽ Everton (2-1).</span> Everton ahead. Trad EVE 51%.</div>
+        <div class="ev"><span class="t">84'</span> · <span class="h">⚽ Everton (3-1).</span> Two-goal cushion. Kalshi has Everton at 89%.</div>
+        <div class="ev"><span class="t">90+3'</span> · <span class="r">⚽ Haaland (3-2).</span> City closing.</div>
+        <div class="ev"><span class="t">90+7'</span> · <span class="r">⚽ Doku (3-3).</span> Late equalizer.</div>
+        <div class="ev"><span class="t">FT</span> · 3-3 draw.</div>
+        <div class="ev"><span class="t">20:57</span> · <span style="color:#4ade80">SETTLE.</span> Lands at $117.30 — $0.44 from $117.74 draw projection.</div>
+      </div>
+      <div class="footer">
+        Solid green line: live Notch price. Horizontal dashed lines: pre-match Win / Draw / Loss projections.<br/>
+        Vertical lines: goals (red = City, green = Everton), HT, FT/SETTLE.
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
 // ────────────────  Tab logic  ────────────────
 document.querySelectorAll('.tab').forEach(btn => {
@@ -608,43 +756,50 @@ const liverpoolPrice = [
 // ────────────────  Chart factory  ────────────────
 function makeChart(canvasId, oddsData, priceData, cfg) {
   const ctx = document.getElementById(canvasId).getContext('2d');
+  const clean = !!cfg.cleanMode;
+  const fs = clean
+    ? { axisTitle: 13, axisTick: 12, projLabel: 12, evLabel: 12, legend: 12, priceWidth: 3.5 }
+    : { axisTitle: 11, axisTick: 10, projLabel: 9,  evLabel: 10, legend: 10, priceWidth: 2.5 };
+
+  const datasets = [{
+    label: 'Notch Price ($)',
+    data: priceData.map(([x,y]) => ({x,y})),
+    borderColor: '#b2ed68',
+    backgroundColor: 'rgba(178,237,104,0.10)',
+    borderWidth: fs.priceWidth, pointRadius: clean ? 0 : 2, pointHoverRadius: 6,
+    tension: 0.15, yAxisID: 'yPrice', fill: true,
+  }];
+  if (!clean) {
+    datasets.push(
+      {
+        label: cfg.subjectName + ' win %',
+        data: oddsData.map(d => ({x: d[0], y: d[cfg.subjectIdx]})),
+        borderColor: '#4ade80', borderWidth: 1.5, borderDash: [5,4],
+        pointRadius: 2, tension: 0.1, yAxisID: 'yProb',
+      },
+      {
+        label: 'Draw %',
+        data: oddsData.map(d => ({x: d[0], y: d[2]})),
+        borderColor: '#fbbf24', borderWidth: 1.5, borderDash: [5,4],
+        pointRadius: 1.5, tension: 0.1, yAxisID: 'yProb',
+      },
+      {
+        label: cfg.opponentName + ' win %',
+        data: oddsData.map(d => ({x: d[0], y: d[cfg.opponentIdx]})),
+        borderColor: '#f87171', borderWidth: 1.5, borderDash: [5,4],
+        pointRadius: 1.5, tension: 0.1, yAxisID: 'yProb',
+      },
+    );
+  }
+
   return new Chart(ctx, {
     type: 'line',
-    data: {
-      datasets: [
-        {
-          label: 'Notch Price ($)',
-          data: priceData.map(([x,y]) => ({x,y})),
-          borderColor: '#b2ed68',
-          backgroundColor: 'rgba(178,237,104,0.08)',
-          borderWidth: 2.5, pointRadius: 2, pointHoverRadius: 6,
-          tension: 0.15, yAxisID: 'yPrice', fill: true,
-        },
-        {
-          label: cfg.subjectName + ' win %',
-          data: oddsData.map(d => ({x: d[0], y: d[cfg.subjectIdx]})),
-          borderColor: '#4ade80', borderWidth: 1.5, borderDash: [5,4],
-          pointRadius: 2, tension: 0.1, yAxisID: 'yProb',
-        },
-        {
-          label: 'Draw %',
-          data: oddsData.map(d => ({x: d[0], y: d[2]})),
-          borderColor: '#fbbf24', borderWidth: 1.5, borderDash: [5,4],
-          pointRadius: 1.5, tension: 0.1, yAxisID: 'yProb',
-        },
-        {
-          label: cfg.opponentName + ' win %',
-          data: oddsData.map(d => ({x: d[0], y: d[cfg.opponentIdx]})),
-          borderColor: '#f87171', borderWidth: 1.5, borderDash: [5,4],
-          pointRadius: 1.5, tension: 0.1, yAxisID: 'yProb',
-        },
-      ],
-    },
+    data: { datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { position: 'top', labels: { color: '#bbb', font: { size: 10, family: 'monospace' } } },
+        legend: { position: 'top', labels: { color: '#bbb', font: { size: fs.legend, family: 'monospace' } } },
         tooltip: {
           backgroundColor: '#0c0d10', borderColor: '#2a2d32', borderWidth: 1,
           titleColor: '#fff', bodyColor: '#ddd',
@@ -657,46 +812,45 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
               borderColor: 'rgba(74,222,128,0.6)', borderWidth: 1.5, borderDash: [2,4],
               label: { display: true, content: `Win projection · $${cfg.winPrice.toFixed(2)} (${cfg.winProb}%)`,
                 position: 'end', backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ade80',
-                font: { size: 9, weight: 'bold' }, padding: 4, yAdjust: -10 }
+                font: { size: fs.projLabel, weight: 'bold' }, padding: clean ? 6 : 4, yAdjust: -10 }
             },
             drawLine: {
               type: 'line', yMin: cfg.drawPrice, yMax: cfg.drawPrice, xMin: -10, xMax: 145, yScaleID: 'yPrice',
               borderColor: 'rgba(251,191,36,0.5)', borderWidth: 1.5, borderDash: [2,4],
               label: { display: true, content: `Draw projection · $${cfg.drawPrice.toFixed(2)} (${cfg.drawProb}%)`,
                 position: 'end', backgroundColor: 'rgba(251,191,36,0.12)', color: '#fbbf24',
-                font: { size: 9, weight: 'bold' }, padding: 4, yAdjust: -10 }
+                font: { size: fs.projLabel, weight: 'bold' }, padding: clean ? 6 : 4, yAdjust: -10 }
             },
             lossLine: {
               type: 'line', yMin: cfg.lossPrice, yMax: cfg.lossPrice, xMin: -10, xMax: 145, yScaleID: 'yPrice',
               borderColor: 'rgba(248,113,113,0.5)', borderWidth: 1.5, borderDash: [2,4],
               label: { display: true, content: `Loss projection · $${cfg.lossPrice.toFixed(2)} (${cfg.lossProb}%)`,
                 position: 'end', backgroundColor: 'rgba(248,113,113,0.12)', color: '#f87171',
-                font: { size: 9, weight: 'bold' }, padding: 4, yAdjust: -10 }
+                font: { size: fs.projLabel, weight: 'bold' }, padding: clean ? 6 : 4, yAdjust: -10 }
             },
             ko: {
               type: 'line', xMin: 0, xMax: 0, borderColor: 'rgba(255,255,255,0.25)', borderWidth: 1,
-              label: { display: true, content: 'KO', position: 'start', backgroundColor: 'rgba(0,0,0,0.6)', color: '#888', font: { size: 9 } }
+              label: { display: true, content: 'KO', position: 'start', backgroundColor: 'rgba(0,0,0,0.6)', color: '#888', font: { size: fs.evLabel } }
             },
             ht: {
               type: 'line', xMin: 45, xMax: 45, borderColor: 'rgba(255,255,255,0.10)', borderWidth: 1, borderDash: [3,4],
-              label: { display: true, content: 'HT', position: 'start', backgroundColor: 'rgba(0,0,0,0.6)', color: '#666', font: { size: 9 } }
+              label: { display: true, content: 'HT', position: 'start', backgroundColor: 'rgba(0,0,0,0.6)', color: '#666', font: { size: fs.evLabel } }
             },
             ...(cfg.goalMin != null ? { goal: {
               type: 'line', xMin: cfg.goalMin, xMax: cfg.goalMin, borderColor: '#b2ed68', borderWidth: 1.5, borderDash: [4,3],
-              label: { display: true, content: '⚽ GOAL', position: 'start', backgroundColor: '#1a3a14', color: '#b2ed68', font: { size: 10, weight: 'bold' } }
+              label: { display: !clean, content: '⚽ GOAL', position: 'start', backgroundColor: '#1a3a14', color: '#b2ed68', font: { size: fs.evLabel + 1, weight: 'bold' } }
             }} : {}),
             // Optional: array of goal markers for multi-goal matches.
             // cfg.goals = [{min, label, color}, ...] — color: 'home' (red) or 'away' (green) for the subject team
-            // Labels stair-step UP from the bottom (position='start' = bottom for vertical lines;
-            // negative yAdjust pushes upward so consecutive goals don't overlap).
+            // In cleanMode, labels are hidden — only colored vertical lines are drawn.
             ...(Array.isArray(cfg.goals) ? Object.fromEntries(cfg.goals.map((g, i) => {
-              // 5-level stagger going upward from chart bottom: 0, -28, -56, -84, -112 px.
               const yAdjust = -((i % 5) * 28);
               return [`goal_${i}`, {
                 type: 'line', xMin: g.min, xMax: g.min,
                 borderColor: g.color === 'home' ? 'rgba(248,113,113,0.7)' : 'rgba(74,222,128,0.7)',
-                borderWidth: 1.5, borderDash: [4,3],
-                label: { display: true, content: g.label, position: 'start',
+                borderWidth: clean ? 1.5 : 1.5, borderDash: [4,3],
+                label: clean ? { display: false } : {
+                  display: true, content: g.label, position: 'start',
                   backgroundColor: g.color === 'home' ? 'rgba(248,113,113,0.18)' : 'rgba(74,222,128,0.18)',
                   color: g.color === 'home' ? '#f87171' : '#4ade80',
                   font: { size: 9, weight: 'bold' },
@@ -712,7 +866,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
               label: { display: true, content: 'SETTLE',
                 position: 'start',
                 backgroundColor: cfg.snapFired ? 'rgba(178,237,104,0.15)' : 'rgba(251,191,36,0.15)',
-                color: cfg.snapFired ? '#b2ed68' : '#fbbf24', font: { size: 10, weight: 'bold' } }
+                color: cfg.snapFired ? '#b2ed68' : '#fbbf24', font: { size: fs.evLabel + 1, weight: 'bold' }, padding: clean ? 6 : 4 }
             },
           }
         }
@@ -720,24 +874,24 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
       scales: {
         x: {
           type: 'linear',
-          title: { display: true, text: 'Minutes from kickoff', color: '#888', font: { size: 11 } },
-          ticks: { color: '#888', font: { size: 10 } },
+          title: { display: true, text: 'Minutes from kickoff', color: '#888', font: { size: fs.axisTitle } },
+          ticks: { color: '#888', font: { size: fs.axisTick } },
           grid: { color: 'rgba(255,255,255,0.04)' },
           min: cfg.xMin ?? -10, max: cfg.xMax ?? 145,
         },
         yPrice: {
           type: 'linear', position: 'left',
-          title: { display: true, text: 'Notch price ($)', color: '#b2ed68', font: { size: 11 } },
-          ticks: { color: '#b2ed68', font: { size: 10 }, callback: (v) => '$' + v.toFixed(2) },
+          title: { display: true, text: 'Notch price ($)', color: '#b2ed68', font: { size: fs.axisTitle } },
+          ticks: { color: '#b2ed68', font: { size: fs.axisTick }, callback: (v) => '$' + v.toFixed(2) },
           grid: { color: 'rgba(178,237,104,0.06)' },
           min: cfg.priceMin, max: cfg.priceMax,
         },
-        yProb: {
+        ...(clean ? {} : { yProb: {
           type: 'linear', position: 'right',
-          title: { display: true, text: 'Bookmaker probability (%)', color: '#888', font: { size: 11 } },
-          ticks: { color: '#888', font: { size: 10 }, callback: (v) => v + '%' },
+          title: { display: true, text: 'Bookmaker probability (%)', color: '#888', font: { size: fs.axisTitle } },
+          ticks: { color: '#888', font: { size: fs.axisTick }, callback: (v) => v + '%' },
           grid: { drawOnChartArea: false }, min: 0, max: 100,
-        }
+        }})
       }
     }
   });
@@ -793,6 +947,28 @@ makeChart('chart-everton', evertonOdds, evertonPrice, {
     { min: 99,  label: '⚽ 84\' Everton (3-1)',     color: 'home' },
     { min: 108, label: '⚽ 90+3\' Haaland (3-2)',  color: 'away' },
     { min: 112, label: '⚽ 90+7\' Doku (3-3)',     color: 'away' },
+  ],
+  snapFired: false,
+  priceMin: 111, priceMax: 124,
+  xMin: -60, xMax: 145,
+});
+
+// Everton — Investor view: clean mode (no prob lines, no labels on goals, bigger fonts)
+makeChart('chart-everton-investor', evertonOdds, evertonPrice, {
+  cleanMode: true,
+  subjectName: 'Everton', subjectIdx: 1,
+  opponentName: 'Man City', opponentIdx: 3,
+  winPrice: 122.86, winProb: 14,
+  drawPrice: 117.74, drawProb: 20,
+  lossPrice: 112.69, lossProb: 66,
+  goalMin: null,
+  goals: [
+    { min: 38,  color: 'away' },
+    { min: 85,  color: 'home' },
+    { min: 93,  color: 'home' },
+    { min: 99,  color: 'home' },
+    { min: 108, color: 'away' },
+    { min: 112, color: 'away' },
   ],
   snapFired: false,
   priceMin: 111, priceMax: 124,
