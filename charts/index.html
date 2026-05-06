@@ -931,27 +931,31 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
             // cfg.goals = [{min, label, color}, ...] — color: 'home' (red) or 'away' (green) for the subject team
             // In cleanMode, labels are hidden — only colored vertical lines are drawn.
             ...(Array.isArray(cfg.goals) ? Object.fromEntries(cfg.goals.map((g, i) => {
+              // Subject team's goals are GREEN (matches subject's win% line color),
+              // opponent's goals are RED. g.color stores match-side ('home'/'away').
+              const subjectIsHome = cfg.subjectIdx === 1;
+              const isSubjectGoal = (g.color === 'home') === subjectIsHome;
+              const lineColor = isSubjectGoal ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)';
+              const lblColor  = isSubjectGoal ? '#4ade80' : '#f87171';
+              const lblBg     = isSubjectGoal ? 'rgba(74,222,128,0.20)' : 'rgba(248,113,113,0.20)';
+
               let label;
               if (goalLabels === 'none') {
                 label = { display: false };
               } else if (goalLabels === 'score-top') {
-                // Position labels at TOP of chart with 3-level vertical stagger
                 const yAdj = (i % 3) * 30;
                 label = {
                   display: true, content: g.label, position: 'end',
-                  backgroundColor: g.color === 'home' ? 'rgba(248,113,113,0.20)' : 'rgba(74,222,128,0.20)',
-                  color: g.color === 'home' ? '#f87171' : '#4ade80',
+                  backgroundColor: lblBg, color: lblColor,
                   font: { size: fs.goalLabel, weight: 'bold' },
                   yAdjust: yAdj,
                   padding: 5,
                 };
               } else {
-                // 'name-stagger' — original behavior, labels at bottom stair-stepping up
                 const yAdj = -((i % 5) * 28);
                 label = {
                   display: true, content: g.label, position: 'start',
-                  backgroundColor: g.color === 'home' ? 'rgba(248,113,113,0.18)' : 'rgba(74,222,128,0.18)',
-                  color: g.color === 'home' ? '#f87171' : '#4ade80',
+                  backgroundColor: lblBg, color: lblColor,
                   font: { size: 9, weight: 'bold' },
                   yAdjust: yAdj,
                   padding: 4,
@@ -959,7 +963,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
               }
               return [`goal_${i}`, {
                 type: 'line', xMin: g.min, xMax: g.min,
-                borderColor: g.color === 'home' ? 'rgba(248,113,113,0.7)' : 'rgba(74,222,128,0.7)',
+                borderColor: lineColor,
                 borderWidth: 1.5, borderDash: [4,3],
                 label,
               }];
@@ -973,6 +977,39 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
                 backgroundColor: cfg.snapFired ? 'rgba(178,237,104,0.15)' : 'rgba(251,191,36,0.15)',
                 color: cfg.snapFired ? '#b2ed68' : '#fbbf24', font: { size: fs.evLabel + 1, weight: 'bold' }, padding: clean ? 6 : 4 }
             },
+            // W/D/L tags at the start of each odds line (only when sharp/faded lines are visible)
+            ...((oddsStyle === 'sharp' || oddsStyle === 'faded') ? {
+              wTag: {
+                type: 'label',
+                xValue: oddsData[0][0], yValue: oddsData[0][cfg.subjectIdx], yScaleID: 'yProb',
+                content: 'W', color: '#4ade80',
+                backgroundColor: 'rgba(74,222,128,0.18)',
+                borderColor: 'rgba(74,222,128,0.55)', borderWidth: 1,
+                font: { size: 12, weight: 'bold', family: 'Space Mono' },
+                padding: { top: 3, bottom: 3, left: 7, right: 7 },
+                xAdjust: -16,
+              },
+              dTag: {
+                type: 'label',
+                xValue: oddsData[0][0], yValue: oddsData[0][2], yScaleID: 'yProb',
+                content: 'D', color: '#fbbf24',
+                backgroundColor: 'rgba(251,191,36,0.18)',
+                borderColor: 'rgba(251,191,36,0.55)', borderWidth: 1,
+                font: { size: 12, weight: 'bold', family: 'Space Mono' },
+                padding: { top: 3, bottom: 3, left: 7, right: 7 },
+                xAdjust: -16,
+              },
+              lTag: {
+                type: 'label',
+                xValue: oddsData[0][0], yValue: oddsData[0][cfg.opponentIdx], yScaleID: 'yProb',
+                content: 'L', color: '#f87171',
+                backgroundColor: 'rgba(248,113,113,0.18)',
+                borderColor: 'rgba(248,113,113,0.55)', borderWidth: 1,
+                font: { size: 12, weight: 'bold', family: 'Space Mono' },
+                padding: { top: 3, bottom: 3, left: 7, right: 7 },
+                xAdjust: -16,
+              },
+            } : {}),
           }
         }
       },
