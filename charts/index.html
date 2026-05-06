@@ -804,6 +804,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
+      layout: { padding: { bottom: 30 } },
       plugins: {
         legend: { position: 'top', labels: { color: '#bbb', font: { size: fs.legend, family: 'monospace' } } },
         tooltip: {
@@ -812,6 +813,7 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
           callbacks: { title: (items) => `${items[0].parsed.x.toFixed(0)}'  from KO` }
         },
         annotation: {
+          clip: false,
           annotations: {
             winLine: {
               type: 'line', yMin: cfg.winPrice, yMax: cfg.winPrice, xMin: -10, xMax: 145, yScaleID: 'yPrice',
@@ -894,10 +896,22 @@ function makeChart(canvasId, oddsData, priceData, cfg) {
               type: 'line', xMin: 120, xMax: 120,
               borderColor: cfg.snapFired ? 'rgba(74,222,128,0.7)' : 'rgba(251,191,36,0.7)',
               borderWidth: 1.5,
-              label: { display: true, content: 'SETTLE',
-                position: 'start',
-                backgroundColor: cfg.snapFired ? 'rgba(178,237,104,0.15)' : 'rgba(251,191,36,0.15)',
-                color: cfg.snapFired ? '#b2ed68' : '#fbbf24', font: { size: fs.evLabel + 1, weight: 'bold' }, padding: clean ? 6 : 4 }
+              label: { display: false }, // axis label rendered separately below
+            },
+            ftAxisTag: {
+              type: 'label',
+              xValue: 120,
+              yValue: cfg.priceMin,
+              yScaleID: 'yPrice',
+              yAdjust: 22,  // push down into x-axis tick area
+              clip: false,  // render outside plot area
+              content: 'SETTLE',
+              backgroundColor: cfg.snapFired ? 'rgba(178,237,104,0.15)' : 'rgba(251,191,36,0.15)',
+              color: cfg.snapFired ? '#b2ed68' : '#fbbf24',
+              borderColor: cfg.snapFired ? 'rgba(178,237,104,0.55)' : 'rgba(251,191,36,0.55)',
+              borderWidth: 1,
+              font: { size: fs.evLabel + 1, weight: 'bold', family: 'Space Mono' },
+              padding: clean ? 6 : 4,
             },
             // W/D/L tags at the start of each odds line (only when sharp/faded lines are visible)
             ...((oddsStyle === 'sharp' || oddsStyle === 'faded') ? {
