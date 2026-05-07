@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NBA 101 — Visual Interactive Guide</title>
+  <style>
+    :root{
+      --bg:#05070a;
+      --bg2:#090d13;
+      --card:#111722;
+      --card2:#161d29;
+      --glass:rgba(255,255,255,.065);
+      --glass2:rgba(255,255,255,.035);
+      --line:rgba(255,255,255,.11);
+      --line2:rgba(255,106,0,.28);
+      --text:#f5f7fb;
+      --muted:#9aa4b5;
+      --muted2:#c6ceda;
+      --orange:#ff6a00;
+      --orange2:#ff9b2f;
+      --blue:#3b82ff;
+      --green:#3ee289;
+      --red:#ff4d62;
+      --purple:#a777ff;
+      --yellow:#ffd166;
+      --radius:24px;
+      --shadow:0 28px 100px rgba(0,0,0,.58);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 82% -5%, rgba(255,106,0,.22), transparent 35%),
+        radial-gradient(circle at 6% 18%, rgba(59,130,255,.16), transparent 30%),
+        radial-gradient(circle at 92% 75%, rgba(167,119,255,.12), transparent 28%),
+        linear-gradient(180deg,#05070a,#090d13 46%,#05070a);
+      overflow-x:hidden;
+    }
+
+    a{color:inherit;text-decoration:none}
+    button,input{font:inherit}
+    .wrap{display:grid;grid-template-columns:268px 1fr;min-height:100vh}
+
+    aside{
+      position:sticky;top:0;height:100vh;padding:24px 18px;border-right:1px solid var(--line);
+      background:rgba(5,7,10,.72);backdrop-filter:blur(22px);z-index:20;
+    }
+
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:25px}
+    .ball{
+      width:46px;height:46px;border-radius:999px;position:relative;flex:0 0 auto;
+      background:
+        radial-gradient(circle at 65% 30%, #ffc278 0 7%, transparent 8%),
+        linear-gradient(135deg,#ff8a16,#df4d00);
+      box-shadow:0 0 34px rgba(255,106,0,.36);
+      overflow:hidden;
+    }
+    .ball:before{content:"";position:absolute;inset:8px;border:2px solid rgba(0,0,0,.54);border-left:0;border-right:0;border-radius:50%}
+    .ball:after{content:"";position:absolute;inset:5px;border-left:2px solid rgba(0,0,0,.52);border-right:2px solid rgba(0,0,0,.52);border-radius:50%;transform:rotate(28deg)}
+    .brand b{display:block;font-size:18px;letter-spacing:-.2px}
+    .brand span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+
+    .sideSearch{display:flex;gap:8px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:16px;background:var(--glass2);margin-bottom:18px;color:var(--muted)}
+    .sideSearch input{width:100%;border:0;outline:0;background:transparent;color:#fff}
+
+    nav{display:grid;gap:8px}
+    nav a{
+      display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:16px;
+      color:#cbd3df;border:1px solid transparent;font-weight:760;font-size:14px;
+    }
+    nav a:hover, nav a.active{background:rgba(255,106,0,.11);border-color:rgba(255,106,0,.26);color:#fff}
+    .navIcon{width:24px;height:24px;border-radius:10px;display:grid;place-items:center;color:var(--orange);background:rgba(255,106,0,.08)}
+
+    .sideCard{
+      margin-top:24px;padding:17px;border-radius:20px;border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.026));
+      position:relative;overflow:hidden;
+    }
+    .sideCard:after{
+      content:"";position:absolute;right:-35px;bottom:-50px;width:120px;height:120px;border:2px solid rgba(255,106,0,.22);border-radius:50%;
+    }
+    .sideCard b{display:block;margin-bottom:6px}
+    .sideCard p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+
+    main{min-width:0}
+    .topbar{
+      position:sticky;top:0;z-index:15;height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+      padding:0 34px;background:rgba(5,7,10,.68);backdrop-filter:blur(22px);border-bottom:1px solid var(--line);
+    }
+    .toplinks{display:flex;gap:22px;color:#d5dbe6;font-size:14px;font-weight:760}
+    .toplinks a:hover{color:#fff}
+    .quickSearch{width:330px;display:flex;gap:9px;align-items:center;padding:11px 14px;border:1px solid var(--line);border-radius:999px;background:var(--glass2);color:var(--muted)}
+    .quickSearch input{width:100%;background:transparent;border:0;outline:0;color:#fff}
+
+    .content{max-width:1360px;margin:0 auto;padding:38px 34px 96px}
+    .hero{
+      min-height:500px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:34px;padding:48px;
+      background:
+        linear-gradient(90deg,rgba(5,7,10,.97) 0%,rgba(5,7,10,.82) 50%,rgba(5,7,10,.38) 100%),
+        radial-gradient(circle at 78% 40%,rgba(255,106,0,.22),transparent 34%),
+        linear-gradient(135deg,#111824,#070a0f);
+      box-shadow:var(--shadow);
+    }
+    .hero:before{
+      content:"";position:absolute;inset:-2px;opacity:.26;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size:48px 48px;
+      mask-image:linear-gradient(90deg,#000 15%,transparent 78%);
+    }
+
+    .heroText{position:relative;z-index:2;max-width:740px}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(255,106,0,.34);
+      border-radius:999px;background:rgba(255,106,0,.1);color:#ffc18a;font-size:13px;font-weight:900;
+    }
+    h1{font-size:104px;line-height:.9;letter-spacing:-6px;margin:20px 0 16px}
+    .hero p{font-size:22px;line-height:1.35;color:#d7dde8;margin:0 0 28px;max-width:650px}
+
+    .heroStats{display:flex;gap:12px;flex-wrap:wrap}
+    .heroStat{
+      min-width:145px;padding:16px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.07);
+      box-shadow:0 14px 38px rgba(0,0,0,.24)
+    }
+    .heroStat b{display:block;color:#fff;font-size:26px;letter-spacing:-1px}
+    .heroStat span{display:block;color:var(--muted);font-size:12px;font-weight:800;margin-top:3px}
+
+    .heroVisual{
+      position:absolute;right:28px;top:58px;width:520px;height:380px;z-index:1;opacity:.94;
+    }
+    .board{
+      position:absolute;right:58px;top:12px;width:120px;height:88px;border:5px solid rgba(255,255,255,.8);border-bottom:0;border-radius:4px 4px 0 0;
+    }
+    .rim{position:absolute;right:96px;top:102px;width:76px;height:13px;border:3px solid var(--orange);border-radius:999px;box-shadow:0 0 22px rgba(255,106,0,.45)}
+    .courtSvg{width:100%;height:100%;filter:drop-shadow(0 24px 50px rgba(255,106,0,.12))}
+    .floatingBall{position:absolute;right:185px;top:60px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#ff9b2f,#ca4300);box-shadow:0 0 35px rgba(255,106,0,.4)}
+    .floatingBall:before{content:"";position:absolute;inset:9px;border:2px solid rgba(0,0,0,.48);border-left:0;border-right:0;border-radius:50%}
+
+    section{margin-top:32px}
+    .sectionHead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 15px}
+    .sectionHead h2{font-size:30px;letter-spacing:-.9px;margin:0}
+    .sectionHead p{font-size:14px;font-weight:750;color:var(--muted);margin:0}
+    .grid{display:grid;gap:13px}
+    .cols2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .cols3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .cols4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .cols5{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .cols6{grid-template-columns:repeat(6,minmax(0,1fr))}
+
+    .card{
+      position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);
+      background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.028));
+      padding:18px;min-height:124px;
+    }
+    .card:hover{border-color:rgba(255,106,0,.38);transform:translateY(-1px);transition:.18s}
+    .card h3{font-size:16px;line-height:1.15;margin:0 0 9px;letter-spacing:-.2px}
+    .card p{color:#bdc6d3;font-size:13.5px;line-height:1.43;margin:0}
+    .large{min-height:210px}
+    .accentTag{
+      width:46px;height:46px;border-radius:16px;display:grid;place-items:center;margin-bottom:14px;
+      color:#ffc18a;background:rgba(255,106,0,.11);border:1px solid rgba(255,106,0,.28);font-weight:950;
+    }
+
+    .seasonViz{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0}
+    .seasonStep{flex:1;text-align:center}
+    .seasonBubble{
+      width:56px;height:56px;border-radius:18px;margin:0 auto 9px;display:grid;place-items:center;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);font-weight:950;color:#fff;
+    }
+    .seasonStep small{color:var(--muted2);font-weight:850}
+    .arrow{color:var(--orange);font-size:22px;font-weight:900}
+
+    .positions{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:20px}
+    .pos{padding:12px 8px;border:1px solid var(--line);border-radius:16px;text-align:center;background:rgba(255,255,255,.04)}
+    .pos b{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 8px;border-radius:50%;border:2px solid var(--orange);font-size:17px}
+    .pos small{font-size:11px;color:var(--muted2);font-weight:800}
+
+    .courtPanel{
+      display:grid;grid-template-columns:1.1fr .9fr;gap:16px;border:1px solid var(--line);border-radius:28px;padding:18px;background:rgba(255,255,255,.035);
+    }
+    .svgCourt{width:100%;min-height:330px;border-radius:24px;background:linear-gradient(135deg,rgba(255,106,0,.09),rgba(255,255,255,.025));border:1px solid var(--line)}
+    .legend{display:grid;gap:10px;align-content:center}
+    .legendItem{display:flex;gap:11px;align-items:flex-start;padding:13px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.045)}
+    .dot{width:12px;height:12px;border-radius:50%;margin-top:4px;background:var(--orange);box-shadow:0 0 18px rgba(255,106,0,.5)}
+    .legendItem b{display:block;margin-bottom:2px}
+    .legendItem span{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+
+    .flow{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:10px;position:relative;
+    }
+    .flowCard{padding:16px;text-align:center;border:1px solid var(--line);border-radius:20px;background:var(--glass2);min-height:122px}
+    .flowCard .num{display:grid;place-items:center;width:34px;height:34px;border-radius:12px;margin:0 auto 10px;background:rgba(255,106,0,.13);border:1px solid rgba(255,106,0,.3);color:#ffc18a;font-weight:950}
+    .flowCard b{display:block;margin-bottom:5px}
+    .flowCard span{font-size:12.5px;color:var(--muted);line-height:1.35;display:block}
+
+    .chipControls{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px}
+    .chipBtn{
+      border:1px solid var(--line);background:var(--glass2);color:#d8deea;padding:9px 13px;border-radius:999px;cursor:pointer;font-weight:850;font-size:13px
+    }
+    .chipBtn.active{border-color:rgba(255,106,0,.45);background:rgba(255,106,0,.13);color:#fff}
+
+    .termCard{min-height:136px}
+    .termCard h3{display:flex;align-items:center;gap:9px}
+    .miniIcon{width:28px;height:28px;display:grid;place-items:center;border-radius:10px;background:rgba(255,106,0,.1);color:var(--orange)}
+    .cat{position:absolute;right:12px;top:12px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900}
+
+    .tacticCard{min-height:220px;padding-bottom:14px}
+    .miniCourt{
+      height:96px;border:1px solid rgba(255,106,0,.24);border-radius:17px;margin-top:14px;
+      background:
+        radial-gradient(circle at 22% 42%,var(--orange) 0 4px,transparent 5px),
+        radial-gradient(circle at 42% 30%,var(--orange) 0 4px,transparent 5px),
+        radial-gradient(circle at 62% 56%,#fff 0 4px,transparent 5px),
+        radial-gradient(circle at 78% 34%,#fff 0 4px,transparent 5px),
+        linear-gradient(90deg,transparent 49%,rgba(255,106,0,.16) 50%,transparent 51%),
+        rgba(255,106,0,.035);
+      position:relative;overflow:hidden;
+    }
+    .miniCourt:before{content:"";position:absolute;right:18px;top:25px;width:43px;height:43px;border:1px solid rgba(255,106,0,.48);border-radius:50%}
+    .miniCourt:after{content:"";position:absolute;left:22px;bottom:18px;width:80px;height:2px;background:rgba(255,106,0,.7);transform:rotate(-18deg);box-shadow:68px -18px 0 rgba(255,106,0,.38)}
+
+    .matrix{
+      min-height:420px;border:1px solid var(--line);border-radius:28px;background:rgba(255,255,255,.035);position:relative;overflow:hidden;padding:26px;
+    }
+    .matrix:before{
+      content:"";position:absolute;left:56px;right:34px;top:34px;bottom:58px;
+      background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+      background-size:25% 25%;border-left:2px solid rgba(255,255,255,.18);border-bottom:2px solid rgba(255,255,255,.18);
+    }
+    .axisX,.axisY{position:absolute;color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .axisX{left:50%;bottom:22px;transform:translateX(-50%)}
+    .axisY{left:9px;top:50%;transform:rotate(-90deg) translateX(-50%);transform-origin:left top}
+    .playerDot{
+      position:absolute;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,106,0,.36);
+      background:rgba(255,106,0,.14);color:#fff;font-size:12px;font-weight:950;white-space:nowrap;
+      box-shadow:0 12px 35px rgba(0,0,0,.25);
+    }
+    .dot1{left:67%;top:17%}.dot2{left:70%;top:48%}.dot3{left:42%;top:37%}.dot4{left:22%;top:66%}.dot5{left:52%;top:68%}.dot6{left:32%;top:23%}
+
+    .statTile{min-height:138px;padding:17px;border-radius:20px;border:1px solid var(--line);background:var(--glass2)}
+    .statTile b{display:block;color:var(--orange2);font-size:24px;letter-spacing:-.8px}
+    .statTile small{display:block;margin:4px 0 9px;color:#fff;font-weight:900}
+    .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:14px}
+    .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--orange),var(--yellow));width:60%}
+
+    .betBoard{
+      border:1px solid var(--line);border-radius:28px;background:rgba(255,255,255,.035);padding:18px;
+      display:grid;grid-template-columns:1fr 1.2fr;gap:16px;
+    }
+    .lineChart{border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,rgba(255,106,0,.08),rgba(255,255,255,.025));min-height:280px;padding:16px}
+    .lineChart svg{width:100%;height:210px}
+    .oddsCards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .oddsCard{padding:16px;border-radius:20px;border:1px solid var(--line);background:var(--glass2)}
+    .oddsCard b{display:block;margin-bottom:7px}
+    .oddsCard span{color:var(--muted);font-size:13px;line-height:1.4}
+
+    .weaknessTest{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .testCard{padding:18px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.028));min-height:160px}
+    .testCard .emoji{font-size:30px;margin-bottom:10px}
+    .testCard b{display:block;margin-bottom:7px}
+    .testCard span{color:var(--muted);font-size:13px;line-height:1.4}
+
+    .quoteGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+    .quote{
+      min-height:110px;padding:20px;border-radius:22px;border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.028));
+      font-size:18px;line-height:1.36;font-weight:900;
+    }
+    .quote:before{content:"“";font-size:44px;line-height:0;color:var(--orange);margin-right:3px}
+
+    .glossary{
+      border:1px solid var(--line);border-radius:30px;background:rgba(255,255,255,.035);padding:20px;overflow:hidden
+    }
+    .glossaryGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .glossItem{padding:16px;border:1px solid var(--line);border-radius:19px;background:rgba(255,255,255,.035)}
+    .glossItem b{display:block;margin-bottom:6px;color:#fff}
+    .glossItem span{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+    .hidden{display:none!important}
+
+    .mobileBar{
+      display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:30;padding:9px;border:1px solid var(--line);
+      background:rgba(8,11,16,.88);backdrop-filter:blur(20px);border-radius:22px;box-shadow:0 20px 70px rgba(0,0,0,.5);
+      grid-template-columns:repeat(5,1fr);gap:6px;
+    }
+    .mobileBar a{display:grid;place-items:center;gap:2px;padding:7px 4px;border-radius:15px;color:#d9dfea;font-size:10px;font-weight:850}
+    .mobileBar a:hover{background:rgba(255,106,0,.12);color:#fff}
+    .mobileBar span{font-size:17px;color:var(--orange)}
+
+    .footer{text-align:center;color:var(--muted);padding:34px 20px;margin-top:28px}
+
+    @media (max-width:1180px){
+      .wrap{grid-template-columns:1fr}
+      aside{display:none}
+      .content{padding:30px 22px 96px}
+      .cols5{grid-template-columns:repeat(3,1fr)}
+      .cols4{grid-template-columns:repeat(2,1fr)}
+      .heroVisual{opacity:.33;right:-40px}
+      .mobileBar{display:grid}
+    }
+
+    @media (max-width:820px){
+      .topbar{height:auto;min-height:68px;padding:12px 16px;align-items:flex-start;flex-direction:column}
+      .toplinks{width:100%;overflow:auto;gap:16px;padding-bottom:2px}
+      .quickSearch{width:100%}
+      .hero{padding:28px;border-radius:26px;min-height:520px}
+      h1{font-size:62px;letter-spacing:-3.5px}
+      .hero p{font-size:18px}
+      .heroStats{display:grid;grid-template-columns:repeat(2,1fr)}
+      .heroStat{min-width:0}
+      .heroVisual{width:460px;height:330px;top:250px;right:-140px;opacity:.38}
+      .sectionHead{align-items:flex-start;flex-direction:column;gap:5px}
+      .sectionHead h2{font-size:25px}
+      .cols2,.cols3,.cols4,.cols5,.cols6{grid-template-columns:1fr}
+      .courtPanel,.betBoard{grid-template-columns:1fr}
+      .flow{grid-template-columns:1fr}
+      .seasonViz{display:grid;grid-template-columns:1fr auto 1fr;row-gap:12px}
+      .seasonStep{min-width:120px}
+      .positions{grid-template-columns:repeat(5, minmax(58px,1fr));overflow:auto;padding-bottom:4px}
+      .weaknessTest,.quoteGrid,.glossaryGrid{grid-template-columns:1fr}
+      .matrix{min-height:360px}
+      .axisY{display:none}
+      .oddsCards{grid-template-columns:1fr}
+    }
+
+    @media (max-width:460px){
+      .content{padding:20px 12px 98px}
+      .toplinks{font-size:13px}
+      .hero{padding:22px;min-height:545px}
+      h1{font-size:50px;letter-spacing:-2.7px}
+      .heroStats{grid-template-columns:1fr}
+      .heroVisual{top:315px;right:-200px}
+      .card,.testCard,.glossItem{border-radius:20px}
+      .seasonViz{grid-template-columns:1fr}
+      .arrow{display:none}
+      .svgCourt{min-height:250px}
+    }
+
+    /* Real game walkthrough tabs */
+    .gameTabsTop a{white-space:nowrap}
+    .gameSection{
+      position:relative;
+      border:1px solid var(--line);
+      border-radius:32px;
+      background:
+        radial-gradient(circle at 84% 10%, rgba(255,106,0,.16), transparent 30%),
+        linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+      padding:20px;
+      overflow:hidden;
+    }
+    .gameHeader{
+      display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;margin-bottom:16px;
+    }
+    .gameHeader h3{margin:0;font-size:24px;letter-spacing:-.6px}
+    .gameHeader p{margin:5px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+    .gameTabs{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+    .gameTab{
+      cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.045);color:#dbe2ee;
+      padding:11px 14px;border-radius:999px;font-weight:950;font-size:13px;
+    }
+    .gameTab.active{border-color:rgba(255,106,0,.5);background:rgba(255,106,0,.14);color:#fff}
+    .gamePanel{display:none}
+    .gamePanel.active{display:block}
+    .scoreHero{
+      display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;
+      border:1px solid var(--line);border-radius:28px;padding:18px;
+      background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+      margin-bottom:15px;
+    }
+    .teamBox{min-height:118px;border-radius:22px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.035);position:relative;overflow:hidden}
+    .teamBox:after{content:"";position:absolute;right:-38px;bottom:-50px;width:120px;height:120px;border-radius:50%;border:2px solid rgba(255,106,0,.16)}
+    .teamBox small{display:block;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:11px;margin-bottom:7px}
+    .teamBox b{display:block;font-size:24px;letter-spacing:-.7px}
+    .teamBox span{display:block;color:var(--muted2);font-size:13px;margin-top:5px}
+    .scoreMid{text-align:center;min-width:120px}
+    .scoreMid b{display:block;font-size:34px;letter-spacing:-1.5px;color:#fff}
+    .scoreMid span{display:block;color:#ffc18a;font-weight:950;font-size:12px;text-transform:uppercase;letter-spacing:.09em}
+    .gameSummaryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+    .summaryChip{padding:13px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04)}
+    .summaryChip b{display:block;color:var(--orange2);font-size:18px;margin-bottom:3px}
+    .summaryChip span{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+    .gameTimeline{display:grid;gap:12px}
+    .moment{
+      display:grid;grid-template-columns:90px 1fr 1fr;gap:12px;align-items:stretch;
+      border:1px solid var(--line);border-radius:24px;background:rgba(5,7,10,.24);padding:12px;
+    }
+    .momentTime{
+      display:grid;place-items:center;text-align:center;border-radius:18px;background:rgba(255,106,0,.1);border:1px solid rgba(255,106,0,.25);color:#ffc18a;font-weight:1000;
+    }
+    .momentCard{padding:15px;border-radius:19px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
+    .momentCard .label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
+    .momentCard b{display:block;font-size:16px;margin-bottom:5px;letter-spacing:-.2px}
+    .momentCard p{margin:0;color:#c3ccda;font-size:13.5px;line-height:1.45}
+    .slangCard{border-color:rgba(255,106,0,.18);background:linear-gradient(180deg,rgba(255,106,0,.075),rgba(255,255,255,.035))}
+    .gameLesson{
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;
+    }
+    .lessonCard{padding:17px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,.04)}
+    .lessonCard b{display:block;color:#fff;margin-bottom:7px}
+    .lessonCard p{margin:0;color:var(--muted2);font-size:13.5px;line-height:1.45}
+
+    @media (max-width:900px){
+      .gameHeader{grid-template-columns:1fr}.gameTabs{justify-content:flex-start}
+      .scoreHero{grid-template-columns:1fr}.scoreMid{order:-1}.scoreMid b{font-size:30px}
+      .gameSummaryGrid{grid-template-columns:1fr 1fr}
+      .moment{grid-template-columns:1fr}.momentTime{padding:12px;place-items:start;text-align:left}
+      .gameLesson{grid-template-columns:1fr}
+    }
+    @media (max-width:460px){.gameSummaryGrid{grid-template-columns:1fr}.gameSection{padding:13px;border-radius:24px}.gameHeader h3{font-size:21px}}
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <aside>
+      <div class="brand">
+        <div class="ball"></div>
+        <div><b>NBA 101</b><span>visual fan guide</span></div>
+      </div>
+
+      <label class="sideSearch">⌕ <input class="globalSearch" placeholder="Search everything..." /></label>
+
+      <nav>
+        <a class="active" href="#hero"><span class="navIcon">⌂</span>Home</a>
+        <a href="#map"><span class="navIcon">⌁</span>Game map</a>
+        <a href="#basics"><span class="navIcon">82</span>League</a>
+        <a href="#court"><span class="navIcon">▭</span>Court</a>
+        <a href="#games"><span class="navIcon">▶</span>Games</a>
+        <a href="#slang"><span class="navIcon">💬</span>Slang</a>
+        <a href="#tactics"><span class="navIcon">◎</span>Tactics</a>
+        <a href="#stats"><span class="navIcon">↗</span>Stats</a>
+        <a href="#betting"><span class="navIcon">$</span>Betting</a>
+      </nav>
+
+      <div class="sideCard">
+        <b>The real cheat code</b>
+        <p>NBA discourse = spacing + efficiency + matchups + playoff weakness hunting.</p>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="toplinks gameTabsTop">
+          <a href="#basics">Basics</a>
+          <a href="#court">Court</a>
+          <a href="#games" data-game-jump="wolves">Game 1</a>
+          <a href="#games" data-game-jump="pistons">Game 2</a>
+          <a href="#slang">Slang</a>
+          <a href="#tactics">Tactics</a>
+          <a href="#stats">Stats</a>
+          <a href="#betting">Betting</a>
+        </div>
+        <label class="quickSearch">⌕ <input class="globalSearch" placeholder="Search: bag, drop, CLV, TS%, spacing..." /></label>
+      </div>
+
+      <div class="content">
+        <header id="hero" class="hero">
+          <div class="heroVisual" aria-hidden="true">
+            <svg class="courtSvg" viewBox="0 0 600 420">
+              <rect x="20" y="55" width="540" height="300" rx="28" fill="none" stroke="rgba(255,106,0,.42)" stroke-width="3"/>
+              <line x1="290" y1="55" x2="290" y2="355" stroke="rgba(255,106,0,.26)" stroke-width="3"/>
+              <circle cx="290" cy="205" r="58" fill="none" stroke="rgba(255,106,0,.24)" stroke-width="3"/>
+              <rect x="410" y="132" width="150" height="146" fill="none" stroke="rgba(255,106,0,.28)" stroke-width="3"/>
+              <circle cx="473" cy="205" r="72" fill="none" stroke="rgba(255,106,0,.22)" stroke-width="3"/>
+              <path d="M 110 90 C 210 155, 260 120, 335 205 S 450 275, 515 230" fill="none" stroke="rgba(255,154,47,.78)" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="112" cy="91" r="9" fill="#ff6a00"/>
+              <circle cx="335" cy="205" r="9" fill="#fff"/>
+              <circle cx="515" cy="230" r="9" fill="#ff6a00"/>
+            </svg>
+            <div class="board"></div>
+            <div class="rim"></div>
+            <div class="floatingBall"></div>
+          </div>
+
+          <div class="heroText">
+            <span class="eyebrow">🏀 NBA native-speaker pack</span>
+            <h1>NBA 101</h1>
+            <p>A visual guide to the league, the court, the slang, the tactics, the stats, and the betting/trading language fans actually use.</p>
+            <div class="heroStats">
+              <div class="heroStat"><b>30</b><span>teams</span></div>
+              <div class="heroStat"><b>82</b><span>regular season games</span></div>
+              <div class="heroStat"><b>7</b><span>game playoff series</span></div>
+              <div class="heroStat"><b>100</b><span>possessions = cleaner stats</span></div>
+            </div>
+          </div>
+        </header>
+
+        <section id="games">
+          <div class="sectionHead"><h2>Real Game Walkthroughs</h2><p>Plain English → NBA slang translation.</p></div>
+          <div class="gameSection">
+            <div class="gameHeader">
+              <div>
+                <h3>Recent playoff examples</h3>
+                <p>Two games where the story is easy to learn from: one defensive monster game, one pressure-and-turnovers game.</p>
+              </div>
+              <div class="gameTabs">
+                <button class="gameTab active" data-game="wolves">Game 1 · Wolves vs Spurs</button>
+                <button class="gameTab" data-game="pistons">Game 2 · Pistons vs Cavs</button>
+              </div>
+            </div>
+
+            <article class="gamePanel active" data-panel="wolves">
+              <div class="scoreHero searchable" data-terms="timberwolves spurs anthony edwards victor wembanyama 104 102 game walkthrough">
+                <div class="teamBox"><small>Winner</small><b>Minnesota Timberwolves</b><span>104 · lower-scoring, physical road win</span></div>
+                <div class="scoreMid"><span>May 4, 2026</span><b>104–102</b><span>Western semifinal G1</span></div>
+                <div class="teamBox"><small>Loser</small><b>San Antonio Spurs</b><span>102 · Wemby block-party, offense stalled</span></div>
+              </div>
+              <div class="gameSummaryGrid">
+                <div class="summaryChip"><b>12 BLK</b><span>Wembanyama set a playoff blocks record.</span></div>
+                <div class="summaryChip"><b>18 PTS</b><span>Anthony Edwards returned from knee injury.</span></div>
+                <div class="summaryChip"><b>11 in 4Q</b><span>Edwards scored most of his points late.</span></div>
+                <div class="summaryChip"><b>Rock fight</b><span>Ugly, physical, defense-first game.</span></div>
+              </div>
+              <div class="gameTimeline">
+                <div class="moment searchable" data-terms="wolves spurs first quarter wembanyama blocks rim protection">
+                  <div class="momentTime">1Q<br>Paint war</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>San Antonio made the rim feel impossible.</b><p>Wembanyama blocked or changed shots early, so Minnesota could not just drive casually. For a beginner: one defender made the easiest scoring area feel dangerous.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Wemby put the rim in jail.</b><p>It was a no-fly zone. Wolves kept going into the paint and getting erased at the cup.</p></div>
+                </div>
+                <div class="moment searchable" data-terms="wolves spurs second quarter ugly offense physical defense randle">
+                  <div class="momentTime">2Q<br>Rock fight</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Neither team got comfortable shots.</b><p>The game became physical. Minnesota survived because Julius Randle gave them strong, simple offense and rebounding while the Spurs offense stayed uneven.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Both teams were in the mud.</b><p>It was brick city, but Randle kept Minny alive with grown-man buckets and boards.</p></div>
+                </div>
+                <div class="moment searchable" data-terms="wolves spurs third quarter 14 2 run biggest lead">
+                  <div class="momentTime">3Q<br>Run</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Minnesota created the only real separation.</b><p>A 14–2 Wolves run turned a tight game into a small cushion. In basketball, quick runs matter because they force the opponent to play rushed.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Wolves hit them with a mini-avalanche.</b><p>Spurs got sped up, the offense froze, and suddenly Minnesota had the first real punch of the game.</p></div>
+                </div>
+                <div class="moment searchable" data-terms="anthony edwards fourth quarter return 11 points clutch wolves spurs">
+                  <div class="momentTime">4Q<br>Ant closes</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Anthony Edwards changed the endgame.</b><p>Even on limited minutes after injury, he scored key fourth-quarter points. San Antonio came back late, but Minnesota had just enough shot-making to survive.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Ant came off the bench and said “I’m him.”</b><p>Wemby had a block party, but Ant got the clutch buckets. Spurs made it scary, Wolves escaped.</p></div>
+                </div>
+              </div>
+              <div class="gameLesson">
+                <div class="lessonCard"><b>Beginner lesson</b><p>A player can dominate defensively and still lose if his team cannot generate enough efficient offense.</p></div>
+                <div class="lessonCard"><b>NBA-slang lesson</b><p>Defense was elite, but you still need buckets. Wemby had the clamps; Ant had the closer gene.</p></div>
+              </div>
+            </article>
+
+            <article class="gamePanel" data-panel="pistons">
+              <div class="scoreHero searchable" data-terms="pistons cavaliers cade cunningham 111 101 turnovers defensive pressure game walkthrough">
+                <div class="teamBox"><small>Winner</small><b>Detroit Pistons</b><span>111 · defense, turnovers, closing run</span></div>
+                <div class="scoreMid"><span>May 5, 2026</span><b>111–101</b><span>Eastern semifinal G1</span></div>
+                <div class="teamBox"><small>Loser</small><b>Cleveland Cavaliers</b><span>101 · bad spacing, ball-screen problems</span></div>
+              </div>
+              <div class="gameSummaryGrid">
+                <div class="summaryChip"><b>19 TO</b><span>Detroit forced Cleveland turnovers.</span></div>
+                <div class="summaryChip"><b>31 PTS</b><span>Pistons scored heavily off those mistakes.</span></div>
+                <div class="summaryChip"><b>18–8</b><span>Detroit closed the game with a final run.</span></div>
+                <div class="summaryChip"><b>12-game</b><span>Detroit snapped a playoff skid vs Cleveland.</span></div>
+              </div>
+              <div class="gameTimeline">
+                <div class="moment searchable" data-terms="pistons cavaliers first quarter defensive pressure turnovers">
+                  <div class="momentTime">1Q<br>Pressure</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Detroit made Cleveland uncomfortable immediately.</b><p>The Pistons pressured the ball, disrupted passing lanes, and forced Cleveland to start possessions from bad spots.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Pistons came out in menace mode.</b><p>Cavs couldn’t breathe. Detroit was picking them up, speeding them up, and turning them over.</p></div>
+                </div>
+                <div class="moment searchable" data-terms="cade cunningham tobias harris duncan robinson balanced scoring">
+                  <div class="momentTime">2Q<br>Balance</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Detroit did not rely on one scorer.</b><p>Cade Cunningham led the offense, but Tobias Harris and Duncan Robinson gave Detroit enough scoring balance to punish Cleveland’s mistakes.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>It wasn’t just Cade hero-ball.</b><p>Cade cooked, Tobias got his, Duncan cashed threes — role guys were actually hooping.</p></div>
+                </div>
+                <div class="moment searchable" data-terms="cavaliers fourth quarter push harden comeback spacing ball screens">
+                  <div class="momentTime">3Q/4Q<br>Cavs push</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Cleveland made a real comeback attempt.</b><p>The Cavaliers had a fourth-quarter push, but their spacing and ball-screen execution were not clean enough to fully take control.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Cavs tried to make it a game.</b><p>They had a little run, but the offense was clunky. Not enough spacing, not enough clean actions.</p></div>
+                </div>
+                <div class="moment searchable" data-terms="jalen duren dunks closing run pistons cavaliers 18 8 finish">
+                  <div class="momentTime">Final<br>Door slam</div>
+                  <div class="momentCard"><div class="label">Normal explanation</div><b>Detroit closed with force.</b><p>Jalen Duren’s late dunks powered an 18–8 closing run. That means Detroit converted defense and pressure into simple, high-value shots at the rim.</p></div>
+                  <div class="momentCard slangCard"><div class="label">Same thing in slang</div><b>Duren put the rim in a body bag.</b><p>Pistons slammed the door. Cavs got punched in the mouth late and never recovered.</p></div>
+                </div>
+              </div>
+              <div class="gameLesson">
+                <div class="lessonCard"><b>Beginner lesson</b><p>Turnovers are not just lost possessions. They create easy points before the defense is organized.</p></div>
+                <div class="lessonCard"><b>NBA-slang lesson</b><p>Detroit turned defense into offense. Cavs got sped up, coughed it up, and got run out late.</p></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+
+        <section id="map">
+          <div class="sectionHead"><h2>0. The NBA in One Possession</h2><p>The whole game loop, visually.</p></div>
+          <div class="flow">
+            <div class="flowCard searchable" data-terms="possession inbound offense set"><div class="num">1</div><b>Start possession</b><span>Bring ball up, defense gets set.</span></div>
+            <div class="flowCard searchable" data-terms="spacing pick and roll iso drive"><div class="num">2</div><b>Create advantage</b><span>Screen, drive, cut, iso, or mismatch.</span></div>
+            <div class="flowCard searchable" data-terms="help defense rotation closeout"><div class="num">3</div><b>Defense reacts</b><span>Help comes. Offense reads the rotation.</span></div>
+            <div class="flowCard searchable" data-terms="shot rim three free throw"><div class="num">4</div><b>Take best shot</b><span>Layup, three, midrange, or free throws.</span></div>
+            <div class="flowCard searchable" data-terms="rebound transition fast break"><div class="num">5</div><b>Reset / run</b><span>Rebound creates new offense or transition.</span></div>
+          </div>
+        </section>
+
+        <section id="basics">
+          <div class="sectionHead"><h2>1. How the League Works</h2><p>Regular season is sorting. Playoffs are interrogation.</p></div>
+          <div class="grid cols3">
+            <div class="card large searchable" data-terms="east west conference 30 teams">
+              <div class="accentTag">E/W</div>
+              <h3>East vs West</h3>
+              <p>30 teams split into two conferences. Teams compete for seeds, then playoff matchups.</p>
+            </div>
+
+            <div class="card large searchable" data-terms="regular season play in playoffs finals best of seven">
+              <h3>Season Journey</h3>
+              <div class="seasonViz">
+                <div class="seasonStep"><div class="seasonBubble">82</div><small>Regular</small></div><div class="arrow">→</div>
+                <div class="seasonStep"><div class="seasonBubble">7-10</div><small>Play-in</small></div><div class="arrow">→</div>
+                <div class="seasonStep"><div class="seasonBubble">B7</div><small>Playoffs</small></div><div class="arrow">→</div>
+                <div class="seasonStep"><div class="seasonBubble">🏆</div><small>Finals</small></div>
+              </div>
+              <p>Best-of-7 means the better team usually wins. Randomness shrinks. Weaknesses get hunted.</p>
+            </div>
+
+            <div class="card large searchable" data-terms="positions pg sg sf pf c guard wing big center">
+              <h3>Positions → Modern Roles</h3>
+              <div class="positions">
+                <div class="pos"><b>PG</b><small>handler</small></div>
+                <div class="pos"><b>SG</b><small>scorer</small></div>
+                <div class="pos"><b>SF</b><small>wing</small></div>
+                <div class="pos"><b>PF</b><small>big wing</small></div>
+                <div class="pos"><b>C</b><small>big</small></div>
+              </div>
+              <p style="margin-top:12px">Modern NBA cares more about function: creator, shooter, wing, big, defender.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="court">
+          <div class="sectionHead"><h2>2. Court Map: What Fans Are Talking About</h2><p>Paint, arc, corners, elbows — learn the geography.</p></div>
+          <div class="courtPanel">
+            <svg class="svgCourt" viewBox="0 0 720 420" role="img" aria-label="Basketball court diagram">
+              <rect x="24" y="26" width="672" height="368" rx="24" fill="none" stroke="rgba(255,106,0,.48)" stroke-width="4"/>
+              <line x1="360" y1="26" x2="360" y2="394" stroke="rgba(255,106,0,.25)" stroke-width="3"/>
+              <circle cx="360" cy="210" r="62" fill="none" stroke="rgba(255,106,0,.25)" stroke-width="3"/>
+              <rect x="510" y="114" width="186" height="192" fill="rgba(255,106,0,.06)" stroke="rgba(255,106,0,.36)" stroke-width="3"/>
+              <circle cx="568" cy="210" r="74" fill="none" stroke="rgba(255,106,0,.32)" stroke-width="3"/>
+              <path d="M 445 64 C 335 155 335 265 445 356" fill="none" stroke="rgba(255,106,0,.34)" stroke-width="4"/>
+              <line x1="24" y1="86" x2="160" y2="86" stroke="rgba(255,106,0,.28)" stroke-width="4"/>
+              <line x1="24" y1="334" x2="160" y2="334" stroke="rgba(255,106,0,.28)" stroke-width="4"/>
+              <circle cx="660" cy="210" r="9" fill="#ff6a00"/>
+              <line x1="660" y1="210" x2="697" y2="210" stroke="#fff" stroke-width="5"/>
+              <text x="525" y="208" fill="#fff" font-size="18" font-weight="900">PAINT</text>
+              <text x="406" y="73" fill="#ffb16a" font-size="15" font-weight="900">3PT ARC</text>
+              <text x="51" y="75" fill="#cbd3df" font-size="15" font-weight="900">CORNER 3</text>
+              <text x="545" y="107" fill="#cbd3df" font-size="14" font-weight="900">ELBOW</text>
+              <text x="350" y="205" fill="#cbd3df" font-size="14" font-weight="900">LOGO</text>
+            </svg>
+
+            <div class="legend">
+              <div class="legendItem searchable" data-terms="paint rim protector inside layup"><div class="dot"></div><div><b>Paint</b><span>Most valuable area for layups, dunks, rebounds, rim pressure.</span></div></div>
+              <div class="legendItem searchable" data-terms="three point arc spacing corner three"><div class="dot" style="background:var(--blue)"></div><div><b>3PT Arc</b><span>Modern spacing lives here. Shooters stretch defense.</span></div></div>
+              <div class="legendItem searchable" data-terms="corner three efficient shot"><div class="dot" style="background:var(--green)"></div><div><b>Corner Three</b><span>Shorter three. Very valuable if offense creates it cleanly.</span></div></div>
+              <div class="legendItem searchable" data-terms="elbow midrange high post jokic"><div class="dot" style="background:var(--purple)"></div><div><b>Elbow / High Post</b><span>Great passing hub for skilled bigs and midrange creators.</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="slang">
+          <div class="sectionHead"><h2>3. Slang Map</h2><p>Filter by offense, defense, fan discourse, or betting.</p></div>
+          <div class="chipControls">
+            <button class="chipBtn active" data-filter="all">All</button>
+            <button class="chipBtn" data-filter="offense">Offense</button>
+            <button class="chipBtn" data-filter="defense">Defense</button>
+            <button class="chipBtn" data-filter="fan">Fan talk</button>
+            <button class="chipBtn" data-filter="betting">Betting</button>
+          </div>
+          <div class="grid cols5" id="slangGrid"></div>
+        </section>
+
+        <section id="tactics">
+          <div class="sectionHead"><h2>4. Tactics Visualized</h2><p>Most NBA commentary is just these concepts in disguise.</p></div>
+          <div class="grid cols5" id="tacticsGrid"></div>
+        </section>
+
+        <section id="archetypes">
+          <div class="sectionHead"><h2>5. Player Archetype Matrix</h2><p>Creation vs impact.</p></div>
+          <div class="matrix">
+            <div class="axisX">More offensive creation →</div>
+            <div class="axisY">More two-way impact →</div>
+            <div class="playerDot dot1">Superstar</div>
+            <div class="playerDot dot2">Ceiling raiser</div>
+            <div class="playerDot dot3">3-and-D wing</div>
+            <div class="playerDot dot4">Role player</div>
+            <div class="playerDot dot5">Sixth man</div>
+            <div class="playerDot dot6">Two-way star</div>
+          </div>
+        </section>
+
+        <section id="stats">
+          <div class="sectionHead"><h2>6. Stats That Actually Matter</h2><p>Efficiency > raw points. Context > box score.</p></div>
+          <div class="grid cols5" id="statsGrid"></div>
+        </section>
+
+        <section id="betting">
+          <div class="sectionHead"><h2>7. Betting / Trading Board</h2><p>Especially useful for Notch-style team markets.</p></div>
+          <div class="betBoard">
+            <div class="lineChart">
+              <h3 style="margin:0 0 8px">Line Movement / CLV</h3>
+              <p style="margin:0;color:var(--muted);font-size:13px">If you buy before the market moves your way, you got closing line value.</p>
+              <svg viewBox="0 0 520 210">
+                <line x1="35" y1="170" x2="500" y2="170" stroke="rgba(255,255,255,.18)" />
+                <line x1="35" y1="25" x2="35" y2="170" stroke="rgba(255,255,255,.18)" />
+                <path d="M45 145 C 110 137, 132 110, 180 116 S 260 82, 320 74 S 404 52, 485 43" fill="none" stroke="#ff9b2f" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="132" cy="110" r="8" fill="#3ee289"/>
+                <text x="145" y="106" fill="#fff" font-size="13" font-weight="900">your entry</text>
+                <circle cx="485" cy="43" r="8" fill="#ff6a00"/>
+                <text x="370" y="37" fill="#fff" font-size="13" font-weight="900">closing price</text>
+                <text x="36" y="196" fill="#9aa4b5" font-size="12">open</text>
+                <text x="452" y="196" fill="#9aa4b5" font-size="12">tipoff</text>
+              </svg>
+            </div>
+            <div class="oddsCards" id="bettingGrid"></div>
+          </div>
+        </section>
+
+        <section id="playoffs">
+          <div class="sectionHead"><h2>8. The Playoff Weakness Test</h2><p>Why NBA nerds obsess over matchups.</p></div>
+          <div class="weaknessTest">
+            <div class="testCard searchable" data-terms="playoffs hunted weak defender"><div class="emoji">🎯</div><b>Can he be hunted?</b><span>Weak defenders get targeted every possession.</span></div>
+            <div class="testCard searchable" data-terms="half court offense creator playoffs"><div class="emoji">🧠</div><b>Can they score half-court?</b><span>Fast breaks disappear when elite defenses are set.</span></div>
+            <div class="testCard searchable" data-terms="spacing non shooter playoff defense"><div class="emoji">📏</div><b>Can they space?</b><span>Non-shooters shrink the floor and kill star drives.</span></div>
+            <div class="testCard searchable" data-terms="star best player title team"><div class="emoji">👑</div><b>Is he the best guy?</b><span>The ultimate title question: can your #1 beat other #1s?</span></div>
+          </div>
+        </section>
+
+        <section id="phrases">
+          <div class="sectionHead"><h2>9. Phrases That Make You Sound Native</h2><p>Drop these and you’ll sound 10x less casual.</p></div>
+          <div class="quoteGrid">
+            <div class="quote searchable" data-terms="hunting weak guard pick and roll">They’re hunting the weak guard in every pick-and-roll.</div>
+            <div class="quote searchable" data-terms="half court offense playoffs trust">I don’t trust their half-court offense in the playoffs.</div>
+            <div class="quote searchable" data-terms="spacing floor off ball">He spaces the floor and doesn’t need the ball.</div>
+            <div class="quote searchable" data-terms="backbreaker run momentum">That was a backbreaker run.</div>
+            <div class="quote searchable" data-terms="transition fast break problem">He’s a problem in transition.</div>
+            <div class="quote searchable" data-terms="defensive anchor rim protector contend">They need a defensive anchor to contend.</div>
+          </div>
+        </section>
+
+        <section id="glossary">
+          <div class="sectionHead"><h2>10. Mini Glossary</h2><p>Searchable reference.</p></div>
+          <div class="glossary">
+            <div class="glossaryGrid" id="glossaryGrid"></div>
+          </div>
+        </section>
+
+        <div class="footer">Basketball is more than a game. It’s a language. <b style="color:var(--orange)">Keep learning.</b> 🏀</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="mobileBar">
+    <a href="#hero"><span>⌂</span>Home</a>
+    <a href="#court"><span>▭</span>Court</a>
+    <a href="#games"><span>▶</span>Games</a>
+    <a href="#slang"><span>💬</span>Slang</a>
+    <a href="#betting"><span>$</span>Board</a>
+  </div>
+
+<script>
+const slang = [
+  ["Bucket","Made shot / player who can score easily.","offense","◉"],
+  ["Bag","A player's scoring moves and tools.","offense","▣"],
+  ["Dime","A perfect assist.","offense","✦"],
+  ["And-one","Made shot while fouled, plus free throw.","offense","1+"],
+  ["Brick","Ugly missed shot.","offense","▰"],
+  ["Splash","Clean made jumper, usually a three.","offense","≈"],
+  ["Clutch","Good under late-game pressure.","fan","⌁"],
+  ["Choke","Fails under pressure.","fan","!"],
+  ["Posterized","Dunked on badly.","fan","↧"],
+  ["Heat check","Difficult shot after a player gets hot.","fan","🔥"],
+  ["Clamps","Great defense.","defense","⛓"],
+  ["BBQ chicken","Easy mismatch target.","fan","🍗"],
+  ["Hunted","Repeatedly targeted by offense.","defense","🎯"],
+  ["Washed","Declined badly / no longer good.","fan","⌫"],
+  ["Garbage time","End of game when result is basically decided.","betting","⏱"],
+  ["Backdoor cover","Late meaningless score makes spread bet win/lose.","betting","↩"],
+  ["Chalk","Favorite / obvious side.","betting","−"],
+  ["Dog","Underdog / plus-money side.","betting","+"],
+  ["Vig","Bookmaker fee / hidden margin.","betting","%"],
+  ["CLV","Closing line value: your price beats closing market.","betting","↗"]
+];
+
+const tactics = [
+  ["Pick-and-Roll","Screen frees ball-handler; screener rolls to rim.","Screen + roll action."],
+  ["Switch","Defenders swap assignments after a screen.","Stops easy advantage, creates mismatches."],
+  ["Drop Coverage","Big stays near paint vs pick-and-roll.","Protects rim but gives pull-up shots."],
+  ["Blitz / Trap","Two defenders attack the ball-handler.","Forces pass, risks open shooters."],
+  ["Help Defense","Defender leaves his man to stop bigger threat.","Creates rotations and closeouts."],
+  ["Closeout","Sprint to contest shooter without getting blown by.","Harder than it looks."],
+  ["Iso","One-on-one attack.","Great for stars, ugly for weak creators."],
+  ["Spacing","Players spread floor to create driving lanes.","The oxygen of modern offense."],
+  ["Transition","Fast break before defense sets.","Easy points if you run."],
+  ["Mismatch","Speed, size, or skill advantage.","The thing playoff offenses hunt."]
+];
+
+const stats = [
+  ["PTS","Points","Raw scoring. Useful, but can lie without efficiency.",78],
+  ["REB","Rebounds","Who ended or extended possessions.",62],
+  ["AST","Assists","Passing that directly creates buckets.",66],
+  ["FG%","Field Goal %","Basic shooting percentage.",58],
+  ["3P%","Three Point %","How dangerous a shooter is from deep.",68],
+  ["TS%","True Shooting","Best simple scoring efficiency stat.",88],
+  ["USG%","Usage Rate","How much offense runs through a player.",72],
+  ["ORtg","Offensive Rating","Points scored per 100 possessions.",80],
+  ["DRtg","Defensive Rating","Points allowed per 100 possessions.",70],
+  ["Net Rating","Net Impact","Point differential per 100 possessions.",86]
+];
+
+const betting = [
+  ["Moneyline","Pick the outright winner. Celtics ML = Celtics win."],
+  ["Spread","Handicap. Lakers -5.5 means win by 6+."],
+  ["Over/Under","Bet on combined points total."],
+  ["Prop","Specific player/team event or stat."],
+  ["Parlay","Multiple bets combined. Bigger payout, worse odds."],
+  ["CLV","You bought a better price than the closing market."],
+  ["Vig","Bookmaker fee / margin."],
+  ["Steam","Fast line move from sharp money or news."]
+];
+
+function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
+
+const slangGrid = document.getElementById("slangGrid");
+slang.forEach(([title,body,cat,icon]) => {
+  slangGrid.appendChild(el(`
+    <div class="card termCard searchable slangItem" data-cat="${cat}" data-terms="${(title+" "+body+" "+cat).toLowerCase()}">
+      <span class="cat">${cat}</span>
+      <h3><span class="miniIcon">${icon}</span>${title}</h3>
+      <p>${body}</p>
+    </div>
+  `));
+});
+
+const tacticsGrid = document.getElementById("tacticsGrid");
+tactics.forEach(([title,body,note]) => {
+  tacticsGrid.appendChild(el(`
+    <div class="card tacticCard searchable" data-terms="${(title+" "+body+" "+note).toLowerCase()}">
+      <h3><span class="miniIcon">◎</span>${title}</h3>
+      <p>${body}</p>
+      <div class="miniCourt"></div>
+      <p style="margin-top:10px;color:#8f9aac">${note}</p>
+    </div>
+  `));
+});
+
+const statsGrid = document.getElementById("statsGrid");
+stats.forEach(([abbr,name,body,width]) => {
+  statsGrid.appendChild(el(`
+    <div class="statTile searchable" data-terms="${(abbr+" "+name+" "+body).toLowerCase()}">
+      <b>${abbr}</b><small>${name}</small><p>${body}</p>
+      <div class="bar"><span style="width:${width}%"></span></div>
+    </div>
+  `));
+});
+
+const bettingGrid = document.getElementById("bettingGrid");
+betting.forEach(([title,body]) => {
+  bettingGrid.appendChild(el(`
+    <div class="oddsCard searchable" data-terms="${(title+" "+body).toLowerCase()}">
+      <b>${title}</b><span>${body}</span>
+    </div>
+  `));
+});
+
+const glossaryGrid = document.getElementById("glossaryGrid");
+[...slang, ...tactics.map(x=>[x[0],x[1],"tactics","◎"]), ...stats.map(x=>[x[0],x[2],"stats","↗"]), ...betting.map(x=>[x[0],x[1],"betting","$"])].forEach(([title,body,cat]) => {
+  glossaryGrid.appendChild(el(`
+    <div class="glossItem searchable" data-terms="${(title+" "+body+" "+cat).toLowerCase()}">
+      <b>${title}</b><span>${body}</span>
+    </div>
+  `));
+});
+
+let activeFilter = "all";
+document.querySelectorAll(".chipBtn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".chipBtn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+document.querySelectorAll(".globalSearch").forEach(input=>{
+  input.addEventListener("input", e=>{
+    document.querySelectorAll(".globalSearch").forEach(other=>{ if(other!==input) other.value=input.value; });
+    applyFilters();
+  });
+});
+
+function applyFilters(){
+  const q = document.querySelector(".globalSearch").value.trim().toLowerCase();
+  document.querySelectorAll(".searchable").forEach(node=>{
+    const terms = (node.dataset.terms || node.textContent).toLowerCase();
+    const matchesSearch = !q || terms.includes(q);
+    const isSlang = node.classList.contains("slangItem");
+    const matchesCat = !isSlang || activeFilter === "all" || node.dataset.cat === activeFilter;
+    node.classList.toggle("hidden", !(matchesSearch && matchesCat));
+  });
+}
+
+
+// Real game tabs
+function activateGame(game){
+  document.querySelectorAll('.gameTab').forEach(btn=>btn.classList.toggle('active', btn.dataset.game === game));
+  document.querySelectorAll('.gamePanel').forEach(panel=>panel.classList.toggle('active', panel.dataset.panel === game));
+}
+document.querySelectorAll('.gameTab').forEach(btn=>btn.addEventListener('click',()=>activateGame(btn.dataset.game)));
+document.querySelectorAll('[data-game-jump]').forEach(link=>{
+  link.addEventListener('click',()=>{
+    const game = link.dataset.gameJump;
+    setTimeout(()=>activateGame(game), 30);
+  });
+});
+
+const sections = [...document.querySelectorAll("section, header")];
+const navs = [...document.querySelectorAll("nav a")];
+window.addEventListener("scroll",()=>{
+  const y = window.scrollY + 120;
+  let current = "hero";
+  for(const s of sections){ if(s.offsetTop <= y) current = s.id; }
+  navs.forEach(a=>a.classList.toggle("active", a.getAttribute("href") === "#"+current));
+});
+</script>
+</body>
+</html>
