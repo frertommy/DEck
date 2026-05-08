@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c0e12">
+<title>Notch — Sports betting, properly understood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0e12;--border:#242629;--hover:#181b20;--lime:#b2ed68;--lime-bg:rgba(178,237,104,.06);--w:#eef1f6;--t1:#b0b5be;--t2:#8a8f98;--t3:#606267;--blue:#5b8def;--purple:#a78bfa;--amber:#f5c542;--red:#ef6b6b}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--t1);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Space Mono',monospace}.upper{text-transform:uppercase}a{color:var(--lime);text-decoration:none}
+.sec{border-bottom:1px solid var(--border)}.sec-inner{max-width:1140px;margin:0 auto;padding:5rem 1.5rem}
+@media(min-width:768px){.sec-inner{padding:7rem 3rem}}@media(min-width:1280px){.sec-inner{padding:8rem 4rem}}
+.lbl{font-family:'Space Mono',monospace;font-size:11px;line-height:16px;text-transform:uppercase;letter-spacing:.1em;color:var(--lime)}
+.h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(36px,6.5vw,68px);line-height:1.05;color:var(--w);letter-spacing:-0.02em}
+.h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(26px,4vw,42px);line-height:1.15;color:var(--w);letter-spacing:-0.01em}
+.h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:clamp(18px,2.4vw,22px);line-height:1.3;color:var(--w)}
+.lead{font-size:18px;line-height:30px;color:var(--t1);max-width:820px}
+.body{font-size:15px;line-height:26px;color:var(--t1);max-width:780px}
+.body p{margin-bottom:14px}.body p:last-child{margin-bottom:0}
+.body strong{color:var(--w);font-weight:600}.body em{color:var(--w);font-style:normal;background:var(--lime-bg);padding:1px 4px}
+.kicker{font-family:'Space Mono',monospace;font-size:13px;color:var(--lime);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px}
+.num{color:var(--t3);margin-right:10px}
+.g2{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}
+.g3{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}
+.g4{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border)}
+@media(min-width:768px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+.g2>*,.g3>*,.g4>*{background:var(--bg)}
+.card{background:var(--bg);padding:28px;transition:background .2s}
+.card:hover{background:var(--hover)}
+.card-title{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;line-height:18px;text-transform:uppercase;color:var(--w);margin-bottom:12px;letter-spacing:.04em}
+.card-body{font-size:13px;line-height:21px;color:var(--t1)}
+.stat-val{font-family:'Space Mono',monospace;font-weight:700;font-size:30px;line-height:34px;color:var(--lime)}
+.stat-lbl{font-family:'Space Mono',monospace;font-size:11px;line-height:16px;color:var(--t2);text-transform:uppercase;margin-top:8px;letter-spacing:.04em}
+.callout{margin-top:32px;padding:24px 28px;border:1px solid var(--border);border-left:2px solid var(--lime);background:var(--lime-bg);max-width:920px}
+.callout span{font-size:16px;color:var(--w);line-height:25px;display:block}
+.tag{display:inline-block;font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;padding:3px 8px;border:1px solid var(--border);color:var(--t2);letter-spacing:.06em}
+.divider-grow{height:1px;background:linear-gradient(90deg,var(--lime),transparent);width:60px;margin:24px 0}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border)}
+table.matrix{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:12px;min-width:720px}
+table.matrix th{text-align:center;padding:14px 12px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;font-size:10px;border-bottom:1px solid var(--border);font-weight:700}
+table.matrix th:first-child{text-align:left}
+table.matrix td{padding:13px 12px;border-bottom:1px solid var(--border);text-align:center}
+table.matrix td:first-child{text-align:left;color:var(--w)}
+.yes{color:var(--lime);font-weight:700}
+.no{color:var(--red)}
+.maybe{color:var(--amber)}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lime);margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@media(max-width:767px){.lead{font-size:16px;line-height:26px}.body{font-size:14px;line-height:23px}.sec-inner{padding:3rem 1.25rem}}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="sec"><div class="sec-inner" style="padding-top:6rem;padding-bottom:6rem">
+  <div class="lbl">Notch · experience + instrument</div>
+  <h1 class="h1" style="margin-top:24px">
+    More dopamine.<br>
+    More <span style="color:var(--lime)">expression.</span><br>
+    At the <span style="color:var(--lime)">same time.</span>
+  </h1>
+  <p class="lead" style="margin-top:36px">Two things every engaged sports bettor walks around wanting — <strong style="color:var(--w)">max dopamine</strong>, and <strong style="color:var(--w)">continuous expression of a position they already hold</strong>. A perpetual derivative on team strength delivers both — at higher amplitude than any sportsbook in the world. Crypto perp day traders have been living in this state for a decade. Sports has never had its version.</p>
+
+  <div style="margin-top:48px;display:flex;gap:24px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">
+    <span><span class="num">01</span>The experience</span>
+    <span><span class="num">02</span>The instrument that wins it</span>
+  </div>
+</div></section>
+
+<!-- ============ 01 · THE EXPERIENCE ============ -->
+<section class="sec"><div class="sec-inner">
+  <div class="kicker"><span class="num">01</span>The experience</div>
+  <h2 class="h2">Bettors want max dopamine. A perp delivers more of it than a sportsbook ever could — plus continuous expression on top.</h2>
+  <div class="divider-grow"></div>
+
+  <div class="body" style="margin-top:24px">
+    <p>Yes, bettors want dopamine. They want as much of it as possible. The misread is that <em>a single binary bet</em> is the high-dopamine product. It's the floor, not the ceiling. One event, 90 minutes, a single P&L moment at the whistle, then the position dies and the cycle restarts from zero. That's not a dopamine machine — that's a coin flip with a delay.</p>
+    <p><strong>The maximum-dopamine experience in modern finance is sitting on the screens of crypto perp day traders right now.</strong> Every tick on the chart is a P&L event. Every funding period is a settlement. Every 10× swing is a heart-rate spike. They sit in front of charts for hours because the instrument delivers a continuous stream of micro-dopamine. And every position is simultaneously a real directional view they've sized into with leverage. <strong>The instrument is both a slot machine and a thesis at the same time.</strong></p>
+    <p>A sports perp is exactly that experience — applied to a market the user cares about more than they care about ETH. Pre-match, the price moves with lineups and transfer leaks. In-play, every event reprices the position. Funding fires every hour. Leverage scales conviction. <strong>Same maximum-dopamine engine. Same continuous expression. Same trader-grade UX. Just with Arsenal instead of WIF.</strong></p>
+  </div>
+
+  <h3 class="h3" style="margin-top:64px">Same team. Same 3 matches. 15 distinct trades.</h3>
+  <p class="body" style="margin-top:16px">The 15-trade pattern below isn't aspirational. It's what a crypto day trader already does on perps every week — applied to sports instead of ETH. Same fan. Same conviction on Arsenal. Three matches across 14 days. <em>Fifteen dopamine events. Fifteen expressed theses.</em></p>
+
+  <!-- VISUAL: 15 TRADES, 3 MATCHES -->
+  <div style="margin-top:32px;padding:28px;background:rgba(255,255,255,.015);border:1px solid var(--border);overflow-x:auto">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Same team · same 3 matches · 14-day window</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;color:var(--w);font-weight:600;margin-bottom:24px">15 distinct trades. 15 distinct theses. 1 user. 1 team.</div>
+
+    <svg viewBox="0 0 940 1040" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;min-width:760px" font-family="Space Mono">
+      <text x="40" y="14" font-size="9" fill="#606267">Day 0</text>
+      <text x="298" y="14" font-size="9" fill="#606267">Day 4</text>
+      <text x="557" y="14" font-size="9" fill="#606267">Day 8</text>
+      <text x="880" y="14" font-size="9" fill="#606267" text-anchor="end">Day 13</text>
+
+      <rect x="95" y="50" width="40" height="240" fill="rgba(178,237,104,0.04)"/>
+      <rect x="355" y="50" width="40" height="240" fill="rgba(178,237,104,0.04)"/>
+      <rect x="680" y="50" width="65" height="240" fill="rgba(178,237,104,0.07)"/>
+
+      <line x1="95" y1="50" x2="95" y2="770" stroke="#242629" stroke-dasharray="2,3"/>
+      <line x1="135" y1="50" x2="135" y2="770" stroke="#242629" stroke-dasharray="2,3"/>
+      <line x1="355" y1="50" x2="355" y2="770" stroke="#242629" stroke-dasharray="2,3"/>
+      <line x1="395" y1="50" x2="395" y2="770" stroke="#242629" stroke-dasharray="2,3"/>
+      <line x1="680" y1="50" x2="680" y2="770" stroke="#242629" stroke-dasharray="2,3"/>
+      <line x1="745" y1="50" x2="745" y2="770" stroke="#242629" stroke-dasharray="2,3"/>
+
+      <text x="115" y="40" font-size="11" fill="#eef1f6" text-anchor="middle" font-weight="700">M1</text>
+      <text x="115" y="54" font-size="9" fill="#8a8f98" text-anchor="middle">vs Brighton</text>
+      <text x="375" y="40" font-size="11" fill="#eef1f6" text-anchor="middle" font-weight="700">M2</text>
+      <text x="375" y="54" font-size="9" fill="#8a8f98" text-anchor="middle">vs Brentford</text>
+      <text x="712" y="40" font-size="12" fill="#b2ed68" text-anchor="middle" font-weight="700">M3</text>
+      <text x="712" y="54" font-size="9" fill="#b2ed68" text-anchor="middle" font-weight="700">NORTH LONDON DERBY</text>
+
+      <text x="95" y="74" font-size="8" fill="#606267" text-anchor="middle">KO</text>
+      <text x="135" y="74" font-size="8" fill="#606267" text-anchor="middle">FT</text>
+      <text x="355" y="74" font-size="8" fill="#606267" text-anchor="middle">KO</text>
+      <text x="395" y="74" font-size="8" fill="#606267" text-anchor="middle">FT</text>
+      <text x="680" y="74" font-size="8" fill="#b2ed68" text-anchor="middle">KO</text>
+      <text x="745" y="74" font-size="8" fill="#b2ed68" text-anchor="middle">FT</text>
+
+      <text x="0" y="100" font-size="10" fill="#606267" text-transform="uppercase" letter-spacing="1">Arsenal · strength price ($)</text>
+      <text x="0" y="280" font-size="9" fill="#606267">$223</text>
+      <text x="0" y="125" font-size="9" fill="#606267">$240</text>
+
+      <path d="M40,280 L60,272 L80,266 L95,261 L102,275 L110,253 L122,235 L130,243 L135,235 L180,233 L240,228 L300,222 L355,219 L362,210 L370,237 L378,202 L388,202 L395,202 L460,199 L530,193 L600,187 L680,184 L688,201 L695,168 L702,176 L712,151 L720,168 L730,134 L745,142 L820,138 L880,132" stroke="#b2ed68" stroke-width="2" fill="none"/>
+
+      <circle cx="95" cy="261" r="3" fill="#b2ed68"/>
+      <circle cx="135" cy="235" r="3" fill="#b2ed68"/>
+      <circle cx="355" cy="219" r="3" fill="#b2ed68"/>
+      <circle cx="395" cy="202" r="3" fill="#b2ed68"/>
+      <circle cx="680" cy="184" r="4" fill="#b2ed68"/>
+      <circle cx="745" cy="142" r="4" fill="#b2ed68"/>
+
+      <text x="510" y="106" font-size="9" fill="#606267" font-style="italic">smooth between matches · jagged during them</text>
+
+      <line x1="0" y1="320" x2="940" y2="320" stroke="#242629"/>
+      <text x="0" y="340" font-size="10" fill="#606267" text-transform="uppercase" letter-spacing="1">15 trades · 15 distinct theses · same team across same 3 matches</text>
+
+      <text x="0" y="376" font-size="11" fill="#606267">T01</text>
+      <rect x="40" y="366" width="82" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="376" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+3.6%</text>
+      <text x="40" y="397" font-size="11" fill="#b0b5be">LONG · pre-M1 form thesis · $225 → $228</text>
+
+      <text x="0" y="418" font-size="11" fill="#606267">T02</text>
+      <rect x="110" y="408" width="22" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="418" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+1.2%</text>
+      <text x="40" y="439" font-size="11" fill="#b0b5be">LONG · in-play 2-0 momentum · cash out at FT</text>
+
+      <text x="0" y="460" font-size="11" fill="#606267">T03</text>
+      <rect x="135" y="450" width="65" height="18" fill="#ef6b6b" opacity=".75"/>
+      <text x="930" y="460" font-size="13" fill="#ef6b6b" font-weight="700" text-anchor="end">+1.7%</text>
+      <text x="40" y="481" font-size="11" fill="#b0b5be">SHORT · post-M1 · price spiked too far · revert to mean</text>
+
+      <text x="0" y="502" font-size="11" fill="#606267">T04</text>
+      <rect x="290" y="492" width="105" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="502" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+1.5%</text>
+      <text x="40" y="523" font-size="11" fill="#b0b5be">LONG · pre-M2 · favorable opponent · schedule edge</text>
+
+      <text x="0" y="544" font-size="11" fill="#606267">T05</text>
+      <rect x="362" y="534" width="22" height="18" fill="#ef6b6b" opacity=".75"/>
+      <text x="930" y="544" font-size="13" fill="#ef6b6b" font-weight="700" text-anchor="end">+0.8%</text>
+      <text x="40" y="565" font-size="11" fill="#b0b5be">SHORT · in-play · key player goes off injured</text>
+
+      <text x="0" y="586" font-size="11" fill="#606267">T06</text>
+      <rect x="425" y="576" width="65" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="586" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+1.7%</text>
+      <text x="40" y="607" font-size="11" fill="#b0b5be">LONG · transfer rumor leaks Tuesday · ride confirmation</text>
+
+      <text x="0" y="628" font-size="11" fill="#606267">T07</text>
+      <rect x="555" y="618" width="65" height="18" fill="#ef6b6b" opacity=".75"/>
+      <text x="930" y="628" font-size="13" fill="#ef6b6b" font-weight="700" text-anchor="end">+0.8%</text>
+      <text x="40" y="649" font-size="11" fill="#b0b5be">SHORT · manager presser hints rotation · sentiment fade</text>
+
+      <text x="0" y="670" font-size="11" fill="#b2ed68" font-weight="700">T08</text>
+      <rect x="635" y="658" width="115" height="22" fill="#b2ed68" stroke="#b2ed68" stroke-width="1.5"/>
+      <text x="930" y="670" font-size="14" fill="#b2ed68" font-weight="700" text-anchor="end">+600% margin</text>
+      <text x="40" y="693" font-size="11" fill="#eef1f6" font-weight="600">LONG · pre-derby · 100× leverage · the conviction trade</text>
+
+      <text x="0" y="715" font-size="11" fill="#606267">T09</text>
+      <rect x="708" y="705" width="32" height="18" fill="#ef6b6b" opacity=".75"/>
+      <text x="930" y="715" font-size="13" fill="#ef6b6b" font-weight="700" text-anchor="end">−0.4%</text>
+      <text x="40" y="736" font-size="11" fill="#b0b5be">SHORT · half-time hedge · lock in derby gains</text>
+
+      <text x="0" y="757" font-size="11" fill="#606267">T10</text>
+      <rect x="755" y="747" width="125" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="757" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+4.0%</text>
+      <text x="40" y="778" font-size="11" fill="#b0b5be">LONG · post-derby continuation · momentum into next week</text>
+
+      <text x="0" y="799" font-size="11" fill="#606267">T11</text>
+      <rect x="555" y="789" width="100" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="799" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+24%</text>
+      <text x="40" y="820" font-size="11" fill="#b0b5be">LONG · <tspan fill="#eef1f6" font-weight="700">5× leverage</tspan> · pre-derby narrative build · sized into the conviction</text>
+
+      <text x="0" y="841" font-size="11" fill="#606267">T12</text>
+      <rect x="687" y="831" width="33" height="18" fill="#ef6b6b" opacity=".75"/>
+      <text x="930" y="841" font-size="13" fill="#ef6b6b" font-weight="700" text-anchor="end">+9%</text>
+      <text x="40" y="862" font-size="11" fill="#b0b5be">SHORT · <tspan fill="#eef1f6" font-weight="700">3× leverage</tspan> · M3 in-play · early-goal price overshoot fade</text>
+
+      <text x="0" y="883" font-size="11" fill="#606267">T13</text>
+      <rect x="755" y="873" width="140" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="883" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+32%</text>
+      <text x="40" y="904" font-size="11" fill="#b0b5be">LONG · <tspan fill="#eef1f6" font-weight="700">8× leverage</tspan> · post-derby momentum · scaled continuation</text>
+
+      <text x="0" y="925" font-size="11" fill="#606267">T14</text>
+      <rect x="60" y="915" width="365" height="18" fill="#b2ed68" opacity=".75"/>
+      <text x="930" y="925" font-size="13" fill="#b2ed68" font-weight="700" text-anchor="end">+4.8%</text>
+      <text x="40" y="946" font-size="11" fill="#b0b5be">LONG · <tspan fill="#eef1f6" font-weight="700">2× leverage</tspan> · early-season form swing · held across <tspan fill="#eef1f6" font-weight="700">M1 + M2</tspan></text>
+
+      <text x="0" y="967" font-size="11" fill="#606267">T15</text>
+      <rect x="335" y="957" width="370" height="18" fill="#ef6b6b" opacity=".75"/>
+      <text x="930" y="967" font-size="13" fill="#ef6b6b" font-weight="700" text-anchor="end">+6%</text>
+      <text x="40" y="988" font-size="11" fill="#b0b5be">SHORT · <tspan fill="#eef1f6" font-weight="700">3× leverage</tspan> · over-extended favorite · faded across <tspan fill="#eef1f6" font-weight="700">M2 + M3</tspan></text>
+
+      <line x1="0" y1="1005" x2="940" y2="1005" stroke="#242629"/>
+      <text x="0" y="1027" font-family="Space Grotesk" font-size="15" fill="#eef1f6" font-weight="600">Same team. Same 3 matches. 15 different theses. 15 different trades.</text>
+    </svg>
+
+    <div style="margin-top:20px;font-family:'Space Mono',monospace;font-size:11px;color:#b0b5be;line-height:20px">Form analysis · in-play momentum · mean reversion · schedule strength · injury news · transfer flow · manager sentiment · leveraged conviction · half-time hedge · continuation.</div>
+    <div style="margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;color:#606267;text-transform:uppercase;letter-spacing:.06em;line-height:18px">Each is a distinct analytical primitive every fan already runs. None of them are buyable on a sportsbook. All of them are reachable on Notch.</div>
+  </div>
+
+  <div class="body" style="margin-top:48px">
+    <p>On a sportsbook the bettor walks around with <strong>fifteen takes on Arsenal</strong> and gets to buy <strong>one</strong>. On a perp they buy all of them — sized differently, layered over time, <strong>some held for hours, others held across two full matches</strong>, hedgeable against a rival, leverageable on the conviction trades. <strong>Each one is its own dopamine event.</strong> Most sit at 2–8× leverage on routine scalps and multi-match swings. One sits at 100× because the derby justified it. The position never dies. The cycle never resets.</p>
+    <p>What looks from the outside like "more analytical depth" is actually <em>15× more entertainment</em>. Same fan. Same team. Same 14 days. <strong>15 dopamine events instead of 1. 15 expressed theses instead of 1.</strong> Maximum of both, at once.</p>
+  </div>
+
+  <div class="callout"><span><strong style="color:var(--w)">A perp is the only sports betting instrument that's also a max-dopamine instrument.</strong> Crypto day traders have been living in this state for a decade — chart-watching, leveraged, P&L moving by the second. Sports has never had its version. Notch is it.</span></div>
+</div></section>
+
+<!-- ============ 02 · THE INSTRUMENT ============ -->
+<section class="sec"><div class="sec-inner">
+  <div class="kicker"><span class="num">02</span>The instrument that wins this market</div>
+  <h2 class="h2">A live perpetual on team strength. Continuous price, 100× leverage, no expiry.</h2>
+  <div class="divider-grow"></div>
+
+  <!-- LIVE DEMO -->
+  <h3 class="h3" style="margin-top:48px"><span class="live-dot"></span>It exists. It's running. Here's a real match.</h3>
+
+  <div style="margin-top:32px;padding:32px;background:rgba(255,255,255,.015);border:1px solid var(--border);overflow-x:auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px">
+      <div>
+        <div class="lbl"><span class="live-dot"></span>Live tracked · 4 May 2026</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;color:var(--w);margin-top:6px;font-weight:600">Everton · Man City · Premier League</div>
+      </div>
+      <div style="text-align:right;font-family:'Space Mono',monospace;font-size:12px">
+        <div style="color:var(--t3);text-transform:uppercase">Final</div>
+        <div style="color:var(--w);margin-top:6px;font-size:14px">3-3 · settled at $119.16</div>
+      </div>
+    </div>
+
+    <svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;min-width:720px" font-family="Space Mono">
+      <text x="0" y="42" font-size="9" fill="#606267">$124</text>
+      <text x="0" y="92" font-size="9" fill="#606267">$120</text>
+      <text x="0" y="142" font-size="9" fill="#606267">$118</text>
+      <text x="0" y="192" font-size="9" fill="#606267">$115</text>
+      <text x="0" y="242" font-size="9" fill="#606267">$112</text>
+      <text x="0" y="262" font-size="9" fill="#606267">$111</text>
+      <text x="0" y="22" font-size="10" fill="#8a8f98" text-transform="uppercase" letter-spacing="1">Notch price ($)</text>
+
+      <text x="940" y="42" font-size="9" fill="#606267" text-anchor="end">100%</text>
+      <text x="940" y="92" font-size="9" fill="#606267" text-anchor="end">75%</text>
+      <text x="940" y="142" font-size="9" fill="#606267" text-anchor="end">50%</text>
+      <text x="940" y="192" font-size="9" fill="#606267" text-anchor="end">25%</text>
+      <text x="940" y="262" font-size="9" fill="#606267" text-anchor="end">0%</text>
+      <text x="940" y="22" font-size="10" fill="#8a8f98" text-transform="uppercase" letter-spacing="1" text-anchor="end">Bookmaker probability</text>
+
+      <line x1="40" y1="42" x2="900" y2="42" stroke="#181b20" stroke-dasharray="1,4"/>
+      <line x1="40" y1="142" x2="900" y2="142" stroke="#181b20" stroke-dasharray="1,4"/>
+      <line x1="40" y1="262" x2="900" y2="262" stroke="#242629"/>
+
+      <line x1="240" y1="40" x2="240" y2="262" stroke="#242629"/>
+      <text x="240" y="280" font-size="9" fill="#8a8f98" text-anchor="middle">KO</text>
+
+      <line x1="349" y1="40" x2="349" y2="262" stroke="#a78bfa" stroke-dasharray="2,3" opacity=".7"/>
+      <rect x="328" y="60" width="42" height="14" fill="#a78bfa" opacity=".15" stroke="#a78bfa" stroke-width="1"/>
+      <text x="349" y="71" font-size="9" fill="#a78bfa" text-anchor="middle" font-weight="700">M 0:1</text>
+
+      <line x1="375" y1="40" x2="375" y2="262" stroke="#242629" stroke-dasharray="2,3" opacity=".5"/>
+      <text x="375" y="280" font-size="8" fill="#606267" text-anchor="middle">HT</text>
+
+      <line x1="492" y1="40" x2="492" y2="262" stroke="#5b8def" stroke-dasharray="2,3" opacity=".7"/>
+      <rect x="471" y="98" width="42" height="14" fill="#5b8def" opacity=".15" stroke="#5b8def" stroke-width="1"/>
+      <text x="492" y="109" font-size="9" fill="#5b8def" text-anchor="middle" font-weight="700">E 1:1</text>
+
+      <line x1="510" y1="40" x2="510" y2="262" stroke="#5b8def" stroke-dasharray="2,3" opacity=".7"/>
+      <rect x="489" y="118" width="42" height="14" fill="#5b8def" opacity=".15" stroke="#5b8def" stroke-width="1"/>
+      <text x="510" y="129" font-size="9" fill="#5b8def" text-anchor="middle" font-weight="700">E 2:1</text>
+
+      <line x1="534" y1="40" x2="534" y2="262" stroke="#5b8def" stroke-dasharray="2,3" opacity=".7"/>
+      <rect x="513" y="78" width="42" height="14" fill="#5b8def" opacity=".15" stroke="#5b8def" stroke-width="1"/>
+      <text x="534" y="89" font-size="9" fill="#5b8def" text-anchor="middle" font-weight="700">E 3:1</text>
+
+      <line x1="546" y1="40" x2="546" y2="262" stroke="#a78bfa" stroke-dasharray="2,3" opacity=".7"/>
+      <rect x="525" y="138" width="42" height="14" fill="#a78bfa" opacity=".15" stroke="#a78bfa" stroke-width="1"/>
+      <text x="546" y="149" font-size="9" fill="#a78bfa" text-anchor="middle" font-weight="700">M 3:2</text>
+
+      <line x1="558" y1="40" x2="558" y2="262" stroke="#a78bfa" stroke-dasharray="2,3" opacity=".7"/>
+      <rect x="537" y="158" width="42" height="14" fill="#a78bfa" opacity=".15" stroke="#a78bfa" stroke-width="1"/>
+      <text x="558" y="169" font-size="9" fill="#a78bfa" text-anchor="middle" font-weight="700">M 3:3</text>
+
+      <line x1="648" y1="40" x2="648" y2="262" stroke="#f5c542" stroke-width="1.5"/>
+      <rect x="624" y="200" width="50" height="16" fill="#f5c542" opacity=".15" stroke="#f5c542" stroke-width="1"/>
+      <text x="648" y="212" font-size="9" fill="#f5c542" text-anchor="middle" font-weight="700">SETTLE</text>
+
+      <path d="M40,128 L80,128 L120,124 L180,122 L240,128 L300,116 L349,90 L375,86 L420,90 L480,108 L492,134 L510,180 L534,250 L546,234 L558,254 L580,260 L648,260 L800,260 L900,260" stroke="#ef6b6b" stroke-width="1.5" fill="none" stroke-dasharray="3,3" opacity=".7"/>
+      <path d="M40,250 L120,248 L240,248 L300,244 L349,250 L375,250 L420,254 L480,236 L492,150 L510,90 L534,46 L546,68 L558,114 L580,80 L648,42 L800,42 L900,42" stroke="#b2ed68" stroke-width="1.5" fill="none" stroke-dasharray="3,3" opacity=".5"/>
+
+      <path d="M40,194 L120,196 L180,198 L240,196 L300,198 L349,222 L375,222 L420,222 L470,222 L492,202 L510,164 L534,98 L546,134 L558,170 L580,150 L620,144 L648,144 L780,144 L900,144" stroke="#b2ed68" stroke-width="2.5" fill="none"/>
+
+      <circle cx="648" cy="144" r="5" fill="#f5c542"/>
+      <circle cx="648" cy="144" r="9" fill="none" stroke="#f5c542" stroke-width="1.5" opacity=".5"/>
+
+      <text x="40" y="300" font-size="9" fill="#606267">−60</text>
+      <text x="240" y="300" font-size="9" fill="#606267" text-anchor="middle">0</text>
+      <text x="375" y="300" font-size="9" fill="#606267" text-anchor="middle">+45</text>
+      <text x="510" y="300" font-size="9" fill="#606267" text-anchor="middle">+90</text>
+      <text x="648" y="300" font-size="9" fill="#606267" text-anchor="middle">+130</text>
+      <text x="800" y="300" font-size="9" fill="#606267" text-anchor="middle">+180</text>
+      <text x="470" y="320" font-size="10" fill="#8a8f98" text-anchor="middle" text-transform="uppercase" letter-spacing="1">Minutes from kickoff</text>
+
+      <line x1="40" y1="345" x2="56" y2="345" stroke="#b2ed68" stroke-width="2.5"/>
+      <text x="62" y="349" font-size="10" fill="#b0b5be">Notch price</text>
+      <line x1="160" y1="345" x2="176" y2="345" stroke="#b2ed68" stroke-width="1.5" stroke-dasharray="3,3" opacity=".5"/>
+      <text x="182" y="349" font-size="10" fill="#606267">Everton win %</text>
+      <line x1="300" y1="345" x2="316" y2="345" stroke="#ef6b6b" stroke-width="1.5" stroke-dasharray="3,3" opacity=".7"/>
+      <text x="322" y="349" font-size="10" fill="#606267">Man City win %</text>
+    </svg>
+
+    <div style="margin-top:24px;font-family:'Space Mono',monospace;font-size:11px;color:#8a8f98;line-height:18px">Pre-match: $115. Man City score → $114. Everton equalize → $115. Everton 2-1 → $118. Everton 3-1 → $122. Man City pulls back → $120 → $117. Settle 3-3 → <span style="color:var(--lime);font-weight:700">$119.16</span>. Every event repriced in real time. No expiry, exit anytime, hedge anytime, leverage to 100× on flagship markets.</div>
+  </div>
+
+  <!-- COVERAGE -->
+  <h3 class="h3" style="margin-top:80px">It covers what nothing else does.</h3>
+  <p class="body" style="margin-top:14px;max-width:780px">Stack Notch against every other product the bettor currently uses, by what the bettor can actually express:</p>
+
+  <div style="margin-top:32px;padding:32px;background:rgba(255,255,255,.015);border:1px solid var(--border);overflow-x:auto">
+    <table class="matrix">
+      <thead><tr>
+        <th>The take a fan already has</th>
+        <th>Sportsbook</th>
+        <th>Parlay</th>
+        <th>Fantasy</th>
+        <th>Polymarket</th>
+        <th style="color:var(--lime)">Notch</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>"Arsenal will win Saturday"</td><td class="yes">YES</td><td class="yes">YES</td><td class="no">NO</td><td class="no">NO</td><td class="yes">YES</td></tr>
+        <tr><td>"Arsenal lifts the Premier League trophy" <span style="color:var(--t3);font-style:italic">— specific binary outcome</span></td><td class="yes">YES</td><td class="no">NO</td><td class="no">NO</td><td class="yes">YES</td><td class="no">NO</td></tr>
+        <tr><td>"Arsenal will be one of the strongest clubs this season"</td><td class="no">NO</td><td class="no">NO</td><td class="maybe">~</td><td class="maybe">~</td><td class="yes">YES</td></tr>
+        <tr><td>"Arsenal is on form for the next 6 weeks"</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="yes">YES</td></tr>
+        <tr style="background:rgba(178,237,104,0.06)"><td>"Arsenal got 5% better this week — buy the move"</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="yes">YES</td></tr>
+        <tr><td>"Bayern is overpriced — fade them"</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="maybe">~</td><td class="yes">YES</td></tr>
+        <tr style="background:rgba(178,237,104,0.06)"><td>"Hedge my Arsenal love by shorting their rival"</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="yes">YES</td></tr>
+        <tr style="background:rgba(178,237,104,0.06)"><td>"Highest-conviction trade of my year — size up 100×"</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="no">NO</td><td class="yes">YES</td></tr>
+        <tr style="border-top:1px solid var(--border)">
+          <td style="font-style:italic;color:var(--t2);font-size:11px">Coverage of fan's mental model</td>
+          <td style="color:var(--red);font-style:italic">~10%</td>
+          <td style="color:var(--red);font-style:italic">~10%</td>
+          <td style="color:var(--red);font-style:italic">~5%</td>
+          <td style="color:var(--red);font-style:italic">~25%</td>
+          <td style="color:var(--lime);font-style:italic;font-weight:700">~85%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="h3" style="margin-top:80px">365 days a year. Never closes. Never resolves. Never expires.</h3>
+  <p class="body" style="margin-top:14px;max-width:820px">Sports fandom runs every day. The instruments built for it don't. Sportsbook match lines open hours before kickoff and close at full time. Outright futures close at season end. Polymarket contracts resolve and disappear. Notch trades every team <strong>continuously, year-round</strong> — through international breaks, transfer windows, off-season, manager firings, pre-season hype, owners selling clubs in July. <strong>The fan never takes a break. Now the instrument doesn't either.</strong></p>
+
+  <h3 class="h3" style="margin-top:64px">The closest thing fans have ever had to ownership.</h3>
+  <p class="body" style="margin-top:14px;max-width:820px">Sports fans buy merch, season tickets, Sorare cards, Socios fan tokens — and get zero economic exposure to their team's actual success. <strong>A long perpetual position on team strength is the first instrument that gives fandom what it's always wanted: real, sized, persistent stake in the team they love.</strong> The bettors testing Notch describe it the same way every time: <em>"the closest thing I'll ever have to actually owning my club."</em></p>
+
+</div></section>
+
+
+</body>
+</html>
