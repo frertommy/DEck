@@ -1,0 +1,3952 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notch — MLB · packaged payouts</title>
+<style>
+  :root {
+    --bg: #0c0e12;
+    --bg2: #0f1218;
+    --panel: #15181f;
+    --panel-hi: #1c2029;
+    --line: #1f232c;
+    --line2: #2a2f3a;
+    --text: #ffffff;
+    --text2: #a8b0bd;
+    --text3: #606267;
+    --lime: #b2ed68;
+    --green: #57d68d;
+    --green-dim: rgba(87,214,141,.12);
+    --red: #ef6b6b;
+    --red-dim: rgba(239,107,107,.12);
+    --amber: #f5c542;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0a0b0e;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(178,237,104,.04), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(91,141,239,.03), transparent 50%);
+    color: var(--text);
+    font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+  .mono { font-family: "Space Mono", "JetBrains Mono", "SF Mono", Menlo, monospace; }
+
+  .lab-head {
+    max-width: 1200px;
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  .lab-head h1 {
+    font-size: 22px; margin: 0 0 6px;
+    font-weight: 700; letter-spacing: -.3px;
+  }
+  .lab-head h1 span { color: var(--lime); }
+  .lab-head p {
+    margin: 0; color: #7a8090; font-size: 13px;
+    max-width: 720px; margin: 0 auto;
+  }
+
+  .rack {
+    display: flex; gap: 36px;
+    justify-content: center; align-items: flex-start;
+    flex-wrap: wrap;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .phone-wrap {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+  }
+  .phone-caption {
+    color: #9aa3b3; font-size: 12px;
+    font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.2px; text-align: center;
+    font-family: "Space Mono", monospace;
+  }
+  .phone-caption small {
+    display: block; color: #5e6675;
+    font-weight: 400; text-transform: none;
+    letter-spacing: 0; margin-top: 4px;
+    font-size: 11px; font-family: "Space Grotesk", sans-serif;
+    max-width: 320px;
+  }
+
+  .phone {
+    width: 390px; height: 844px;
+    background: #000;
+    border-radius: 52px;
+    padding: 12px;
+    box-shadow:
+      0 50px 100px rgba(0,0,0,.5),
+      0 0 0 2px #1a1d24,
+      0 0 0 4px #2a2d34,
+      inset 0 0 0 1px #0a0b0e;
+    position: relative;
+  }
+  .screen {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    border-radius: 42px;
+    overflow: hidden; position: relative;
+    display: flex; flex-direction: column;
+  }
+  .island {
+    position: absolute;
+    top: 11px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 34px;
+    background: #000; border-radius: 20px;
+    z-index: 100;
+  }
+  .statusbar {
+    height: 54px;
+    padding: 18px 28px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 15px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .statusbar .right {
+    display: flex; align-items: center; gap: 5px;
+  }
+  .statusbar .signal {
+    display: flex; align-items: flex-end; gap: 2px;
+  }
+  .statusbar .signal span { width: 3px; background: #fff; border-radius: 1px; }
+  .statusbar .signal span:nth-child(1) { height: 4px; }
+  .statusbar .signal span:nth-child(2) { height: 6px; }
+  .statusbar .signal span:nth-child(3) { height: 8px; }
+  .statusbar .signal span:nth-child(4) { height: 10px; }
+  .statusbar .battery {
+    width: 24px; height: 12px;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    padding: 1px;
+    position: relative;
+  }
+  .statusbar .battery::after {
+    content: "";
+    position: absolute;
+    right: -3px; top: 3px;
+    width: 2px; height: 4px;
+    background: #fff;
+    border-radius: 0 1px 1px 0;
+  }
+  .statusbar .battery .fill {
+    background: #fff;
+    height: 100%; width: 80%;
+    border-radius: 1px;
+  }
+
+  .app {
+    flex: 1;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .app-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 100px;
+  }
+  .app-scroll::-webkit-scrollbar { display: none; }
+
+  /* Header */
+  .app-header {
+    padding: 6px 16px 14px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg);
+  }
+  .logo-notch { height: 18px; width: auto; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    background: var(--panel);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--text2);
+    font-size: 15px;
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .icon-btn.notif::after {
+    content: "";
+    position: absolute;
+    width: 7px; height: 7px;
+    background: var(--lime);
+    border-radius: 50%;
+    top: 8px; right: 8px;
+    border: 2px solid var(--bg);
+  }
+  .balance-pill {
+    margin-left: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 6px 4px 6px 12px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .balance-pill .amt { color: var(--lime); font-family: "Space Mono", monospace; }
+  .balance-pill .plus {
+    background: var(--lime);
+    color: #0a0b0e;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+  }
+
+  /* Mode toggle (Quick / Pro) */
+  .mode-toggle {
+    margin: 0 16px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 3px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .mode-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    padding: 8px 0;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 7px;
+    font-family: "Space Mono", monospace;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .mode-toggle button.on {
+    background: var(--lime);
+    color: #0a0b0e;
+  }
+
+  /* Sport tabs */
+  .sport-tabs-m {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 12px;
+    gap: 6px;
+    scrollbar-width: none;
+    margin-bottom: 14px;
+  }
+  .sport-tabs-m::-webkit-scrollbar { display: none; }
+  .sport-tab-m {
+    padding: 8px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sport-tab-m.active {
+    background: #fff;
+    color: #0a0b0e;
+    border-color: #fff;
+    font-weight: 700;
+  }
+  .sport-tab-m .live-dot {
+    width: 5px; height: 5px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  /* Subnav */
+  .subnav-m {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 12px;
+    gap: 18px;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .subnav-m::-webkit-scrollbar { display: none; }
+  .subnav-item-m {
+    padding: 10px 0;
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 700;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    font-family: "Space Mono", monospace;
+  }
+  .subnav-item-m.active {
+    color: #fff;
+    border-bottom-color: var(--lime);
+  }
+
+  /* Section header */
+  .sec-head {
+    padding: 18px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sec-head h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -.1px;
+  }
+  .sec-head .sub {
+    font-size: 10px;
+    color: var(--text3);
+    font-weight: 600;
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .sec-head .see-all {
+    font-size: 11px;
+    color: var(--lime);
+    font-weight: 700;
+  }
+
+  /* ────────── GAME CARD ────────── */
+  .game-card {
+    margin: 0 12px 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .game-card .head {
+    padding: 9px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--line);
+  }
+  .game-card .head .time {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-family: "Space Mono", monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .game-card .head .time .net { color: var(--amber); }
+  .game-card .head .time .auto-pill {
+    background: rgba(178,237,104,.12);
+    color: var(--lime);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    letter-spacing: .5px;
+  }
+  .game-card .head .more {
+    color: var(--text3);
+    font-size: 10px;
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+  }
+  .game-card .body {
+    padding: 6px 12px 12px;
+  }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1fr 78px 78px;
+    margin: 6px 0 4px;
+    gap: 6px;
+  }
+  .col-labels div {
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    text-align: center;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+  }
+  .col-labels div:first-child { text-align: left; }
+
+  .team-row {
+    display: grid;
+    grid-template-columns: 1fr 78px 78px;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+  }
+  .team-row + .team-row { border-top: 1px solid var(--line); }
+  .team-row .team-id {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .team-row .team-logo {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 10px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .team-row .nm {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .team-row .nm .meta {
+    font-size: 9px;
+    color: var(--text3);
+    font-weight: 500;
+    display: block;
+    margin-top: 1px;
+    font-family: "Space Mono", monospace;
+  }
+
+  /* PAYOUT BUTTONS — THE NEW PRIMARY SIGNAL */
+  .payout-btn {
+    border: 1px solid;
+    border-radius: 7px;
+    padding: 8px 0;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    transition: all .15s;
+  }
+  .payout-btn .side-lbl {
+    font-size: 8.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    font-family: "Space Mono", monospace;
+    opacity: .85;
+  }
+  .payout-btn .pct {
+    font-size: 14px;
+    font-weight: 800;
+    font-family: "Space Mono", monospace;
+    letter-spacing: -.3px;
+  }
+  .payout-btn.lose {
+    background: var(--red-dim);
+    border-color: rgba(239,107,107,.3);
+    color: var(--red);
+  }
+  .payout-btn.win {
+    background: var(--green-dim);
+    border-color: rgba(87,214,141,.3);
+    color: var(--green);
+  }
+  .payout-btn.lose:hover {
+    background: rgba(239,107,107,.2);
+    border-color: var(--red);
+  }
+  .payout-btn.win:hover {
+    background: rgba(87,214,141,.2);
+    border-color: var(--green);
+  }
+  .payout-btn.selected.lose {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+  }
+  .payout-btn.selected.win {
+    background: var(--green);
+    color: #0a0b0e;
+    border-color: var(--green);
+  }
+
+  /* ────────── STICKY CONTROL BAR ────────── */
+  .control-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(12,14,18,.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lev-pills {
+    display: flex;
+    gap: 4px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 3px;
+    flex: 1;
+  }
+  .lev-pill {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text2);
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 0;
+    border-radius: 7px;
+    letter-spacing: .3px;
+    cursor: pointer;
+  }
+  .lev-pill.on {
+    background: var(--lime);
+    color: #0a0b0e;
+  }
+  .close-toggle {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+  .close-toggle .icon { font-size: 13px; line-height: 1; }
+  .close-toggle .lbl {
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--lime);
+  }
+  .close-toggle .chev { color: var(--text3); font-size: 9px; margin-left: 2px; }
+
+  .format-toggle {
+    display: flex;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .format-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    min-width: 22px;
+  }
+  .format-toggle button.on {
+    background: var(--lime);
+    color: #0a0b0e;
+  }
+
+  .explainer-btn {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    color: var(--lime);
+    font-family: "Space Mono", monospace;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all .15s;
+  }
+  .explainer-btn:hover {
+    background: var(--lime);
+    color: #0a0b0e;
+    border-color: var(--lime);
+  }
+
+  /* Explainer overlay + sheet */
+  .explainer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    border-radius: 42px;
+    overflow: hidden;
+  }
+  .explainer-overlay.on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .explainer-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0;
+    padding: 16px 18px 28px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.6);
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.2,.9,.3,1);
+    max-height: 88%;
+    overflow-y: auto;
+  }
+  .explainer-overlay.on .explainer-sheet {
+    transform: translateY(0);
+  }
+  .explainer-grab {
+    width: 40px; height: 4px;
+    background: var(--line2);
+    border-radius: 2px;
+    margin: 0 auto 14px;
+  }
+  .explainer-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+    margin: 0 0 4px;
+  }
+  .explainer-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 18px;
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+  }
+  .step-row {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+  }
+  .step-row:first-of-type { border-top: none; }
+  .step-num {
+    background: var(--lime);
+    color: #0a0b0e;
+    border-radius: 8px;
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    font-family: "Space Mono", monospace;
+    font-weight: 900;
+    font-size: 13px;
+  }
+  .step-body .step-title {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 3px;
+    line-height: 1.2;
+  }
+  .step-body .step-text {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .step-body .step-text b { color: var(--lime); font-weight: 700; }
+  .step-body .step-text .red-tx { color: var(--red); font-weight: 700; }
+  .step-body .step-text .grn-tx { color: var(--green); font-weight: 700; }
+  .step-body .mini-example {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .step-body .mini-example b { color: var(--lime); font-weight: 700; }
+  .got-it {
+    width: 100%;
+    background: var(--lime);
+    color: #0a0b0e;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: "Space Mono", monospace;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-top: 18px;
+    cursor: pointer;
+  }
+  .pro-link {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+  .pro-link b { color: var(--lime); font-weight: 700; }
+
+  /* ─────── PROMO STRIP ─────── */
+  .promo-strip {
+    margin: 0 12px 14px;
+    background: linear-gradient(95deg, rgba(178,237,104,.15) 0%, rgba(178,237,104,.04) 100%);
+    border: 1px solid rgba(178,237,104,.25);
+    border-radius: 12px;
+    padding: 11px 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .promo-strip .promo-ico {
+    width: 36px; height: 36px;
+    background: var(--lime);
+    color: #0a0b0e;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    font-weight: 900;
+  }
+  .promo-strip .copy {
+    flex: 1; line-height: 1.3;
+  }
+  .promo-strip .copy .ttl {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--lime);
+  }
+  .promo-strip .copy .sub {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .promo-strip .arrow {
+    background: rgba(178,237,104,.18);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--lime);
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  /* ─────── BOOST BADGE ─────── */
+  .boost-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(178,237,104,.15);
+    color: var(--lime);
+    border: 1px solid rgba(178,237,104,.35);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: "Space Mono", monospace;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-left: 6px;
+  }
+
+  /* ─────── HOT TAG ─────── */
+  .hot-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255,107,77,.15);
+    color: #ff8a5b;
+    border: 1px solid rgba(255,107,77,.3);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: "Space Mono", monospace;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-left: 6px;
+  }
+
+  /* Trending pickers counter */
+  .picker-count {
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+  .picker-count b { color: #ff8a5b; font-weight: 700; }
+
+  /* ─────── CASH OUT CHIP ─────── */
+  .cashout-chip {
+    background: linear-gradient(135deg, var(--lime), #8fd138);
+    color: #0a0b0e;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "Space Mono", monospace;
+    font-weight: 900;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    box-shadow: 0 4px 12px rgba(178,237,104,.25);
+  }
+  .cashout-chip .ico { font-size: 12px; }
+  .cashout-chip .amt { font-size: 13px; }
+  .cashout-status {
+    background: rgba(178,237,104,.1);
+    border: 1px solid rgba(178,237,104,.3);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .cashout-status .left {
+    flex: 1;
+  }
+  .cashout-status .label {
+    font-size: 9px;
+    color: var(--lime);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    font-weight: 800;
+    font-family: "Space Mono", monospace;
+    margin-bottom: 2px;
+  }
+  .cashout-status .pick-line {
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .cashout-status .pick-line .stake {
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+  }
+
+  /* ─────── LIVE TICKER ─────── */
+  .live-ticker {
+    margin: 0 12px 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .live-ticker .tick-label {
+    background: var(--lime);
+    color: #0a0b0e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: "Space Mono", monospace;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+  }
+  .tick-stream {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 16px;
+  }
+  .tick-track {
+    position: absolute;
+    display: flex;
+    gap: 32px;
+    animation: tickScroll 28s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes tickScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .tick-item {
+    font-size: 11px;
+    color: var(--text2);
+    font-family: "Space Grotesk", sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .tick-item b { color: var(--lime); font-weight: 700; font-family: "Space Mono", monospace; }
+  .tick-item .who { color: var(--text); font-weight: 700; }
+
+  /* Recent form pills */
+  .form-row {
+    display: inline-flex;
+    gap: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .form-pip {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    display: inline-grid;
+    place-items: center;
+    font-family: "Space Mono", monospace;
+    font-size: 7px;
+    font-weight: 900;
+    color: #0a0b0e;
+  }
+  .form-pip.w { background: var(--green); }
+  .form-pip.d { background: var(--amber); }
+  .form-pip.l { background: var(--red); color: #fff; }
+
+  /* ──────── PICK SLIP OVERLAY ──────── */
+  .slip-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    border-radius: 42px;
+    overflow: hidden;
+  }
+  .slip-overlay.on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .slip-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0;
+    padding: 14px 16px 24px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.6);
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.2,.9,.3,1);
+    max-height: 90%;
+    overflow-y: auto;
+  }
+  .slip-overlay.on .slip-sheet {
+    transform: translateY(0);
+  }
+  .slip-grab {
+    width: 40px; height: 4px;
+    background: var(--line2);
+    border-radius: 2px;
+    margin: 0 auto 12px;
+  }
+  .slip-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .slip-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .slip-header h2 .count-badge {
+    background: var(--lime);
+    color: #0a0b0e;
+    font-family: "Space Mono", monospace;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .slip-header .x-close {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    color: var(--text3);
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  .slip-mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .slip-mode-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    padding: 9px 0;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 7px;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .slip-mode-toggle button.on {
+    background: var(--lime);
+    color: #0a0b0e;
+  }
+
+  .slip-list {
+    margin-bottom: 12px;
+  }
+  .slip-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text3);
+    font-size: 12px;
+  }
+  .slip-empty .ico { font-size: 32px; margin-bottom: 8px; opacity: .4; }
+
+  .slip-pick {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .slip-pick .x {
+    position: absolute;
+    top: 8px; right: 10px;
+    color: var(--text3);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .slip-pick .x:hover { color: var(--red); }
+  .slip-pick .top {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+    padding-right: 18px;
+  }
+  .slip-pick .top .team-logo {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 9px;
+    color: #fff;
+    display: grid; place-items: center;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .slip-pick .top .draw-pill {
+    width: 22px; height: 22px;
+    background: var(--amber);
+    color: #0a0b0e;
+    border-radius: 50%;
+    font-family: "Space Mono", monospace;
+    font-size: 14px;
+    font-weight: 800;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .slip-pick .top .outcome {
+    font-size: 13px;
+    font-weight: 800;
+    flex: 1;
+  }
+  .slip-pick .top .pct {
+    font-family: "Space Mono", monospace;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--lime);
+  }
+  .slip-pick .match-line {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+  }
+  .slip-pick .match-line .prob {
+    color: var(--text2);
+    margin-left: 4px;
+  }
+
+  .slip-totals {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .slip-totals .ln {
+    display: flex; justify-content: space-between;
+    font-size: 12px;
+    color: var(--text2);
+    padding: 4px 0;
+  }
+  .slip-totals .ln .v {
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+  }
+  .slip-totals .ln.big {
+    border-top: 1px solid var(--line);
+    margin-top: 6px;
+    padding-top: 10px;
+    font-size: 14px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .slip-totals .ln.big .v {
+    font-size: 16px;
+    color: var(--lime);
+    font-weight: 900;
+  }
+  .slip-totals .ln.prob-ln .v {
+    color: var(--text3);
+  }
+
+  .info-btn {
+    background: var(--panel-hi);
+    color: var(--text2);
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    line-height: 1;
+  }
+  .info-btn:hover {
+    color: var(--lime);
+    border-color: var(--lime);
+  }
+  .info-btn.on {
+    background: var(--lime);
+    color: #0a0b0e;
+    border-color: var(--lime);
+  }
+
+  .math-breakdown {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+  }
+  .math-breakdown .mb-row {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    color: var(--text2);
+  }
+  .math-breakdown .mb-row .step {
+    color: var(--text3);
+    font-size: 10px;
+  }
+  .math-breakdown .mb-row .val {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .math-breakdown .mb-formula {
+    padding: 6px 0 0;
+    border-top: 1px dashed var(--line);
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+  .math-breakdown .mb-formula b {
+    color: var(--lime);
+    font-weight: 700;
+  }
+
+  .slip-stake-block {
+    margin-bottom: 12px;
+  }
+  .slip-stake-block .stake-lbl {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between;
+  }
+  .slip-stake-block .stake-lbl .max { color: var(--lime); }
+  .slip-stake-block .stake-input-wrap {
+    display: flex; align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0 14px;
+  }
+  .slip-stake-block .stake-input-wrap .dollar { color: var(--text3); font-size: 18px; margin-right: 6px; }
+  .slip-stake-block .stake-input-wrap input {
+    flex: 1;
+    background: transparent; border: none; outline: none;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    padding: 12px 0;
+    font-family: "Space Mono", monospace;
+    letter-spacing: -.5px;
+  }
+  .slip-stake-block .quick-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+    margin-top: 8px;
+  }
+  .slip-stake-block .quick-row button {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text2);
+    padding: 8px 0;
+    font-size: 11px;
+    border-radius: 7px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+    cursor: pointer;
+  }
+  .slip-stake-block .quick-row button.on {
+    background: var(--lime);
+    color: #0a0b0e;
+    border-color: var(--lime);
+  }
+
+  .slip-place {
+    width: 100%;
+    background: var(--lime);
+    color: #0a0b0e;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-family: "Space Mono", monospace;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .slip-place:disabled {
+    background: var(--panel);
+    color: var(--text3);
+    cursor: not-allowed;
+  }
+
+  .slip-fine {
+    font-size: 9.5px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* Floating + Trade button: dynamic count badge */
+  .tab-item.trade .count-pill {
+    position: absolute;
+    top: -22px;
+    right: 8px;
+    background: var(--lime);
+    color: #0a0b0e;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 900;
+    border: 2px solid var(--bg);
+  }
+  .tab-item.trade .icon-wrap::after { content: none !important; }
+
+  /* Picked indicator on payout buttons */
+  .payout-btn.in-slip::before, .three-btn.in-slip::before {
+    content: "✓";
+    position: absolute;
+    top: 4px; right: 5px;
+    color: var(--lime);
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .payout-btn, .three-btn { position: relative; }
+
+  /* ──────── TOAST ──────── */
+  .toast {
+    position: absolute;
+    top: 62px; left: 50%;
+    transform: translate(-50%, -10px);
+    background: var(--panel);
+    border: 1px solid var(--lime);
+    color: var(--lime);
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    z-index: 300;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 6px 18px rgba(0,0,0,.4);
+    transition: opacity .25s ease, transform .25s ease;
+    white-space: nowrap;
+  }
+  .toast.on {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* Combo Pick button "added" state */
+  .combo-card .combo-ft .sel.added {
+    background: var(--green);
+    color: #0a0b0e;
+  }
+  .combo-card.flash {
+    animation: comboFlash .6s ease-out;
+  }
+  @keyframes comboFlash {
+    0% { box-shadow: 0 0 0 0 rgba(178,237,104,.4); }
+    100% { box-shadow: 0 0 0 6px transparent; }
+  }
+
+  /* Cash out chip "done" state */
+  .cashout-chip.done {
+    background: var(--green-dim);
+    color: var(--green);
+    box-shadow: none;
+  }
+
+  /* ──────── QUICKPICK POPUP ──────── */
+  .quickpick-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 250;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease;
+    border-radius: 42px;
+    overflow: hidden;
+  }
+  .quickpick-overlay.on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .quickpick-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0;
+    padding: 14px 16px 28px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.6);
+    transform: translateY(100%);
+    transition: transform .28s cubic-bezier(.2,.9,.3,1);
+  }
+  .quickpick-overlay.on .quickpick-sheet {
+    transform: translateY(0);
+  }
+  .qp-grab {
+    width: 40px; height: 4px;
+    background: var(--line2);
+    border-radius: 2px;
+    margin: 0 auto 14px;
+  }
+  .qp-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .qp-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+  }
+  .qp-header .x-close {
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    color: var(--text3);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .qp-pick {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .qp-pick .qp-logo {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 13px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .qp-pick .qp-info { flex: 1; min-width: 0; }
+  .qp-pick .qp-team {
+    font-size: 14px; font-weight: 800;
+    letter-spacing: -.2px;
+    line-height: 1.1;
+  }
+  .qp-pick .qp-outcome {
+    font-size: 11px;
+    color: var(--lime);
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-top: 3px;
+  }
+  .qp-pick .qp-matchup {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    margin-top: 3px;
+  }
+  .qp-pick .qp-payout {
+    font-family: "Space Mono", monospace;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--lime);
+    letter-spacing: -.6px;
+    flex-shrink: 0;
+  }
+
+  .qp-stake-block {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .qp-stake-lbl {
+    display: flex; justify-content: space-between;
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+    margin-bottom: 8px;
+  }
+  .qp-stake-lbl .max { color: var(--lime); }
+  .qp-stake-input {
+    display: flex; align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+  }
+  .qp-stake-input .dollar { color: var(--text3); font-size: 18px; margin-right: 6px; }
+  .qp-stake-input input {
+    flex: 1;
+    background: transparent; border: none; outline: none;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    padding: 12px 0;
+    font-family: "Space Mono", monospace;
+    letter-spacing: -.5px;
+    width: 100%;
+  }
+  .qp-quick {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+    margin-top: 10px;
+  }
+  .qp-quick button {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    color: var(--text2);
+    padding: 8px;
+    font-size: 11px;
+    border-radius: 7px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+    cursor: pointer;
+  }
+  .qp-quick button.on {
+    background: var(--lime);
+    color: #0a0b0e;
+    border-color: var(--lime);
+  }
+
+  .qp-summary {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+  }
+  .qp-line {
+    display: flex; justify-content: space-between;
+    padding: 5px 0;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .qp-line + .qp-line {
+    border-top: 1px solid var(--line);
+  }
+  .qp-line .val {
+    font-family: "Space Mono", monospace;
+    font-weight: 800;
+  }
+  .qp-line.win .val { color: var(--lime); font-size: 14px; }
+
+  .qp-place {
+    width: 100%;
+    background: var(--lime);
+    color: #0a0b0e;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-family: "Space Mono", monospace;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .qp-add {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text2);
+    padding: 11px;
+    border-radius: 10px;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    margin-top: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .qp-add:hover {
+    color: var(--lime);
+    border-color: var(--lime);
+  }
+  .qp-fine {
+    font-size: 9.5px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ────────── COMBO CAROUSEL ────────── */
+  .combo-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 0 12px;
+    scrollbar-width: none;
+  }
+  .combo-row::-webkit-scrollbar { display: none; }
+  .combo-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    width: 240px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .combo-card::before {
+    content: "";
+    position: absolute; left: 0; top: 0;
+    width: 3px; height: 100%;
+    background: var(--lime);
+  }
+  .combo-card .tag {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--lime);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 8px;
+    font-family: "Space Mono", monospace;
+  }
+  .combo-card .legs {
+    margin-bottom: 10px;
+  }
+  .combo-card .leg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 11px;
+  }
+  .combo-card .leg + .leg { border-top: 1px solid var(--line); }
+  .combo-card .leg .team-logo {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 8px;
+    color: #fff;
+    display: grid; place-items: center;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .combo-card .leg .leg-name {
+    flex: 1;
+    font-weight: 700;
+  }
+  .combo-card .leg .leg-pct {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--green);
+  }
+  .combo-card .combo-ft {
+    border-top: 1px solid var(--line2);
+    padding-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .combo-card .combo-ft .total-pct {
+    font-family: "Space Mono", monospace;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--lime);
+    letter-spacing: -.5px;
+  }
+  .combo-card .combo-ft .sel {
+    background: var(--lime);
+    color: #0a0b0e;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    font-weight: 900;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .live-card {
+    margin: 0 12px;
+    background:
+      radial-gradient(circle at right, rgba(239,107,107,.12), transparent 60%),
+      var(--panel);
+    border: 1px solid var(--line2);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .live-pill-m {
+    background: var(--red);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 6px;
+    border-radius: 2px;
+    letter-spacing: .7px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: "Space Mono", monospace;
+  }
+  .live-pill-m .pulse {
+    width: 5px; height: 5px;
+    background: #fff;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  .live-card .meta {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-left: 8px;
+    font-weight: 600;
+    font-family: "Space Mono", monospace;
+  }
+  .live-card .live-body {
+    margin-top: 12px;
+  }
+  .live-card .inning {
+    margin-left: auto;
+    text-align: right;
+  }
+  .live-card .inning .big {
+    font-size: 16px;
+    font-weight: 800;
+    font-family: "Space Mono", monospace;
+  }
+  .live-card .inning .small {
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-family: "Space Mono", monospace;
+  }
+  .live-card .col-labels {
+    grid-template-columns: 1fr 78px 78px;
+  }
+
+  /* Bottom tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(15,18,24,.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    padding: 10px 0 28px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    z-index: 50;
+  }
+  .tab-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 9px;
+    color: var(--text3);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    font-family: "Space Mono", monospace;
+    position: relative;
+  }
+  .tab-item .icon { font-size: 19px; line-height: 1; }
+  .tab-item.active { color: var(--lime); }
+  .tab-item .badge {
+    position: absolute;
+    top: -2px; right: 16px;
+    background: var(--red);
+    color: #fff;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .tab-item.trade .icon-wrap {
+    width: 50px; height: 50px;
+    background: var(--lime);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    margin: -18px 0 -2px;
+    box-shadow: 0 8px 20px rgba(178,237,104,.3);
+    color: #0a0b0e;
+  }
+  .tab-item.trade .icon-wrap .icon { font-size: 24px; font-weight: 900; }
+
+  /* ────────── PHONE 2: QUICK-BET CONFIRMATION ────────── */
+  .ticket-screen {
+    background: rgba(0,0,0,.5);
+  }
+  .ticket-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0;
+    padding: 14px 16px 28px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.6);
+  }
+  .ticket-grab {
+    width: 40px; height: 4px;
+    background: var(--line2);
+    border-radius: 2px;
+    margin: 0 auto 18px;
+  }
+  .ticket-title {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+  }
+
+  .pick-hero {
+    background: linear-gradient(180deg, var(--green-dim), transparent);
+    border: 1px solid rgba(87,214,141,.3);
+    border-radius: 14px;
+    padding: 18px 16px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .pick-hero .side-tag {
+    background: var(--green);
+    color: #0a0b0e;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .8px;
+    font-family: "Space Mono", monospace;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .pick-hero .team-row-h {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .pick-hero .team-logo {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 14px;
+    color: #fff;
+  }
+  .pick-hero .pick-name {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: left;
+  }
+  .pick-hero .pick-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    text-align: left;
+    font-family: "Space Mono", monospace;
+  }
+  .pick-hero .pct-big {
+    font-size: 48px;
+    font-weight: 900;
+    font-family: "Space Mono", monospace;
+    color: var(--green);
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 4px;
+  }
+  .pick-hero .pct-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+  }
+
+  .stake-block {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .stake-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .stake-row .lbl {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+  }
+  .stake-row .max {
+    font-size: 10px;
+    color: var(--lime);
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+  }
+  .stake-input {
+    display: flex; align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+  }
+  .stake-input .dollar { color: var(--text3); font-size: 18px; margin-right: 6px; }
+  .stake-input input {
+    flex: 1;
+    background: transparent; border: none; outline: none;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    padding: 12px 0;
+    width: 100%;
+    font-family: "Space Mono", monospace;
+    letter-spacing: -.5px;
+  }
+  .quick-stakes-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+    margin-top: 10px;
+  }
+  .quick-stakes-row button {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text2);
+    padding: 7px;
+    font-size: 11px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+  }
+  .quick-stakes-row button.on {
+    background: var(--lime);
+    color: #0a0b0e;
+    border-color: var(--lime);
+  }
+
+  .payout-summary {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .payout-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .payout-line + .payout-line { border-top: 1px solid var(--line); }
+  .payout-line .lbl {
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .payout-line .val {
+    font-family: "Space Mono", monospace;
+    font-weight: 800;
+    font-size: 13px;
+  }
+  .payout-line .val.win { color: var(--green); }
+  .payout-line .val.lose { color: var(--red); }
+
+  .open-btn {
+    width: 100%;
+    background: var(--lime);
+    color: #0a0b0e;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 900;
+    border: none;
+    letter-spacing: .5px;
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+  }
+  .fine {
+    font-size: 9.5px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .fine .lime-link { color: var(--lime); font-weight: 700; }
+
+  /* Team palette - MLB */
+  .nyy { background: #003087; }
+  .bos { background: #bd3039; }
+  .lad { background: #005a9c; }
+  .sfg { background: #fd5a1e; }
+  .hou { background: #002d62; }
+  .tex { background: #003278; }
+  .atl { background: #ce1141; }
+  .phi { background: #e81828; }
+  .chc { background: #0e3386; }
+  .stl { background: #c41e3a; }
+  .tor { background: #134a8e; }
+  .bal { background: #df4601; }
+  .nym { background: #002d72; }
+  .mil { background: #12284b; }
+  .sea { background: #0c2c56; }
+  .sd  { background: #2f241d; color: #ffc425; }
+
+  /* Soccer team palette */
+  .ars { background: #ef0107; }
+  .pal { background: #1b458f; color: #fff; }
+  .mci { background: #6cabdd; color: #1c2c5b; }
+  .liv { background: #c8102e; }
+  .che { background: #034694; }
+  .rma { background: #fff; color: #00529f; }
+  .bar { background: #a50044; }
+  .bay { background: #dc052d; }
+  .bvb { background: #fde100; color: #000; }
+  .psg { background: #004170; }
+  .mar, .om { background: #2faee0; color: #fff; }
+  .new { background: #241f20; color: #fff; }
+  .bur { background: #6c1d45; color: #99d6ea; }
+  .man { background: #6caddf; color: #000; }
+
+  /* ────────── SOCCER 3-BUTTON ROW ────────── */
+  .col-labels-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin: 6px 0 6px;
+  }
+  .col-labels-3 div {
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    text-align: center;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+  }
+
+  .three-btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .three-btn {
+    border: 1px solid;
+    border-radius: 9px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .three-btn .lbl-team {
+    display: flex; align-items: center; justify-content: center;
+    height: 24px;
+  }
+  .three-btn .lbl-team .team-logo {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-size: 9px;
+    display: grid; place-items: center;
+    font-weight: 900;
+  }
+  .three-btn .draw-glyph {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--amber);
+    font-family: "Space Mono", monospace;
+  }
+  .three-btn .pct {
+    font-family: "Space Mono", monospace;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+  }
+  .three-btn.green-tint {
+    background: var(--green-dim);
+    border-color: rgba(87,214,141,.3);
+    color: var(--green);
+  }
+  .three-btn.green-tint:hover { background: rgba(87,214,141,.2); border-color: var(--green); }
+  .three-btn.amber-tint {
+    background: rgba(245,197,66,.1);
+    border-color: rgba(245,197,66,.3);
+    color: var(--amber);
+  }
+  .three-btn.amber-tint:hover { background: rgba(245,197,66,.2); border-color: var(--amber); }
+  .three-btn.red-tint {
+    background: var(--red-dim);
+    border-color: rgba(239,107,107,.3);
+    color: var(--red);
+  }
+  .three-btn.red-tint:hover { background: rgba(239,107,107,.2); border-color: var(--red); }
+  .three-btn.selected.green-tint {
+    background: var(--green);
+    color: #0a0b0e;
+    border-color: var(--green);
+  }
+  .three-btn.selected.amber-tint {
+    background: var(--amber);
+    color: #0a0b0e;
+    border-color: var(--amber);
+  }
+  .three-btn.selected.red-tint {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+  }
+
+  /* Soccer game card matchup header */
+  .soccer-matchup {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 8px 0 12px;
+    gap: 8px;
+  }
+  .soccer-matchup .side {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .soccer-matchup .side.away { flex-direction: row-reverse; }
+  .soccer-matchup .side .team-logo {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .soccer-matchup .side .nm {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .soccer-matchup .side .nm .meta {
+    font-size: 9px;
+    color: var(--text3);
+    display: block;
+    margin-top: 1px;
+    font-family: "Space Mono", monospace;
+  }
+  .soccer-matchup .side.away .nm { text-align: right; }
+  .soccer-matchup .vs {
+    color: var(--text3);
+    font-size: 10px;
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 800;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 12px 0; }
+    .lab-head { display: none; }
+    .rack { gap: 0; }
+    .phone-caption { display: none; }
+    .phone {
+      width: 100vw; height: 100vh;
+      border-radius: 0; padding: 0; box-shadow: none;
+    }
+    .screen { border-radius: 0; }
+    .phone-wrap:nth-child(n+2) { display: none; }
+    .island { display: none; }
+  }
+  /* ─────────────────────────────────────────────────────
+     PRO VIEW · TEAM DETAIL PAGE (Arsenal)
+     ─────────────────────────────────────────────────── */
+  .pro-header {
+    padding: 4px 14px 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pro-header .back, .pro-header .more, .pro-header .star {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    color: var(--text2);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .pro-header .more, .pro-header .star { color: var(--text3); }
+  .pro-header .star.on { color: var(--lime); }
+  .pro-header .pro-title {
+    flex: 1;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pro-header .pro-title .team-logo {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 10px;
+  }
+  .pro-header .pro-title .name-wrap {
+    line-height: 1.1;
+  }
+  .pro-header .pro-title .nm {
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .pro-header .pro-title .ticker {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  /* Price hero */
+  .price-hero {
+    padding: 6px 16px 14px;
+  }
+  .price-hero .price-row {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 4px;
+  }
+  .price-hero .price {
+    font-size: 36px;
+    font-weight: 800;
+    font-family: "Space Mono", monospace;
+    letter-spacing: -1.2px;
+    line-height: 1;
+  }
+  .price-hero .delta {
+    font-family: "Space Mono", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+  }
+  .price-hero .delta.down { color: var(--red); }
+  .price-hero .sub-meta {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+  }
+
+  /* SVG chart */
+  .chart-wrap {
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .chart-wrap svg { width: 100%; height: 130px; display: block; }
+
+  .time-range-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 14px 12px;
+    justify-content: space-between;
+  }
+  .time-range-tabs button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 0;
+    border-radius: 6px;
+    letter-spacing: .5px;
+    cursor: pointer;
+  }
+  .time-range-tabs button.on {
+    background: var(--panel);
+    color: var(--lime);
+  }
+
+  /* L/S action row */
+  .ls-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 14px 14px;
+  }
+  .ls-btn {
+    padding: 13px 0;
+    border-radius: 10px;
+    font-family: "Space Mono", monospace;
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: .5px;
+    cursor: pointer;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .ls-btn.long {
+    background: var(--green-dim);
+    color: var(--green);
+    border-color: rgba(87,214,141,.4);
+  }
+  .ls-btn.short {
+    background: var(--red-dim);
+    color: var(--red);
+    border-color: rgba(239,107,107,.4);
+  }
+  .ls-btn:hover { filter: brightness(1.2); }
+
+  /* Games / News toggle */
+  .gn-toggle {
+    display: flex;
+    padding: 0 14px;
+    gap: 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+  }
+  .gn-tab {
+    padding: 12px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .gn-tab.on {
+    color: #fff;
+    border-bottom-color: var(--lime);
+  }
+
+  /* Next match card */
+  .next-match {
+    margin: 0 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .next-match .league-time {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+    margin-bottom: 8px;
+  }
+  .next-match .matchup-line {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .next-match .team-name {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    line-height: 1.1;
+  }
+  .next-match .team-name.away {
+    text-align: right;
+  }
+  .next-match .vs-mini {
+    color: var(--text3);
+    font-size: 11px;
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin: 0 12px;
+  }
+
+  /* Books / Poly row */
+  .bp-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .bp-label {
+    font-size: 11px;
+    color: var(--text2);
+    font-family: "Space Mono", monospace;
+    font-weight: 600;
+  }
+  .bp-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+  }
+  .wdl-pill {
+    background: var(--bg2);
+    border-radius: 6px;
+    padding: 5px 0;
+    text-align: center;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .wdl-pill .tag {
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+  .wdl-pill.w .tag { background: var(--green-dim); color: var(--green); }
+  .wdl-pill.d .tag { background: rgba(245,197,66,.16); color: var(--amber); }
+  .wdl-pill.l .tag { background: var(--red-dim); color: var(--red); }
+  .wdl-pill .v {
+    color: var(--text);
+    font-size: 11px;
+  }
+
+  /* Outcomes section */
+  .outcomes {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .outcomes-title {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    font-family: "Space Mono", monospace;
+    margin-bottom: 10px;
+  }
+  .outcome-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr;
+    align-items: center;
+    padding: 5px 0;
+    font-family: "Space Mono", monospace;
+    font-size: 13px;
+  }
+  .outcome-row .lbl {
+    font-weight: 800;
+    font-size: 13px;
+  }
+  .outcome-row.win .lbl { color: var(--green); }
+  .outcome-row.draw .lbl { color: var(--amber); }
+  .outcome-row.lose .lbl { color: var(--red); }
+  .outcome-row .pct {
+    text-align: right;
+    font-weight: 700;
+  }
+  .outcome-row.win .pct { color: var(--green); }
+  .outcome-row.draw .pct,
+  .outcome-row.lose .pct { color: var(--red); }
+  .outcome-row .dol {
+    text-align: right;
+    color: var(--text3);
+    font-size: 11px;
+  }
+
+  /* Previous games */
+  .prev-section {
+    padding: 8px 12px 8px;
+  }
+  .prev-section .ph {
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+  .prev-game {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin-bottom: 6px;
+  }
+  .prev-game .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .prev-game .top .date {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+  }
+  .prev-game .top .pct {
+    font-family: "Space Mono", monospace;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .prev-game .top .pct.up { color: var(--green); }
+  .prev-game .top .pct.down { color: var(--red); }
+  .prev-game .game-info {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .prev-game .res-tag {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    display: grid; place-items: center;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .prev-game .res-tag.w { background: var(--green-dim); color: var(--green); }
+  .prev-game .res-tag.d { background: rgba(245,197,66,.16); color: var(--amber); }
+  .prev-game .res-tag.l { background: var(--red-dim); color: var(--red); }
+  .prev-game .score { color: var(--text3); font-family: "Space Mono", monospace; margin-left: auto; font-size: 11px; }
+
+  .ticket-screen { /* legacy, kept for backwards compat */ }
+
+</style>
+</head>
+<body>
+
+<div class="lab-head">
+  <h1>Notch · <span>Quick mode</span></h1>
+  <p>Standalone preview.</p>
+</div>
+
+<div class="rack">
+
+  <!-- ═══════════════ PHONE 1: MLB FEED WITH PAYOUT BUTTONS ═══════════════ -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="island"></div>
+      <div class="screen">
+
+        <div class="toast" id="toast"></div>
+
+        <div class="statusbar">
+          <div>9:41</div>
+          <div class="right">
+            <div class="signal"><span></span><span></span><span></span><span></span></div>
+            <div class="battery"><div class="fill"></div></div>
+          </div>
+        </div>
+
+        <div class="app">
+          <div class="app-scroll">
+
+            <div class="app-header">
+              <svg class="logo-notch" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M82.082 45.6L54.72 72.96H0L54.72 18.24h27.36z" fill="#fff"/>
+                <path d="M109.45 72.96H82.08V45.6L127.68 0h54.72z" fill="#fff"/>
+                <path d="M212.72 30.83c0-8.64 7.65-15.63 17.08-15.63h4.42c13.74 0 24.88 10.19 24.88 22.77v34.99h-12.22V40.25c0-8.63-7.65-15.63-17.08-15.63s-17.08 7-17.08 15.63v32.71h-12.08V15.19h12.08v15.64z" fill="#fff"/>
+                <path d="M353.71 16.45h15.23v9.67h-15.23v34.15c0 1.57 1.39 2.85 3.11 2.85h12.12v9.84h-14.87c-6.87 0-12.44-5.1-12.44-11.39v-35.5h-8.78V16.45h8.78V5.31h12.08v11.14z" fill="#fff"/>
+                <path d="M453.62 30.83c0-8.64 7.65-15.63 17.08-15.63h4.42C488.86 15.19 500 25.39 500 37.96v34.99h-12.22V40.25c0-8.63-7.65-15.63-17.08-15.63s-17.08 7-17.08 15.63v32.71h-12.08V0h12.08v30.83z" fill="#fff"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.94c17.81 0 32.25 13.21 32.25 29.51 0 16.3-14.44 29.51-32.25 29.51s-32.25-13.21-32.25-29.51c0-16.3 14.44-29.51 32.25-29.51zm0 11.05c-11.14 0-20.17 8.27-20.17 18.46s9.03 18.46 20.17 18.46 20.17-8.27 20.17-18.46-9.03-18.46-20.17-18.46z" fill="#fff"/>
+                <path d="M405.62 13.94c13.8 0 25.49 8.25 29.52 19.66h-13.35c-3.4-5.15-9.57-8.61-16.63-8.61h-1.54c-10.71 0-19.4 7.95-19.4 17.76v1.41c0 9.8 8.69 17.75 19.4 17.75h1.54c7.06 0 13.23-3.45 16.63-8.61h13.35c-4.03 11.41-15.72 19.66-29.52 19.66h-2.47c-17.13 0-31.01-12.71-31.01-28.38v-2.26c0-15.67 13.88-28.38 31.01-28.38h2.47z" fill="#fff"/>
+              </svg>
+              <div class="icon-btn">🔍</div>
+              <div class="icon-btn notif">🔔</div>
+              <div class="balance-pill">
+                <span class="amt">$2,847</span>
+                <div class="plus">+</div>
+              </div>
+            </div>
+
+            <div class="mode-toggle">
+              <button class="on">⚡ Quick</button>
+              <button>📈 Pro</button>
+            </div>
+
+            <div class="sport-tabs-m">
+              <div class="sport-tab-m" data-sport="soccer">⚽ Soccer</div>
+              <div class="sport-tab-m active" data-sport="mlb">⚾ MLB</div>
+            </div>
+
+            <div class="subnav-m">
+              <div class="subnav-item-m active">Single picks</div>
+              <div class="subnav-item-m">Live</div>
+              <div class="subnav-item-m">2-Game combo</div>
+              <div class="subnav-item-m">3-Game combo</div>
+              <div class="subnav-item-m">Tomorrow</div>
+            </div>
+
+            <!-- STICKY CONTROL BAR -->
+            <div class="control-bar">
+              <div class="lev-pills">
+                <button class="lev-pill">20×</button>
+                <button class="lev-pill">30×</button>
+                <button class="lev-pill on">50×</button>
+                <button class="lev-pill">100×</button>
+              </div>
+              <div class="format-toggle">
+                <button data-fmt="pct">%</button>
+                <button class="on" data-fmt="mult">×</button>
+              </div>
+              <div class="close-toggle">
+                <span class="icon">⏱</span>
+                <span class="lbl">Auto</span>
+                <span class="chev">▾</span>
+              </div>
+              <div class="explainer-btn" id="open-explainer">?</div>
+            </div>
+
+            <div class="sec-head">
+              <h2>Live now</h2>
+              <span class="sub" data-mlb-sub>B7 · 2 OUT</span>
+              <span class="sub" data-soccer-sub style="display:none">78' · IN PROGRESS</span>
+            </div>
+
+            <!-- MLB LIVE GAME -->
+            <div class="live-card" data-sport="mlb">
+              <div style="display:flex;align-items:center">
+                <span class="live-pill-m"><span class="pulse"></span>LIVE</span>
+                <span class="meta">YES · BOS 4 — NYY 6</span>
+                <div class="inning"><div class="big">B7</div><div class="small">2 OUT · 1-1</div></div>
+              </div>
+              <div class="live-body">
+                <div class="col-labels">
+                  <div>Team</div>
+                  <div>If they lose</div>
+                  <div>If they win</div>
+                </div>
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo bos">BOS</div>
+                    <div class="nm">Red Sox<span class="meta">Live · 7.14</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="0.6" data-prob="86" data-pick='{"team":"BOS","outcome":"Short · If BOS lose","matchup":"BOS @ NYY · Live B7","logo":"bos"}'><span class="side-lbl">Short</span><span class="pct">+18%</span></div>
+                  <div class="payout-btn win" data-base="11.33" data-prob="14" data-pick='{"team":"BOS","outcome":"Long · If BOS win","matchup":"BOS @ NYY · Live B7","logo":"bos"}'><span class="side-lbl">Long</span><span class="pct">+340%</span></div>
+                </div>
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo nyy">NYY</div>
+                    <div class="nm">Yankees<span class="meta">Live · 1.16</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="11.33" data-prob="14" data-pick='{"team":"NYY","outcome":"Short · If NYY lose","matchup":"NYY vs BOS · Live B7","logo":"nyy"}'><span class="side-lbl">Short</span><span class="pct">+340%</span></div>
+                  <div class="payout-btn win selected" data-base="0.6" data-prob="86" data-pick='{"team":"NYY","outcome":"Long · If NYY win","matchup":"NYY vs BOS · Live B7","logo":"nyy"}'><span class="side-lbl">Long</span><span class="pct">+18%</span></div>
+                </div>
+              </div>
+              <!-- ACTIVE PICK · CASH OUT -->
+              <div class="cashout-status">
+                <div class="left">
+                  <div class="label">✓ Your pick · Active</div>
+                  <div class="pick-line">NYY Win <span class="stake">· $50 stake</span></div>
+                </div>
+                <button class="cashout-chip" id="cashout-btn"><span class="ico">⚡</span> Cash out <span class="amt">+$8.20</span></button>
+              </div>
+            </div>
+
+            <!-- SOCCER LIVE GAME -->
+            <div class="live-card" data-sport="soccer" style="display:none">
+              <div style="display:flex;align-items:center">
+                <span class="live-pill-m"><span class="pulse"></span>LIVE</span>
+                <span class="meta">SKY · PREMIER LEAGUE</span>
+                <div class="inning"><div class="big">78'</div><div class="small">LIV 2 — CHE 1</div></div>
+              </div>
+              <div class="live-body">
+                <div class="col-labels-3">
+                  <div>Liverpool win</div>
+                  <div>Draw</div>
+                  <div>Chelsea win</div>
+                </div>
+                <div class="three-btn-row">
+                  <div class="three-btn green-tint" data-base="0.42" data-prob="92" data-pick='{"team":"Liverpool","outcome":"Win","matchup":"vs Chelsea · Live 78\u0027","logo":"liv"}'>
+                    <div class="lbl-team"><div class="team-logo liv">LIV</div></div>
+                    <span class="pct">+12%</span>
+                  </div>
+                  <div class="three-btn amber-tint" data-base="6.18" data-prob="5" data-pick='{"team":"LIV-CHE","outcome":"Draw","matchup":"Liverpool vs Chelsea · Live 78\u0027","logo":"draw"}'>
+                    <div class="lbl-team"><span class="draw-glyph">×</span></div>
+                    <span class="pct">+185%</span>
+                  </div>
+                  <div class="three-btn red-tint" data-base="14.83" data-prob="3" data-pick='{"team":"Chelsea","outcome":"Win","matchup":"vs Liverpool · Live 78\u0027","logo":"che"}'>
+                    <div class="lbl-team"><div class="team-logo che">CHE</div></div>
+                    <span class="pct">+445%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec-head" style="padding-top:20px">
+              <h2>🚀 Bigger payouts</h2>
+              <span class="sub">2-3 game combos</span>
+            </div>
+
+            <!-- MLB COMBOS -->
+            <div class="combo-row" data-sport="mlb">
+
+              <div class="combo-card">
+                <div class="tag">⭐ ALL FAVORITES · 2 GAMES</div>
+                <div class="legs">
+                  <div class="leg" data-base="3.07" data-pick='{"team":"PHI","outcome":"Long · If PHI win","matchup":"PHI @ NYM · 7:10 PM","logo":"phi"}'>
+                    <div class="team-logo phi">PHI</div>
+                    <div class="leg-name">Phillies win</div>
+                    <div class="leg-pct" data-base="3.07">+92%</div>
+                  </div>
+                  <div class="leg" data-base="1.8" data-pick='{"team":"LAD","outcome":"Long · If LAD win","matchup":"LAD vs SD · 10:10 PM","logo":"lad"}'>
+                    <div class="team-logo lad">LAD</div>
+                    <div class="leg-name">Dodgers win</div>
+                    <div class="leg-pct" data-base="1.8">+54%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+196%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+              <div class="combo-card">
+                <div class="tag">💎 UNDERDOG STACK · 2 GAMES</div>
+                <div class="legs">
+                  <div class="leg" data-base="5.46" data-pick='{"team":"NYM","outcome":"Long · If NYM win","matchup":"NYM vs PHI · 7:10 PM","logo":"nym"}'>
+                    <div class="team-logo nym">NYM</div>
+                    <div class="leg-name">Mets win</div>
+                    <div class="leg-pct" data-base="5.46">+164%</div>
+                  </div>
+                  <div class="leg" data-base="6.87" data-pick='{"team":"SD","outcome":"Long · If SD win","matchup":"SD @ LAD · 10:10 PM","logo":"sd"}'>
+                    <div class="team-logo sd">SD</div>
+                    <div class="leg-name">Padres win</div>
+                    <div class="leg-pct" data-base="6.87">+206%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+708%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+              <div class="combo-card">
+                <div class="tag">🔥 3-GAME PARLAY</div>
+                <div class="legs">
+                  <div class="leg" data-base="3.07" data-pick='{"team":"PHI","outcome":"Long · If PHI win","matchup":"PHI @ NYM · 7:10 PM","logo":"phi"}'>
+                    <div class="team-logo phi">PHI</div>
+                    <div class="leg-name">Phillies win</div>
+                    <div class="leg-pct" data-base="3.07">+92%</div>
+                  </div>
+                  <div class="leg" data-base="1.8" data-pick='{"team":"LAD","outcome":"Long · If LAD win","matchup":"LAD vs SD · 10:10 PM","logo":"lad"}'>
+                    <div class="team-logo lad">LAD</div>
+                    <div class="leg-name">Dodgers win</div>
+                    <div class="leg-pct" data-base="1.8">+54%</div>
+                  </div>
+                  <div class="leg" data-base="2.6" data-pick='{"team":"BAL","outcome":"Long · If BAL win","matchup":"BAL vs TOR · 7:05 PM","logo":"bal"}'>
+                    <div class="team-logo bal">BAL</div>
+                    <div class="leg-name">Orioles win</div>
+                    <div class="leg-pct" data-base="2.6">+78%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+426%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+              <div class="combo-card">
+                <div class="tag">🎲 LONG SHOT · 3 GAMES</div>
+                <div class="legs">
+                  <div class="leg" data-base="5.46" data-pick='{"team":"NYM","outcome":"Long · If NYM win","matchup":"NYM vs PHI · 7:10 PM","logo":"nym"}'>
+                    <div class="team-logo nym">NYM</div>
+                    <div class="leg-name">Mets win</div>
+                    <div class="leg-pct" data-base="5.46">+164%</div>
+                  </div>
+                  <div class="leg" data-base="6.87" data-pick='{"team":"SD","outcome":"Long · If SD win","matchup":"SD @ LAD · 10:10 PM","logo":"sd"}'>
+                    <div class="team-logo sd">SD</div>
+                    <div class="leg-name">Padres win</div>
+                    <div class="leg-pct" data-base="6.87">+206%</div>
+                  </div>
+                  <div class="leg" data-base="3.93" data-pick='{"team":"TOR","outcome":"Long · If TOR win","matchup":"TOR @ BAL · 7:05 PM","logo":"tor"}'>
+                    <div class="team-logo tor">TOR</div>
+                    <div class="leg-name">Blue Jays win</div>
+                    <div class="leg-pct" data-base="3.93">+118%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+1,659%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- SOCCER COMBOS -->
+            <div class="combo-row" data-sport="soccer" style="display:none">
+
+              <div class="combo-card">
+                <div class="tag">⭐ FAVORITES STACK · 3 GAMES</div>
+                <div class="legs">
+                  <div class="leg" data-base="3.07" data-pick='{"team":"Arsenal","outcome":"Win","matchup":"vs Crystal Palace · 15:00 UTC","logo":"ars"}'>
+                    <div class="team-logo ars">ARS</div>
+                    <div class="leg-name">Arsenal win</div>
+                    <div class="leg-pct" data-base="3.07">+92%</div>
+                  </div>
+                  <div class="leg" data-base="3.27" data-pick='{"team":"Real Madrid","outcome":"Win","matchup":"vs Barcelona · 20:00","logo":"rma"}'>
+                    <div class="team-logo rma">RMA</div>
+                    <div class="leg-name">Real Madrid win</div>
+                    <div class="leg-pct" data-base="3.27">+98%</div>
+                  </div>
+                  <div class="leg" data-base="1.93" data-pick='{"team":"Paris SG","outcome":"Win","matchup":"vs Marseille · 21:00","logo":"psg"}'>
+                    <div class="team-logo psg">PSG</div>
+                    <div class="leg-name">PSG win</div>
+                    <div class="leg-pct" data-base="1.93">+58%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+501%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+              <div class="combo-card">
+                <div class="tag">💎 UPSET STACK · 2 GAMES</div>
+                <div class="legs">
+                  <div class="leg" data-base="8.17" data-pick='{"team":"Crystal Palace","outcome":"Win","matchup":"vs Arsenal · 15:00 UTC","logo":"pal"}'>
+                    <div class="team-logo pal">PAL</div>
+                    <div class="leg-name">Crystal Palace win</div>
+                    <div class="leg-pct" data-base="8.17">+245%</div>
+                  </div>
+                  <div class="leg" data-base="4.5" data-pick='{"team":"Barcelona","outcome":"Win","matchup":"vs Real Madrid · 20:00","logo":"bar"}'>
+                    <div class="team-logo bar">BAR</div>
+                    <div class="leg-name">Barcelona win</div>
+                    <div class="leg-pct" data-base="4.5">+135%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+710%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+              <div class="combo-card">
+                <div class="tag">🎲 DRAW STACK · 3 GAMES</div>
+                <div class="legs">
+                  <div class="leg" data-base="10.4" data-pick='{"team":"ARS-PAL","outcome":"Draw","matchup":"Arsenal vs Crystal Palace · 15:00 UTC","logo":"draw"}'>
+                    <div class="team-logo" style="background:var(--amber);color:#000">×</div>
+                    <div class="leg-name">ARS-PAL draw</div>
+                    <div class="leg-pct" data-base="10.4">+312%</div>
+                  </div>
+                  <div class="leg" data-base="9.17" data-pick='{"team":"MCI-LIV","outcome":"Draw","matchup":"Man City vs Liverpool · 17:30","logo":"draw"}'>
+                    <div class="team-logo" style="background:var(--amber);color:#000">×</div>
+                    <div class="leg-name">MCI-LIV draw</div>
+                    <div class="leg-pct" data-base="9.17">+275%</div>
+                  </div>
+                  <div class="leg" data-base="9.5" data-pick='{"team":"RMA-BAR","outcome":"Draw","matchup":"Real Madrid vs Barcelona · 20:00","logo":"draw"}'>
+                    <div class="team-logo" style="background:var(--amber);color:#000">×</div>
+                    <div class="leg-name">RMA-BAR draw</div>
+                    <div class="leg-pct" data-base="9.5">+285%</div>
+                  </div>
+                </div>
+                <div class="combo-ft">
+                  <div>
+                    <div class="total-pct">+5,989%</div>
+                    <div style="font-size:9px;color:var(--text3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Combined</div>
+                  </div>
+                  <button class="sel">Pick</button>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="sec-head" style="padding-top:20px">
+              <h2>Tonight's games</h2>
+              <span class="sub">Auto-close at final out</span>
+            </div>
+
+            <!-- MLB TONIGHT'S GAMES -->
+            <div data-sport="mlb">
+
+            <!-- GAME 1 -->
+            <div class="game-card">
+              <div class="head">
+                <div class="time">7:05 PM <span class="net">YES</span> <span class="auto-pill">AUTO 30×</span></div>
+                <div class="more">Pro view ›</div>
+              </div>
+              <div class="body">
+                <div class="col-labels">
+                  <div>Team</div>
+                  <div>If they lose</div>
+                  <div>If they win</div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo tor">TOR</div>
+                    <div class="nm">Blue Jays<span class="meta">2.13</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="2.6" data-prob="53" data-pick='{"team":"TOR","outcome":"Short · If TOR lose","matchup":"TOR @ BAL · 7:05 PM","logo":"tor"}'><span class="side-lbl">Short</span><span class="pct">+78%</span></div>
+                  <div class="payout-btn win" data-base="3.93" data-prob="47" data-pick='{"team":"TOR","outcome":"Long · If TOR win","matchup":"TOR @ BAL · 7:05 PM","logo":"tor"}'><span class="side-lbl">Long</span><span class="pct">+118%</span></div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo bal">BAL</div>
+                    <div class="nm">Orioles<span class="meta">1.89</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="3.93" data-prob="47" data-pick='{"team":"BAL","outcome":"Short · If BAL lose","matchup":"BAL vs TOR · 7:05 PM","logo":"bal"}'><span class="side-lbl">Short</span><span class="pct">+118%</span></div>
+                  <div class="payout-btn win" data-base="2.6" data-prob="53" data-pick='{"team":"BAL","outcome":"Long · If BAL win","matchup":"BAL vs TOR · 7:05 PM","logo":"bal"}'><span class="side-lbl">Long</span><span class="pct">+78%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GAME 2 -->
+            <div class="game-card">
+              <div class="head">
+                <div class="time">7:10 PM <span class="auto-pill">AUTO 30×</span></div>
+                <div class="more">Pro view ›</div>
+              </div>
+              <div class="body">
+                <div class="col-labels">
+                  <div>Team</div>
+                  <div>If they lose</div>
+                  <div>If they win</div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo phi">PHI</div>
+                    <div class="nm">Phillies<span class="meta">1.61</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="5.46" data-prob="38" data-pick='{"team":"PHI","outcome":"Short · If PHI lose","matchup":"PHI @ NYM · 7:10 PM","logo":"phi"}'><span class="side-lbl">Short</span><span class="pct">+164%</span></div>
+                  <div class="payout-btn win selected" data-base="3.07" data-prob="62" data-pick='{"team":"PHI","outcome":"Long · If PHI win","matchup":"PHI @ NYM · 7:10 PM","logo":"phi"}'><span class="side-lbl">Long</span><span class="pct">+92%</span></div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo nym">NYM</div>
+                    <div class="nm">Mets<span class="meta">2.63</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="3.07" data-prob="62" data-pick='{"team":"NYM","outcome":"Short · If NYM lose","matchup":"NYM vs PHI · 7:10 PM","logo":"nym"}'><span class="side-lbl">Short</span><span class="pct">+92%</span></div>
+                  <div class="payout-btn win" data-base="5.46" data-prob="38" data-pick='{"team":"NYM","outcome":"Long · If NYM win","matchup":"NYM vs PHI · 7:10 PM","logo":"nym"}'><span class="side-lbl">Long</span><span class="pct">+164%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GAME 3 -->
+            <div class="game-card">
+              <div class="head">
+                <div class="time">8:10 PM <span class="net">MLB Net</span> <span class="auto-pill">AUTO 30×</span></div>
+                <div class="more">Pro view ›</div>
+              </div>
+              <div class="body">
+                <div class="col-labels">
+                  <div>Team</div>
+                  <div>If they lose</div>
+                  <div>If they win</div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo atl">ATL</div>
+                    <div class="nm">Braves<span class="meta">1.72</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="4.93" data-prob="42" data-pick='{"team":"ATL","outcome":"Short · If ATL lose","matchup":"ATL @ MIL · 8:10 PM","logo":"atl"}'><span class="side-lbl">Short</span><span class="pct">+148%</span></div>
+                  <div class="payout-btn win" data-base="2.83" data-prob="58" data-pick='{"team":"ATL","outcome":"Long · If ATL win","matchup":"ATL @ MIL · 8:10 PM","logo":"atl"}'><span class="side-lbl">Long</span><span class="pct">+85%</span></div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo mil">MIL</div>
+                    <div class="nm">Brewers<span class="meta">2.38</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="2.83" data-prob="58" data-pick='{"team":"MIL","outcome":"Short · If MIL lose","matchup":"MIL vs ATL · 8:10 PM","logo":"mil"}'><span class="side-lbl">Short</span><span class="pct">+85%</span></div>
+                  <div class="payout-btn win" data-base="4.93" data-prob="42" data-pick='{"team":"MIL","outcome":"Long · If MIL win","matchup":"MIL vs ATL · 8:10 PM","logo":"mil"}'><span class="side-lbl">Long</span><span class="pct">+148%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GAME 4 -->
+            <div class="game-card">
+              <div class="head">
+                <div class="time">10:10 PM <span class="net">SNLA</span> <span class="auto-pill">AUTO 30×</span></div>
+                <div class="more">Pro view ›</div>
+              </div>
+              <div class="body">
+                <div class="col-labels">
+                  <div>Team</div>
+                  <div>If they lose</div>
+                  <div>If they win</div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo sd">SD</div>
+                    <div class="nm">Padres<span class="meta">2.86</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="1.8" data-prob="65" data-pick='{"team":"SD","outcome":"Short · If SD lose","matchup":"SD @ LAD · 10:10 PM","logo":"sd"}'><span class="side-lbl">Short</span><span class="pct">+54%</span></div>
+                  <div class="payout-btn win" data-base="6.87" data-prob="35" data-pick='{"team":"SD","outcome":"Long · If SD win","matchup":"SD @ LAD · 10:10 PM","logo":"sd"}'><span class="side-lbl">Long</span><span class="pct">+206%</span></div>
+                </div>
+
+                <div class="team-row">
+                  <div class="team-id">
+                    <div class="team-logo lad">LAD</div>
+                    <div class="nm">Dodgers<span class="meta">1.54</span></div>
+                  </div>
+                  <div class="payout-btn lose" data-base="6.87" data-prob="35" data-pick='{"team":"LAD","outcome":"Short · If LAD lose","matchup":"LAD vs SD · 10:10 PM","logo":"lad"}'><span class="side-lbl">Short</span><span class="pct">+206%</span></div>
+                  <div class="payout-btn win" data-base="1.8" data-prob="65" data-pick='{"team":"LAD","outcome":"Long · If LAD win","matchup":"LAD vs SD · 10:10 PM","logo":"lad"}'><span class="side-lbl">Long</span><span class="pct">+54%</span></div>
+                </div>
+              </div>
+            </div>
+
+            </div><!-- /MLB GAMES -->
+
+            <!-- SOCCER MATCHES -->
+            <div data-sport="soccer" style="display:none">
+
+              <!-- MATCH 1: ARS vs PAL (Igor's example) -->
+              <div class="game-card">
+                <div class="head">
+                  <div class="time">TUE 15:00 UTC <span class="net">NBC</span> <span class="auto-pill">AUTO 30×</span></div>
+                  <div class="more">Pro view ›</div>
+                </div>
+                <div class="body" style="padding:8px 14px 14px">
+                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:700;font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px">PREMIER LEAGUE · ROUND 38</div>
+                  <div class="soccer-matchup">
+                    <div class="side home">
+                      <div class="team-logo ars">ARS</div>
+                      <div class="nm">Arsenal<span class="meta">1.89</span></div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="side away">
+                      <div class="team-logo pal">PAL</div>
+                      <div class="nm">Crystal Palace<span class="meta">4.35</span></div>
+                    </div>
+                  </div>
+                  <div class="col-labels-3">
+                    <div>Arsenal win</div>
+                    <div>Draw</div>
+                    <div>Palace win</div>
+                  </div>
+                  <div class="three-btn-row">
+                    <div class="three-btn green-tint selected" data-base="3.07" data-prob="53" data-pick='{"team":"Arsenal","outcome":"Win","matchup":"vs Crystal Palace","time":"15:00 UTC","logo":"ars"}'>
+                      <div class="lbl-team"><div class="team-logo ars">ARS</div></div>
+                      <span class="pct">+92%</span>
+                      
+                    </div>
+                    <div class="three-btn amber-tint" data-base="10.4" data-prob="24" data-pick='{"team":"ARS-PAL","outcome":"Draw","matchup":"Arsenal vs Crystal Palace","time":"15:00 UTC","logo":"draw"}'>
+                      <div class="lbl-team"><span class="draw-glyph">×</span></div>
+                      <span class="pct">+312%</span>
+                      
+                    </div>
+                    <div class="three-btn red-tint" data-base="8.17" data-prob="23" data-pick='{"team":"Crystal Palace","outcome":"Win","matchup":"vs Arsenal","time":"15:00 UTC","logo":"pal"}'>
+                      <div class="lbl-team"><div class="team-logo pal">PAL</div></div>
+                      <span class="pct">+245%</span>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MATCH 2: MCI vs LIV -->
+              <div class="game-card">
+                <div class="head">
+                  <div class="time">TUE 17:30 UTC <span class="net">SKY</span> <span class="auto-pill">AUTO 30×</span></div>
+                  <div class="more">Pro view ›</div>
+                </div>
+                <div class="body" style="padding:8px 14px 14px">
+                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:700;font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px">PREMIER LEAGUE</div>
+                  <div class="soccer-matchup">
+                    <div class="side home">
+                      <div class="team-logo mci">MCI</div>
+                      <div class="nm">Man City<span class="meta">1.79</span></div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="side away">
+                      <div class="team-logo liv">LIV</div>
+                      <div class="nm">Liverpool<span class="meta">5.26</span></div>
+                    </div>
+                  </div>
+                  <div class="col-labels-3">
+                    <div>Man City win</div>
+                    <div>Draw</div>
+                    <div>Liverpool win</div>
+                  </div>
+                  <div class="three-btn-row">
+                    <div class="three-btn green-tint" data-base="2.8" data-prob="56" data-pick='{"team":"Man City","outcome":"Win","matchup":"vs Liverpool · 17:30","logo":"mci"}'>
+                      <div class="lbl-team"><div class="team-logo mci">MCI</div></div>
+                      <span class="pct">+84%</span>
+                    </div>
+                    <div class="three-btn amber-tint" data-base="9.17" data-prob="25" data-pick='{"team":"MCI-LIV","outcome":"Draw","matchup":"Man City vs Liverpool · 17:30","logo":"draw"}'>
+                      <div class="lbl-team"><span class="draw-glyph">×</span></div>
+                      <span class="pct">+275%</span>
+                    </div>
+                    <div class="three-btn red-tint" data-base="3.93" data-prob="19" data-pick='{"team":"Liverpool","outcome":"Win","matchup":"vs Man City · 17:30","logo":"liv"}'>
+                      <div class="lbl-team"><div class="team-logo liv">LIV</div></div>
+                      <span class="pct">+118%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MATCH 3: RMA vs BAR (El Clásico) -->
+              <div class="game-card">
+                <div class="head">
+                  <div class="time">TUE 20:00 UTC <span class="net">ESPN+</span> <span class="auto-pill">AUTO 30×</span></div>
+                  <div class="more">Pro view ›</div>
+                </div>
+                <div class="body" style="padding:8px 14px 14px">
+                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:700;font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px">LA LIGA · EL CLÁSICO</div>
+                  <div class="soccer-matchup">
+                    <div class="side home">
+                      <div class="team-logo rma">RMA</div>
+                      <div class="nm">Real Madrid<span class="meta">2.00</span></div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="side away">
+                      <div class="team-logo bar">BAR</div>
+                      <div class="nm">Barcelona<span class="meta">4.35</span></div>
+                    </div>
+                  </div>
+                  <div class="col-labels-3">
+                    <div>Real win</div>
+                    <div>Draw</div>
+                    <div>Barça win</div>
+                  </div>
+                  <div class="three-btn-row">
+                    <div class="three-btn green-tint" data-base="3.27" data-prob="50" data-pick='{"team":"Real Madrid","outcome":"Win","matchup":"vs Barcelona · 20:00","logo":"rma"}'>
+                      <div class="lbl-team"><div class="team-logo rma">RMA</div></div>
+                      <span class="pct">+98%</span>
+                    </div>
+                    <div class="three-btn amber-tint" data-base="9.5" data-prob="27" data-pick='{"team":"RMA-BAR","outcome":"Draw","matchup":"Real Madrid vs Barcelona · 20:00","logo":"draw"}'>
+                      <div class="lbl-team"><span class="draw-glyph">×</span></div>
+                      <span class="pct">+285%</span>
+                    </div>
+                    <div class="three-btn red-tint" data-base="4.5" data-prob="23" data-pick='{"team":"Barcelona","outcome":"Win","matchup":"vs Real Madrid · 20:00","logo":"bar"}'>
+                      <div class="lbl-team"><div class="team-logo bar">BAR</div></div>
+                      <span class="pct">+135%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MATCH 4: PSG vs OM -->
+              <div class="game-card">
+                <div class="head">
+                  <div class="time">TUE 21:00 UTC <span class="auto-pill">AUTO 30×</span></div>
+                  <div class="more">Pro view ›</div>
+                </div>
+                <div class="body" style="padding:8px 14px 14px">
+                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:700;font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px">LIGUE 1 · LE CLASSIQUE</div>
+                  <div class="soccer-matchup">
+                    <div class="side home">
+                      <div class="team-logo psg">PSG</div>
+                      <div class="nm">Paris SG<span class="meta">1.54</span></div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="side away">
+                      <div class="team-logo om">OM</div>
+                      <div class="nm">Marseille<span class="meta">7.69</span></div>
+                    </div>
+                  </div>
+                  <div class="col-labels-3">
+                    <div>PSG win</div>
+                    <div>Draw</div>
+                    <div>OM win</div>
+                  </div>
+                  <div class="three-btn-row">
+                    <div class="three-btn green-tint" data-base="1.93" data-prob="65" data-pick='{"team":"Paris SG","outcome":"Win","matchup":"vs Marseille · 21:00","logo":"psg"}'>
+                      <div class="lbl-team"><div class="team-logo psg">PSG</div></div>
+                      <span class="pct">+58%</span>
+                    </div>
+                    <div class="three-btn amber-tint" data-base="10.67" data-prob="22" data-pick='{"team":"PSG-OM","outcome":"Draw","matchup":"Paris SG vs Marseille · 21:00","logo":"draw"}'>
+                      <div class="lbl-team"><span class="draw-glyph">×</span></div>
+                      <span class="pct">+320%</span>
+                    </div>
+                    <div class="three-btn red-tint" data-base="9.5" data-prob="13" data-pick='{"team":"Marseille","outcome":"Win","matchup":"vs Paris SG · 21:00","logo":"om"}'>
+                      <div class="lbl-team"><div class="team-logo om">OM</div></div>
+                      <span class="pct">+285%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /SOCCER MATCHES -->
+
+          </div>
+
+          <!-- EXPLAINER OVERLAY -->
+          <div class="explainer-overlay" id="explainer-overlay">
+            <div class="explainer-sheet">
+              <div class="explainer-grab"></div>
+
+              <h2 class="explainer-title">How Quick mode works</h2>
+              <div class="explainer-sub">Pick a team. We do the rest.</div>
+
+              <div class="step-row">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                  <div class="step-title">Pick an outcome</div>
+                  <div class="step-text">Tap a <span class="grn-tx">green</span>, <span style="color:var(--amber);font-weight:700">amber</span>, or <span class="red-tx">red</span> button on any game. That's your pick.</div>
+                </div>
+              </div>
+
+              <div class="step-row">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                  <div class="step-title">The % is your payout</div>
+                  <div class="step-text">If you're right, you win that % on top of your stake. Bigger % = bigger reward (and bigger risk).</div>
+                  <div class="mini-example">$50 on <b>Arsenal +92%</b> → win $46 if Arsenal wins. Lose $50 if not.</div>
+                </div>
+              </div>
+
+              <div class="step-row">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                  <div class="step-title">Auto-closes at game end</div>
+                  <div class="step-text">No managing positions. We close it the moment the game ends and pay out automatically.</div>
+                </div>
+              </div>
+
+              <div class="step-row">
+                <div class="step-num">4</div>
+                <div class="step-body">
+                  <div class="step-title">Stack for bigger payouts</div>
+                  <div class="step-text">Combos multiply. Pick 2 or 3 games, all have to be right, but payouts compound.</div>
+                  <div class="mini-example"><b>3-game favorites stack</b> → +501% combined</div>
+                </div>
+              </div>
+
+              <div class="step-row">
+                <div class="step-num">5</div>
+                <div class="step-body">
+                  <div class="step-title">Leverage up top</div>
+                  <div class="step-text">Use the <b>20× / 30× / 50× / 100×</b> pills to dial payouts up or down. Same risk shape — just bigger numbers.</div>
+                </div>
+              </div>
+
+              <button class="got-it" id="close-explainer">Got it</button>
+
+              <div class="pro-link">
+                Want to hold positions past the game? Set your own size and leverage?<br>
+                Switch to <b>Pro mode →</b>
+              </div>
+            </div>
+          </div>
+
+          <!-- PICK SLIP OVERLAY -->
+          <div class="slip-overlay" id="slip-overlay">
+            <div class="slip-sheet">
+              <div class="slip-grab"></div>
+              <div class="slip-header">
+                <h2>Parlay slip <span class="count-badge" id="slip-count">0</span></h2>
+                <div class="x-close" id="close-slip">×</div>
+              </div>
+
+              <div class="slip-list" id="slip-list"></div>
+
+              <div class="slip-totals" id="slip-totals" style="display:none">
+                <div class="ln">
+                  <span>Combined payout</span>
+                  <span class="v" id="slip-combo-pct" style="color:var(--lime);display:flex;align-items:center;gap:6px">
+                    —
+                    <span class="info-btn" id="slip-math-toggle">?</span>
+                  </span>
+                </div>
+                <div class="math-breakdown" id="slip-math" style="display:none"></div>
+                <div class="ln big"><span>To win</span><span class="v" id="slip-to-win">—</span></div>
+              </div>
+
+              <div class="slip-stake-block" id="slip-stake-block" style="display:none">
+                <div class="stake-lbl">
+                  <span>Trade</span>
+                  <span class="max">Max $2,847</span>
+                </div>
+                <div class="stake-input-wrap">
+                  <span class="dollar">$</span>
+                  <input type="text" id="slip-stake" value="50" />
+                </div>
+                <div class="quick-row" id="slip-quick">
+                  <button>$10</button>
+                  <button class="on">$50</button>
+                  <button>$100</button>
+                  <button>$250</button>
+                </div>
+              </div>
+
+              <button class="slip-place" id="slip-place" disabled>Add picks to begin</button>
+
+              <div class="slip-fine">Picks auto-close at game's final whistle. Settles instantly.</div>
+            </div>
+          </div>
+
+          <!-- QUICKPICK POPUP -->
+          <div class="quickpick-overlay" id="quickpick-overlay">
+            <div class="quickpick-sheet">
+              <div class="qp-grab"></div>
+              <div class="qp-header">
+                <h2>Place pick</h2>
+                <div class="x-close" id="qp-close">×</div>
+              </div>
+
+              <div class="qp-pick">
+                <div class="qp-logo" id="qp-logo">PHI</div>
+                <div class="qp-info">
+                  <div class="qp-team" id="qp-team">Phillies</div>
+                  <div class="qp-outcome" id="qp-outcome">Long · If PHI win</div>
+                  <div class="qp-matchup" id="qp-matchup">PHI @ NYM · 7:10 PM</div>
+                </div>
+                <div class="qp-payout" id="qp-payout">+92%</div>
+              </div>
+
+              <div class="qp-stake-block">
+                <div class="qp-stake-lbl">
+                  <span>Trade</span>
+                  <span class="max">Max $2,847</span>
+                </div>
+                <div class="qp-stake-input">
+                  <span class="dollar">$</span>
+                  <input type="text" id="qp-stake" value="50" />
+                </div>
+                <div class="qp-quick">
+                  <button data-amt="10">$10</button>
+                  <button class="on" data-amt="50">$50</button>
+                  <button data-amt="100">$100</button>
+                  <button data-amt="250">$250</button>
+                </div>
+              </div>
+
+              <div class="qp-summary">
+                <div class="qp-line"><span>Current price</span><span class="val" id="qp-current-price">$290.42</span></div>
+                <div class="qp-line"><span>Loses at</span><span class="val" id="qp-loss-price" style="color:var(--red)">$280.74 (−3.33%)</span></div>
+                <div class="qp-line"><span>Your trade size</span><span class="val" id="qp-bet">$50.00</span></div>
+                <div class="qp-line win"><span>You win</span><span class="val" id="qp-win">$46.00</span></div>
+              </div>
+
+              <button class="qp-place" id="qp-place">Place pick · $50</button>
+              <button class="qp-add" id="qp-add">+ Add to parlay instead</button>
+
+              <div class="qp-fine">Auto-closes at game end. <span style="color:var(--lime)">Cash out anytime.</span></div>
+            </div>
+          </div>
+
+          <div class="tabbar">
+            <div class="tab-item active"><div class="icon">⚾</div>Markets</div>
+            <div class="tab-item"><div class="icon">🔴</div>Live<div class="badge">3</div></div>
+            <div class="tab-item trade" id="open-slip">
+              <div class="icon-wrap"><div class="icon">+</div></div>
+              Slip
+            </div>
+            <div class="tab-item"><div class="icon">📊</div>Positions</div>
+            <div class="tab-item"><div class="icon">👤</div>Account</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="phone-caption">MLB · Quick mode<small>Two payouts per team. Auto-leverage. Auto-close.</small></div>
+  </div>
+
+
+</div>
+
+<script>
+  // ─── State ───
+  let leverage = 50;
+  let autoClose = true;
+  let activeSport = 'mlb';
+  let picks = []; // {id, base, prob, team, outcome, matchup, logo, side}
+  let stake = 50;
+  let payoutFormat = 'mult'; // 'pct' or 'mult'
+
+  // ─── Helpers ───
+  const fmtPct = n => {
+    const rounded = Math.round(n);
+    if (rounded >= 1000) return '+' + rounded.toLocaleString() + '%';
+    return '+' + rounded + '%';
+  };
+  const fmtMult = n => {
+    const mult = 1 + n / 100;
+    if (mult >= 100) return mult.toFixed(0) + '×';
+    if (mult >= 10) return mult.toFixed(1) + '×';
+    return mult.toFixed(2) + '×';
+  };
+  const fmtPayout = n => payoutFormat === 'mult' ? fmtMult(n) : fmtPct(n);
+  const fmtMoney = n => {
+    const v = Math.abs(n);
+    return (n < 0 ? '−' : '') + '$' + v.toFixed(2);
+  };
+  const slugify = (s) => s.replace(/[^a-zA-Z0-9]/g, '-');
+
+  // Recalculate every individual payout button (MLB 2-button + Soccer 3-button)
+  function applyLeverage() {
+    document.querySelectorAll('.payout-btn, .three-btn').forEach(btn => {
+      const base = parseFloat(btn.dataset.base);
+      if (isNaN(base)) return;
+      const pct = btn.querySelector('.pct');
+      if (pct) pct.textContent = fmtPayout(base * leverage);
+    });
+
+    // Recalculate combo card legs + totals
+    document.querySelectorAll('.combo-card').forEach(card => {
+      let product = 1;
+      card.querySelectorAll('.leg-pct').forEach(legEl => {
+        const base = parseFloat(legEl.dataset.base);
+        if (isNaN(base)) return;
+        const legPct = base * leverage / 100;
+        product *= (1 + legPct);
+        legEl.textContent = fmtPayout(base * leverage);
+      });
+      const total = (product - 1) * 100;
+      const totalEl = card.querySelector('.total-pct');
+      if (totalEl) totalEl.textContent = fmtPayout(total);
+    });
+
+    document.querySelectorAll('.auto-pill').forEach(pill => {
+      pill.textContent = autoClose ? `AUTO ${leverage}×` : `KEEP ${leverage}×`;
+    });
+
+    renderSlip();
+  }
+
+  function applySport() {
+    document.querySelectorAll('[data-sport]').forEach(el => {
+      if (el.classList.contains('sport-tab-m')) return;
+      el.style.display = (el.dataset.sport === activeSport) ? '' : 'none';
+    });
+    document.querySelectorAll('[data-mlb-sub]').forEach(el => {
+      el.style.display = activeSport === 'mlb' ? '' : 'none';
+    });
+    document.querySelectorAll('[data-soccer-sub]').forEach(el => {
+      el.style.display = activeSport === 'soccer' ? '' : 'none';
+    });
+  }
+
+  // ─── PICK SLIP RENDER ───
+  function renderSlip() {
+    const listEl = document.getElementById('slip-list');
+    const totalsEl = document.getElementById('slip-totals');
+    const stakeBlockEl = document.getElementById('slip-stake-block');
+    const placeEl = document.getElementById('slip-place');
+    const countEl = document.getElementById('slip-count');
+    const tradeEl = document.getElementById('open-slip');
+    if (!listEl) return;
+
+    // Update count badge
+    countEl.textContent = picks.length;
+    // Floating + Trade count pill
+    let countPill = tradeEl ? tradeEl.querySelector('.count-pill') : null;
+    if (picks.length > 0) {
+      if (!countPill && tradeEl) {
+        countPill = document.createElement('div');
+        countPill.className = 'count-pill';
+        tradeEl.querySelector('.icon-wrap').appendChild(countPill);
+      }
+      if (countPill) countPill.textContent = picks.length;
+    } else if (countPill) {
+      countPill.remove();
+    }
+
+    if (picks.length === 0) {
+      listEl.innerHTML = '<div class="slip-empty"><div class="ico">🎯</div>Tap any payout button to start your slip.</div>';
+      totalsEl.style.display = 'none';
+      stakeBlockEl.style.display = 'none';
+      placeEl.disabled = true;
+      placeEl.textContent = 'Add picks to begin';
+      return;
+    }
+
+    // Render picks
+    listEl.innerHTML = picks.map(p => {
+      const payoutPct = (p.base * leverage);
+      const logoHTML = p.logo === 'draw'
+        ? '<div class="draw-pill">×</div>'
+        : `<div class="team-logo ${p.logo}">${p.team.substring(0,3).toUpperCase()}</div>`;
+      return `
+        <div class="slip-pick">
+          <div class="x" data-remove="${p.id}">×</div>
+          <div class="top">
+            ${logoHTML}
+            <div class="outcome">${p.outcome.replace(/Long · |Short · /, '').replace(/If .+ /, '')}</div>
+            <div class="pct">${fmtPayout(payoutPct)}</div>
+          </div>
+          <div class="match-line">${p.matchup}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Wire remove buttons
+    listEl.querySelectorAll('[data-remove]').forEach(x => {
+      x.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = x.dataset.remove;
+        removePick(id);
+      });
+    });
+
+    // Calculate combined parlay math
+    let product = 1;
+    picks.forEach(p => {
+      product *= (1 + p.base * leverage / 100);
+    });
+    const combinedPct = (product - 1) * 100;
+
+    // Update totals
+    totalsEl.style.display = '';
+    stakeBlockEl.style.display = '';
+    placeEl.disabled = false;
+
+    const comboPctEl = document.getElementById('slip-combo-pct');
+    const toWinEl = document.getElementById('slip-to-win');
+
+    // Preserve the info button while updating combo text
+    const infoBtn = document.getElementById('slip-math-toggle');
+    comboPctEl.innerHTML = '';
+    const valueSpan = document.createElement('span');
+    valueSpan.textContent = fmtPayout(combinedPct);
+    comboPctEl.appendChild(valueSpan);
+    if (infoBtn) comboPctEl.appendChild(infoBtn);
+
+    const winAmt = stake * combinedPct / 100;
+    toWinEl.textContent = '+' + fmtMoney(winAmt);
+    placeEl.textContent = `Place ${picks.length}-leg parlay · $${stake}`;
+
+    // Math breakdown content
+    const mathEl = document.getElementById('slip-math');
+    if (mathEl) {
+      const lines = [];
+      let running = stake;
+      picks.forEach((p, i) => {
+        const legMult = 1 + p.base * leverage / 100;
+        running *= legMult;
+        const teamShort = (p.team || '').substring(0, 12);
+        lines.push(`
+          <div class="mb-row">
+            <span><span class="step">${i + 1}.</span> ${teamShort} × ${legMult.toFixed(2)}</span>
+            <span class="val">${fmtMoney(running)}</span>
+          </div>
+        `);
+      });
+      const totalMult = (product).toFixed(2);
+      mathEl.innerHTML = lines.join('') + `
+        <div class="mb-formula">
+          $${stake} × ${totalMult} = <b>${fmtMoney(running)}</b> total<br>
+          Profit = <b>+${fmtMoney(winAmt)}</b> (your $${stake} back + winnings)
+        </div>
+      `;
+    }
+  }
+
+  function buildPickId(btn) {
+    return slugify((btn.dataset.pick || btn.outerHTML).substring(0, 80));
+  }
+
+  function addPick(btn) {
+    if (!btn.dataset.pick) return;
+    const meta = JSON.parse(btn.dataset.pick);
+    const id = buildPickId(btn);
+    // Skip if already in slip
+    if (picks.some(p => p.id === id)) return;
+    // Remove any other pick from same game (same matchup root)
+    const matchupRoot = meta.matchup.split(' · ')[0].replace(/^vs |^@ /, '').toLowerCase();
+    picks = picks.filter(p => {
+      const pRoot = p.matchup.split(' · ')[0].replace(/^vs |^@ /, '').toLowerCase();
+      // crude: if matchups overlap on team names, treat as same game
+      return !(matchupRoot.includes(p.team.toLowerCase()) || pRoot.includes(meta.team.toLowerCase()));
+    });
+    // Also unselect any other button in the same row visually
+    const row = btn.closest('.team-row, .three-btn-row');
+    if (row) {
+      row.querySelectorAll('.payout-btn.in-slip, .three-btn.in-slip').forEach(other => {
+        if (other !== btn) {
+          other.classList.remove('in-slip', 'selected');
+        }
+      });
+    }
+    picks.push({
+      id,
+      base: parseFloat(btn.dataset.base),
+      prob: parseInt(btn.dataset.prob),
+      ...meta,
+      btnRef: btn
+    });
+    btn.classList.add('in-slip', 'selected');
+    renderSlip();
+  }
+
+  function removePick(id) {
+    const removed = picks.find(p => p.id === id);
+    picks = picks.filter(p => p.id !== id);
+    if (removed && removed.btnRef) {
+      removed.btnRef.classList.remove('in-slip', 'selected');
+    }
+    renderSlip();
+  }
+
+  // ─── Wire leverage pills ───
+  document.querySelectorAll('.lev-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.lev-pill').forEach(p => p.classList.remove('on'));
+      pill.classList.add('on');
+      leverage = parseInt(pill.textContent.replace('×', ''));
+      applyLeverage();
+    });
+  });
+
+  // ─── Wire format toggle (% / ×) ───
+  document.querySelectorAll('.format-toggle button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.format-toggle button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      payoutFormat = b.dataset.fmt;
+      applyLeverage();
+    });
+  });
+
+  // ─── Wire Auto/Keep toggle ───
+  document.querySelectorAll('.close-toggle').forEach(tog => {
+    tog.addEventListener('click', () => {
+      autoClose = !autoClose;
+      const lbl = tog.querySelector('.lbl');
+      const icon = tog.querySelector('.icon');
+      if (autoClose) {
+        lbl.textContent = 'Auto';
+        icon.textContent = '⏱';
+        lbl.style.color = 'var(--lime)';
+      } else {
+        lbl.textContent = 'Keep';
+        icon.textContent = '∞';
+        lbl.style.color = 'var(--text2)';
+      }
+      document.querySelectorAll('.sec-head .sub').forEach(s => {
+        if (s.textContent.includes('Auto-close') || s.textContent.includes('Keep position')) {
+          s.textContent = autoClose ? 'Auto-close at final out' : 'Keep position open';
+        }
+      });
+      applyLeverage();
+    });
+  });
+
+  // ─── Wire payout buttons (open quickpick popup) ───
+  document.querySelectorAll('.payout-btn, .three-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openQuickPick(btn);
+    });
+  });
+
+  // ─── Sub-nav ───
+  document.querySelectorAll('.subnav-m').forEach(nav => {
+    nav.querySelectorAll('.subnav-item-m').forEach(item => {
+      item.addEventListener('click', () => {
+        nav.querySelectorAll('.subnav-item-m').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  });
+
+  // ─── Sport tabs ───
+  document.querySelectorAll('.sport-tabs-m').forEach(tabs => {
+    tabs.querySelectorAll('.sport-tab-m').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.querySelectorAll('.sport-tab-m').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        if (tab.dataset.sport) {
+          activeSport = tab.dataset.sport;
+          applySport();
+        }
+      });
+    });
+  });
+
+  // ─── Mode toggle ───
+  document.querySelectorAll('.mode-toggle').forEach(mt => {
+    mt.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        mt.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+      });
+    });
+  });
+
+  // ─── Bottom tab bar ───
+  document.querySelectorAll('.tabbar').forEach(tb => {
+    tb.querySelectorAll('.tab-item').forEach(t => {
+      t.addEventListener('click', () => {
+        tb.querySelectorAll('.tab-item').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+      });
+    });
+  });
+
+  // ─── Pro view: time range tabs ───
+  document.querySelectorAll('.time-range-tabs').forEach(tabs => {
+    tabs.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        tabs.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+      });
+    });
+  });
+
+  // ─── Pro view: Games/News toggle ───
+  document.querySelectorAll('.gn-toggle').forEach(t => {
+    t.querySelectorAll('.gn-tab').forEach(b => {
+      b.addEventListener('click', () => {
+        t.querySelectorAll('.gn-tab').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+      });
+    });
+  });
+
+  // ─── Explainer overlay ───
+  const explainerOverlay = document.getElementById('explainer-overlay');
+  const openBtn = document.getElementById('open-explainer');
+  const closeBtn = document.getElementById('close-explainer');
+  if (openBtn) openBtn.addEventListener('click', () => explainerOverlay.classList.add('on'));
+  if (closeBtn) closeBtn.addEventListener('click', () => explainerOverlay.classList.remove('on'));
+  if (explainerOverlay) {
+    explainerOverlay.addEventListener('click', (e) => {
+      if (e.target === explainerOverlay) explainerOverlay.classList.remove('on');
+    });
+  }
+
+  // ─── Pick Slip overlay ───
+  const slipOverlay = document.getElementById('slip-overlay');
+  const slipOpenBtn = document.getElementById('open-slip');
+  const slipCloseBtn = document.getElementById('close-slip');
+  if (slipOpenBtn) {
+    slipOpenBtn.addEventListener('click', (e) => {
+      // Don't open if user just tapped Active state at bottom of tab bar -- always open
+      slipOverlay.classList.add('on');
+    });
+  }
+  if (slipCloseBtn) slipCloseBtn.addEventListener('click', () => slipOverlay.classList.remove('on'));
+  if (slipOverlay) {
+    slipOverlay.addEventListener('click', (e) => {
+      if (e.target === slipOverlay) slipOverlay.classList.remove('on');
+    });
+  }
+
+  // Math breakdown toggle
+  const slipMathToggle = document.getElementById('slip-math-toggle');
+  if (slipMathToggle) {
+    slipMathToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const mathPanel = document.getElementById('slip-math');
+      const isOpen = mathPanel.style.display !== 'none';
+      mathPanel.style.display = isOpen ? 'none' : '';
+      slipMathToggle.classList.toggle('on', !isOpen);
+    });
+  }
+
+  // Slip stake input
+  const slipStakeInput = document.getElementById('slip-stake');
+  if (slipStakeInput) {
+    slipStakeInput.addEventListener('input', () => {
+      stake = parseFloat(slipStakeInput.value) || 0;
+      renderSlip();
+    });
+  }
+
+  // Slip quick stake buttons
+  const slipQuick = document.getElementById('slip-quick');
+  if (slipQuick) {
+    slipQuick.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        slipQuick.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+        stake = parseFloat(b.textContent.replace('$', ''));
+        slipStakeInput.value = stake;
+        renderSlip();
+      });
+    });
+  }
+
+  // (No auto-population of slip — user opens popups by tapping buttons)
+
+  // ─── TOAST helper ───
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('on'), 2200);
+  }
+
+  // ─── QUICKPICK POPUP ───
+  let qpState = null; // {btn, meta, base}
+  let qpStakeAmt = 50;
+
+  // Current oracle prices per team (mock data)
+  const teamPrices = {
+    ars: 290.42, pal: 145.30,
+    mci: 412.18, liv: 308.92, che: 215.65,
+    rma: 487.20, bar: 320.45,
+    psg: 425.60, om: 132.85,
+    bos: 617.42, nyy: 854.18,
+    tor: 523.14, bal: 684.92,
+    phi: 782.04, nym: 441.18,
+    atl: 798.50, mil: 524.30,
+    sd: 498.31, lad: 1247.65
+  };
+
+  const qpOverlay = document.getElementById('quickpick-overlay');
+  const qpStakeInput = document.getElementById('qp-stake');
+
+  function openQuickPick(btn) {
+    if (!btn.dataset.pick) return;
+    const meta = JSON.parse(btn.dataset.pick);
+    const base = parseFloat(btn.dataset.base);
+    qpState = { btn, meta, base };
+
+    // Populate header
+    const logoEl = document.getElementById('qp-logo');
+    logoEl.className = 'qp-logo';
+    if (meta.logo === 'draw') {
+      logoEl.style.background = 'var(--amber)';
+      logoEl.style.color = '#0a0b0e';
+      logoEl.textContent = '×';
+    } else {
+      logoEl.style.background = '';
+      logoEl.style.color = '';
+      logoEl.classList.add('team-logo', meta.logo);
+      logoEl.textContent = (meta.team || '').substring(0, 3).toUpperCase();
+    }
+
+    document.getElementById('qp-team').textContent = meta.team;
+    document.getElementById('qp-outcome').textContent = meta.outcome;
+    document.getElementById('qp-matchup').textContent = meta.matchup;
+    document.getElementById('qp-payout').textContent = fmtPayout(base * leverage);
+
+    // Price info — show for single-team picks, hide for draws
+    const priceRows = document.querySelectorAll('#qp-current-price, #qp-loss-price');
+    const price = teamPrices[meta.logo];
+    if (price && meta.logo !== 'draw') {
+      const side = meta.outcome.startsWith('Short') ? 'short' : 'long';
+      const buffer = 100 / leverage;
+      const lossPrice = side === 'short'
+        ? price * (1 + 1/leverage)
+        : price * (1 - 1/leverage);
+      const sign = side === 'short' ? '+' : '−';
+      document.getElementById('qp-current-price').textContent = '$' + price.toFixed(2);
+      document.getElementById('qp-loss-price').textContent =
+        '$' + lossPrice.toFixed(2) + ' (' + sign + buffer.toFixed(2) + '%)';
+      priceRows.forEach(el => el.parentElement.style.display = '');
+    } else {
+      // Draw product: hide single-team price info
+      priceRows.forEach(el => el.parentElement.style.display = 'none');
+    }
+
+    updateQpMath();
+    qpOverlay.classList.add('on');
+  }
+
+  function closeQuickPick() {
+    qpOverlay.classList.remove('on');
+    qpState = null;
+  }
+
+  function updateQpMath() {
+    if (!qpState) return;
+    const winAmt = qpStakeAmt * qpState.base * leverage / 100;
+    document.getElementById('qp-bet').textContent = fmtMoney(qpStakeAmt);
+    document.getElementById('qp-win').textContent = '+' + fmtMoney(winAmt);
+    document.getElementById('qp-place').textContent = `Place pick · $${qpStakeAmt}`;
+  }
+
+  // Close handlers
+  document.getElementById('qp-close').addEventListener('click', closeQuickPick);
+  qpOverlay.addEventListener('click', (e) => {
+    if (e.target === qpOverlay) closeQuickPick();
+  });
+
+  // Stake input
+  qpStakeInput.addEventListener('input', () => {
+    qpStakeAmt = parseFloat(qpStakeInput.value) || 0;
+    document.querySelectorAll('.qp-quick button').forEach(b => b.classList.remove('on'));
+    updateQpMath();
+  });
+
+  // Quick stake buttons
+  document.querySelectorAll('.qp-quick button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.qp-quick button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      qpStakeAmt = parseFloat(b.dataset.amt);
+      qpStakeInput.value = qpStakeAmt;
+      updateQpMath();
+    });
+  });
+
+  // Place pick
+  document.getElementById('qp-place').addEventListener('click', () => {
+    if (!qpState) return;
+    const winAmt = qpStakeAmt * qpState.base * leverage / 100;
+    showToast(`Pick placed · $${qpStakeAmt} → win +${fmtMoney(winAmt)}`);
+    closeQuickPick();
+  });
+
+  // Add to parlay
+  document.getElementById('qp-add').addEventListener('click', () => {
+    if (!qpState) return;
+    addPick(qpState.btn);
+    showToast('Added to parlay slip');
+    closeQuickPick();
+  });
+
+  // ─── Cash Out chip ───
+  const cashoutBtn = document.getElementById('cashout-btn');
+  if (cashoutBtn) {
+    cashoutBtn.addEventListener('click', () => {
+      cashoutBtn.classList.add('done');
+      cashoutBtn.innerHTML = '<span class="ico">✓</span> Cashed out <span class="amt">+$8.20</span>';
+      showToast('Cashed out · +$8.20 to balance');
+      // Update balance pill visually
+      const bal = document.querySelector('.balance-pill .amt');
+      if (bal) {
+        const cur = parseFloat(bal.textContent.replace(/[^\d.]/g, ''));
+        const next = cur + 8.20;
+        bal.textContent = '$' + next.toFixed(2);
+      }
+    });
+  }
+
+  // ─── Combo "Pick" button → add all legs to slip ───
+  document.querySelectorAll('.combo-card .sel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.combo-card');
+      if (!card) return;
+      const legs = card.querySelectorAll('.leg[data-pick]');
+      let added = 0;
+      legs.forEach(leg => {
+        // Build a fake button-like object for addPick — pass the leg as the btn
+        if (!leg.dataset.pick) return;
+        addPick(leg);
+        added++;
+      });
+      // Visual feedback
+      card.classList.add('flash');
+      btn.classList.add('added');
+      const origText = btn.textContent;
+      btn.textContent = `✓ ${added} added`;
+      setTimeout(() => {
+        card.classList.remove('flash');
+        btn.classList.remove('added');
+        btn.textContent = origText;
+      }, 1400);
+      // Open slip after a brief delay so user sees confirmation
+      setTimeout(() => {
+        document.getElementById('slip-overlay').classList.add('on');
+      }, 500);
+    });
+  });
+
+  // ─── "Pro view ›" links on game cards ───
+  document.querySelectorAll('.game-card .more').forEach(link => {
+    link.style.cursor = 'pointer';
+    link.addEventListener('click', () => {
+      showToast('Opens Pro view for this game');
+    });
+  });
+
+  // ─── "See all" links on section headers ───
+  document.querySelectorAll('.sec-head .see-all').forEach(link => {
+    link.style.cursor = 'pointer';
+    link.addEventListener('click', () => {
+      showToast('Show full list');
+    });
+  });
+
+  // ─── ORDER BOOK link (if any on live card meta) ───
+  // (handled if it gets added later)
+
+  // Initial render
+  applyLeverage();
+  applySport();
+  renderSlip();
+</script>
+
+</body>
+</html>
