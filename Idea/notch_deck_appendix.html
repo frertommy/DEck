@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notch Deck</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta name="theme-color" content="#0c0e12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0e12;--border:#242629;--hover:#181b20;--lime:#b2ed68;--lime-bg:rgba(178,237,104,.06);--w:#eef1f6;--t1:#b0b5be;--t2:#8a8f98;--t3:#606267;--blue:#5b8def;--purple:#a78bfa;--amber:#f5c542;--red:#ef6b6b}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--t1);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Space Mono',monospace}.upper{text-transform:uppercase}a{color:var(--lime);text-decoration:none}a:hover{text-decoration:underline}
+#grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.25}
+.content{position:relative;z-index:1}
+.sec{border-bottom:1px solid var(--border)}.sec-inner{max-width:1200px;margin:0 auto;padding:5rem 1.5rem}
+@media(min-width:768px){.sec-inner{padding:7rem 3rem}}@media(min-width:1280px){.sec-inner{padding:8rem 4rem}}
+.lbl{font-family:'Space Mono',monospace;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.08em}
+.h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(32px,6vw,56px);line-height:1.1;color:var(--w)}
+.h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(24px,4vw,38px);line-height:1.15;color:var(--w)}
+.body{font-size:15px;line-height:24px;color:var(--t1)}
+.g2{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}.g3{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}.g4{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+@media(min-width:768px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}}
+.g2>*,.g3>*,.g4>*{background:var(--bg)}
+.card{background:var(--bg);padding:28px;transition:background .2s}.card:hover{background:var(--hover)}
+.card-title{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;line-height:22px;text-transform:uppercase;color:var(--w);margin-bottom:10px}
+.card-body{font-size:13px;line-height:20px;color:var(--t1)}
+.stat-val{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;line-height:32px;color:var(--w)}
+.stat-lbl{font-family:'Space Mono',monospace;font-size:12px;line-height:16px;color:var(--t2);text-transform:uppercase;margin-top:6px}
+.badge{display:inline-block;font-family:'Space Mono',monospace;font-size:11px;text-transform:uppercase;padding:4px 10px;border-radius:2px}
+.bar-t{height:2px;margin-bottom:16px}
+.vbar{height:4px;background:var(--border);margin-top:12px}.vbar-fill{height:100%;width:0;transition:width 1.5s cubic-bezier(.16,1,.3,1)}.vbar-fill.active{width:var(--w)}
+.callout{margin-top:24px;padding:20px 24px;border:1px solid var(--border);border-left:2px solid var(--lime)}
+.why-grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:40px;align-items:start}
+@media(min-width:1100px){.why-grid{grid-template-columns:1fr 1fr}}
+.callout span{font-size:15px;color:var(--w)}
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.ticker{display:flex;animation:tickScroll 40s linear infinite;width:max-content}@keyframes tickScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tick-item{display:flex;align-items:center;gap:12px;padding:12px 24px;border-right:1px solid var(--border);white-space:nowrap}
+.tick-name{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;color:var(--w);text-transform:uppercase}.tick-price{font-family:'Space Mono',monospace;font-size:12px;color:var(--t1)}
+.reveal{opacity:0;transform:translateY(20px);transition:all .6s cubic-bezier(.16,1,.3,1)}.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+.pulse{width:6px;height:6px;background:var(--lime);animation:pul 2s ease-in-out infinite}@keyframes pul{0%,100%{box-shadow:0 0 0 0 rgba(178,237,104,.4)}50%{box-shadow:0 0 0 8px rgba(178,237,104,0)}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border)}
+
+
+/* === MOBILE RESPONSIVE === */
+@media(max-width:767px){
+  /* Font loading optimization */
+  .mono{font-size:inherit}
+  
+  /* Feature strip below chart */
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns:repeat(5,1fr)"]{
+    grid-template-columns:1fr 1fr !important;
+  }
+  
+  /* Oracle calendar grid - horizontal scroll on mobile */
+  .oracle-scroll{
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+  }
+  .oracle-scroll > div{
+    min-width:700px;
+  }
+  
+  /* Two-column layouts go single */
+  [style*="grid-template-columns:3fr 5fr"],
+  [style*="grid-template-columns:1fr 1fr;gap:1px"]{
+    grid-template-columns:1fr !important;
+  }
+  
+  /* Fee comparison table - horizontal scroll */
+  [style*="grid-template-columns:2fr 1fr 1fr 1fr 1fr"],
+  [style*="grid-template-columns:2.5fr 0.8fr 1.2fr 2fr"]{
+    grid-template-columns:1.5fr 1fr 1fr 1fr 1fr !important;
+    font-size:10px !important;
+  }
+  
+  /* Trade scenario cards - stack */
+  [style*="grid-template-columns:1fr 140px"]{
+    grid-template-columns:1fr !important;
+  }
+  [style*="grid-template-columns:1fr 140px"] > div:last-child{
+    border-left:none !important;
+    border-top:1px solid var(--border);
+    padding:16px !important;
+    height:80px;
+  }
+  
+  /* Match card two-col */
+  [style*="grid-template-columns:1fr 40px 1fr"]{
+    grid-template-columns:1fr 30px 1fr !important;
+  }
+  
+  /* Odds grid */
+  [style*="grid-template-columns:50px 1fr 1fr 1fr"]{
+    grid-template-columns:40px 1fr 1fr 1fr !important;
+  }
+  
+  /* Stat values smaller on mobile */
+  .mono[style*="font-size:36px"]{font-size:24px !important}
+  .mono[style*="font-size:32px"]{font-size:22px !important}
+  .mono[style*="font-size:28px"]{font-size:20px !important}
+  
+  /* Chart header wrap */
+  [style*="display:flex;gap:16px;margin-left:auto"]{
+    display:none !important;
+  }
+  
+  /* Inline flex wrapping */
+  [style*="display:flex;align-items:center;gap:0;overflow-x:hidden"]{
+    flex-wrap:wrap !important;
+    gap:8px !important;
+  }
+  
+  /* Section padding tighter */
+  .sec-inner{padding:3rem 1.25rem !important}
+  
+  /* Body text */
+  .body{font-size:14px;line-height:22px}
+  
+  /* Cards */
+  .card{padding:20px}
+  
+  /* Buttons */
+  button.mono{font-size:12px !important;padding:8px 14px !important}
+  
+  /* Flywheel / funnel canvases */
+  canvas[id="fw-canvas"],canvas[id="funnel-canvas"]{
+    min-height:300px;
+  }
+  
+  /* Nav */
+  [style*="position:sticky"] [style*="font-size:18px"]{
+    font-size:15px !important;
+  }
+  
+  /* Appendix header */
+  [style*="font-size:clamp(48px,8vw,80px)"]{
+    font-size:clamp(32px,10vw,60px) !important;
+  }
+  
+  /* Callout */
+  .callout{padding:16px}
+  
+  /* Logo boxes consistent */
+  [style*="height:56px"][style*="background:#000"]{
+    height:48px !important;
+  }
+}
+
+/* Small phone */
+@media(max-width:400px){
+  .h1{font-size:clamp(26px,7vw,40px) !important}
+  .h2{font-size:clamp(20px,5vw,30px) !important}
+  .g4{grid-template-columns:1fr !important}
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns:repeat(5,1fr)"]{
+    grid-template-columns:1fr !important;
+  }
+}
+
+/* Tablet tweaks */
+@media(min-width:768px) and (max-width:1024px){
+  [style*="grid-template-columns:3fr 5fr"]{
+    grid-template-columns:1fr 1fr !important;
+  }
+  [style*="grid-template-columns:repeat(5,1fr)"]{
+    grid-template-columns:repeat(3,1fr) !important;
+  }
+}
+
+/* Touch-friendly tap targets */
+@media(hover:none){
+  button.mono{min-height:44px;min-width:44px}
+  a{min-height:44px;display:inline-flex;align-items:center}
+}
+</style>
+<canvas id="grid-bg"></canvas>
+<div class="content">
+
+<canvas id="grid-bg"></canvas>
+<div class="content">
+
+<!-- ============================================================== -->
+<!-- ARCHIVED APPENDIX + TRADE NOW SLIDES                           -->
+<!-- Removed from main deck (index.html) on 2026-05-27              -->
+<!-- Source commit before removal: 98e2760                          -->
+<!-- Restored commit after removal: 67b1524                         -->
+<!-- Original location: index.html lines 693–1175                   -->
+<!-- ============================================================== -->
+
+<!-- APPENDIX DIVIDER -->
+<div class="sec"><div class="sec-inner" style="min-height:calc(100vh - 57px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+  <div class="reveal"><span class="mono upper" style="font-weight:700;font-size:clamp(48px,8vw,80px);color:var(--w);letter-spacing:.15em">APPENDIX</span></div>
+  <div class="body reveal d1" style="margin-top:16px;font-size:16px;color:var(--t3)">Supporting data and additional context.</div>
+</div></div>
+
+<!-- APPENDIX: Revenue -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A1 · Revenue</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">How Notch <span style="color:var(--lime)">makes money.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Five revenue lines. No ads, no subscriptions — pure trading infrastructure.</p>
+
+  <!-- 5 revenue cards -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);margin-top:32px">
+    <div class="card reveal d1" style="padding:20px;background:var(--bg)">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><div class="bar-t" style="background:var(--lime);flex:1"></div><span class="mono" style="font-size:9px;padding:2px 5px;background:rgba(178,237,104,.1);color:var(--lime);border-radius:2px">PRIMARY</span></div>
+      <div class="card-title" style="font-size:13px">Trading Fees</div>
+      <div class="card-body" style="margin-top:6px;font-size:11px">Taker / maker on every matched trade</div>
+    </div>
+    <div class="card reveal d2" style="padding:20px;background:var(--bg)">
+      <div class="bar-t" style="background:var(--blue)"></div>
+      <div class="card-title" style="font-size:13px">Funding Spread</div>
+      <div class="card-body" style="margin-top:6px;font-size:11px">Protocol captures spread on every funding payment</div>
+    </div>
+    <div class="card reveal d3" style="padding:20px;background:var(--bg)">
+      <div class="bar-t" style="background:var(--purple)"></div>
+      <div class="card-title" style="font-size:13px">Liquidation Fees</div>
+      <div class="card-body" style="margin-top:6px;font-size:11px">Collected when leveraged positions are liquidated</div>
+    </div>
+    <div class="card reveal d3" style="padding:20px;background:var(--bg)">
+      <div class="bar-t" style="background:var(--amber)"></div>
+      <div class="card-title" style="font-size:13px">Oracle Licensing</div>
+      <div class="card-body" style="margin-top:6px;font-size:11px">Price feed licensing to third-party venues</div>
+    </div>
+    <div class="card reveal d4" style="padding:20px;background:var(--bg)">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><div class="bar-t" style="background:var(--lime);flex:1"></div><span class="mono" style="font-size:9px;padding:2px 5px;background:rgba(245,197,66,.1);color:var(--amber);border-radius:2px">HIGH CONVICTION</span></div>
+      <div class="card-title" style="font-size:13px">Builder Codes</div>
+      <div class="card-body" style="margin-top:6px;font-size:11px">Sportsbooks plug in as frontends, earn per trade</div>
+    </div>
+  </div>
+
+  <!-- Fee comparison table -->
+  <div class="reveal d2" style="margin-top:32px;border:1px solid var(--border);overflow:hidden">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;background:var(--hover)">
+      <div class="mono" style="font-size:11px;color:var(--t2);padding:12px 20px">Protocol</div>
+      <div class="mono" style="font-size:11px;color:var(--t2);padding:12px 16px;text-align:center">Maker</div>
+      <div class="mono" style="font-size:11px;color:var(--t2);padding:12px 16px;text-align:center">Taker</div>
+      <div class="mono" style="font-size:11px;color:var(--t2);padding:12px 16px;text-align:center">Blended</div>
+      <div class="mono" style="font-size:11px;color:var(--t2);padding:12px 16px;text-align:center">/ $1M vol</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--t1);padding:10px 20px">Vertex</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">0</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">2</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">~2</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">$200</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--t1);padding:10px 20px">Drift</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">0</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">5</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">~3</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">$300</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--t1);padding:10px 20px">Hyperliquid (core)</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">1.0</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">3.5</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">~3.3</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">$330</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--t1);padding:10px 20px">dYdX v4</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">1.0</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">5.0</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">~3.5</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">$350</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--t1);padding:10px 20px">Hyperliquid HIP-3</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">3</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">9</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">~6.6</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">$660</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--t1);padding:10px 20px">GMX V2</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">4–6</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">4–6</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">~8–10</div>
+      <div class="mono" style="font-size:12px;color:var(--t2);padding:10px 16px;text-align:center">$900</div>
+    </div>
+    <!-- Tail.Trade row -->
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:2px solid var(--blue);background:rgba(91,141,239,.04)">
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--blue);padding:12px 20px">Tail.trade</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--blue);padding:12px 16px;text-align:center">2</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--blue);padding:12px 16px;text-align:center">8</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--blue);padding:12px 16px;text-align:center">10</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--blue);padding:12px 16px;text-align:center">$1,000</div>
+    </div>
+    <!-- Notch.win row -->
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border-top:2px solid var(--lime);background:rgba(178,237,104,.04)">
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);padding:12px 20px">Notch.win (For Retail)</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);padding:12px 16px;text-align:center">10</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);padding:12px 16px;text-align:center">20</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);padding:12px 16px;text-align:center">30</div>
+      <div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);padding:12px 16px;text-align:center">$3,000</div>
+    </div>
+  </div>
+  <div class="reveal d2" style="margin-top:8px;font-size:11px;color:var(--t3)">All rates in bps. Data: DefiLlama, Dune, protocol docs (Mar 2026).</div>
+
+  <!-- Revenue scenarios -->
+  <div class="g3" style="margin-top:32px">
+    <div class="card reveal d3" style="padding:24px;text-align:center">
+      <div class="lbl" style="color:var(--t3);margin-bottom:8px">Conservative</div>
+      <div class="mono" style="font-weight:700;font-size:28px;color:var(--w)">$5.5M/yr</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:8px">$10M/day avg volume<br>15 bps blended</div>
+    </div>
+    <div class="card reveal d3" style="padding:24px;text-align:center">
+      <div class="lbl" style="color:var(--lime);margin-bottom:8px">Base</div>
+      <div class="mono" style="font-weight:700;font-size:28px;color:var(--lime)">$27.4M/yr</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:8px">$50M/day avg volume<br>15 bps blended</div>
+    </div>
+    <div class="card reveal d4" style="padding:24px;text-align:center">
+      <div class="lbl" style="color:var(--t3);margin-bottom:8px">Upside</div>
+      <div class="mono" style="font-weight:700;font-size:28px;color:var(--w)">$164.3M/yr</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:8px">$300M/day avg volume<br>15 bps blended</div>
+    </div>
+  </div>
+
+  <!-- Builder Codes note -->
+  <div class="callout reveal d4"><span><span style="color:var(--w);font-weight:700">Builder Codes:</span> Sportsbooks plug into Tail.trade as frontends and earn per trade. We don't acquire users — their apps acquire users for us.</span></div>
+</div></div>
+
+<!-- APPENDIX: Tokenomics -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A2 · $NTCH</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Tokenomics.</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Potential tokenomics allocation map.</p>
+
+  <!-- Total supply -->
+  <div class="reveal d2" style="margin-top:32px;display:flex;justify-content:space-between;align-items:baseline;padding-bottom:16px;border-bottom:1px solid var(--lime)">
+    <span class="lbl" style="color:var(--lime)">Total Supply</span>
+    <span class="mono" style="font-weight:700;font-size:28px;color:var(--w)">1,000,000,000</span>
+  </div>
+
+  <!-- Table header -->
+  <div class="reveal d2" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:16px 0 8px;border-bottom:1px solid var(--border)">
+    <span class="lbl" style="color:var(--t2)">Allocation</span>
+    <span class="lbl" style="color:var(--t2);text-align:right">%</span>
+    <span class="lbl" style="color:var(--t2);text-align:right">Tokens</span>
+    <span class="lbl" style="color:var(--t2);text-align:right">Vesting</span>
+  </div>
+
+  <!-- Rows — community/ecosystem in lime, investors in amber, team/ops in t1 -->
+  <div class="reveal d2" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--lime);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Community / Airdrops</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--lime);text-align:right">30%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">300,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">10% at TGE (100M liquid), 20% over 36mo</span>
+  </div>
+  <div class="reveal d2" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--lime);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Treasury / Foundation</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--lime);text-align:right">15%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">150,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">Governance-gated</span>
+  </div>
+  <div class="reveal d2" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--lime);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Ecosystem / Builders</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--lime);text-align:right">8%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">80,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">Partner incentives</span>
+  </div>
+  <div class="reveal d3" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--amber);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Seed Round</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--amber);text-align:right">10%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">100,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">1yr cliff, 24mo linear vest</span>
+  </div>
+  <div class="reveal d3" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--amber);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Future Rounds</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--amber);text-align:right">15%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">150,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">Reserved for Series A / B</span>
+  </div>
+  <div class="reveal d3" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--t2);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Liquidity</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--t1);text-align:right">5%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">50,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">Unlocked at TGE</span>
+  </div>
+  <div class="reveal d4" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--t2);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Core Team</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--t1);text-align:right">15%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">150,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">1yr cliff, 36mo linear vest</span>
+  </div>
+  <div class="reveal d4" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:14px 0;border-bottom:1px solid var(--border);align-items:center">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;background:var(--t2);flex-shrink:0;border-radius:1px"></div><span style="font-size:13px;color:var(--w)">Advisors</span></div>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--t1);text-align:right">2%</span>
+    <span class="mono" style="font-size:12px;color:var(--t1);text-align:right">20,000,000</span>
+    <span style="font-size:12px;color:var(--t2);text-align:right">1yr cliff, 24mo linear vest</span>
+  </div>
+
+  <!-- Total row -->
+  <div class="reveal d4" style="display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 2fr;gap:0;padding:16px 0 0;align-items:center">
+    <span class="mono" style="font-size:13px;color:var(--lime)">Total</span>
+    <span class="mono" style="font-weight:700;font-size:14px;color:var(--lime);text-align:right">100%</span>
+    <span class="mono" style="font-size:12px;color:var(--lime);text-align:right">1,000,000,000</span>
+    <span></span>
+  </div>
+
+</div></div>
+
+<!-- APPENDIX: Oracle Coverage -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A3 · Oracle Coverage</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">24/7 · 365. <span style="color:var(--lime)">Markets never close.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Colored blocks = peak match density. Dotted = offseason, markets still open.</p>
+
+  <!-- Calendar grid -->
+  <div class="reveal d2 oracle-scroll">
+    <div>
+
+      <!-- Month headers -->
+      <div style="display:grid;grid-template-columns:180px repeat(12,1fr);gap:3px;margin-bottom:8px">
+        <div></div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Jan</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Feb</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Mar</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Apr</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">May</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Jun</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Jul</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Aug</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Sep</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Oct</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Nov</div>
+        <div class="mono" style="font-size:15px;color:var(--t2);text-align:center">Dec</div>
+      </div>
+
+      <!-- Soccer row -->
+      <div style="display:grid;grid-template-columns:180px repeat(12,1fr);gap:3px;margin-bottom:4px">
+        <div><div class="mono" style="font-weight:700;font-size:18px;color:var(--w)">Soccer</div><div style="font-size:13px;color:var(--t3)">~55 games per team · 10 mo</div></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.5"></div>
+        <div style="background:rgba(178,237,104,.1);border:1px dashed rgba(178,237,104,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(178,237,104,.1);border:1px dashed rgba(178,237,104,.25);border-radius:3px;height:48px"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--lime);border-radius:3px;height:48px;opacity:.85"></div>
+      </div>
+
+      <!-- NBA row -->
+      <div style="display:grid;grid-template-columns:180px repeat(12,1fr);gap:3px;margin-bottom:4px">
+        <div><div class="mono" style="font-weight:700;font-size:18px;color:var(--w)">NBA</div><div style="font-size:13px;color:var(--t3)">~100 games per team · 9 mo</div></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.5"></div>
+        <div style="background:rgba(167,139,250,.1);border:1px dashed rgba(167,139,250,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(167,139,250,.1);border:1px dashed rgba(167,139,250,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(167,139,250,.1);border:1px dashed rgba(167,139,250,.25);border-radius:3px;height:48px"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--purple);border-radius:3px;height:48px;opacity:.85"></div>
+      </div>
+
+      <!-- NHL row -->
+      <div style="display:grid;grid-template-columns:180px repeat(12,1fr);gap:3px;margin-bottom:4px">
+        <div><div class="mono" style="font-weight:700;font-size:18px;color:var(--w)">NHL</div><div style="font-size:13px;color:var(--t3)">~100 games per team · 9 mo</div></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.5"></div>
+        <div style="background:rgba(91,141,239,.1);border:1px dashed rgba(91,141,239,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(91,141,239,.1);border:1px dashed rgba(91,141,239,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(91,141,239,.1);border:1px dashed rgba(91,141,239,.25);border-radius:3px;height:48px"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--blue);border-radius:3px;height:48px;opacity:.85"></div>
+      </div>
+
+      <!-- MLB row -->
+      <div style="display:grid;grid-template-columns:180px repeat(12,1fr);gap:3px;margin-bottom:16px">
+        <div><div class="mono" style="font-weight:700;font-size:18px;color:var(--w)">MLB</div><div style="font-size:13px;color:var(--t3)">~175 games · 7 mo</div></div>
+        <div style="background:rgba(245,197,66,.1);border:1px dashed rgba(245,197,66,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(245,197,66,.1);border:1px dashed rgba(245,197,66,.25);border-radius:3px;height:48px"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.85"></div>
+        <div style="background:var(--amber);border-radius:3px;height:48px;opacity:.5"></div>
+        <div style="background:rgba(245,197,66,.1);border:1px dashed rgba(245,197,66,.25);border-radius:3px;height:48px"></div>
+        <div style="background:rgba(245,197,66,.1);border:1px dashed rgba(245,197,66,.25);border-radius:3px;height:48px"></div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:var(--border);margin:8px 0 16px"></div>
+
+      <!-- Leagues active row -->
+      <div style="display:grid;grid-template-columns:180px repeat(12,1fr);gap:3px">
+        <div><div class="mono" style="font-weight:700;font-size:15px;color:var(--t1)">Leagues<br>active</div></div>
+        <div class="mono" style="background:rgba(178,237,104,.15);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">3</div>
+        <div class="mono" style="background:rgba(178,237,104,.15);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">3</div>
+        <div class="mono" style="background:rgba(178,237,104,.25);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">4</div>
+        <div class="mono" style="background:rgba(178,237,104,.25);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">4</div>
+        <div class="mono" style="background:rgba(178,237,104,.25);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">4</div>
+        <div class="mono" style="background:rgba(178,237,104,.15);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">3</div>
+        <div class="mono" style="background:rgba(178,237,104,.08);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--t2)">1</div>
+        <div class="mono" style="background:rgba(178,237,104,.08);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--t2)">1</div>
+        <div class="mono" style="background:rgba(178,237,104,.1);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--t1)">2</div>
+        <div class="mono" style="background:rgba(178,237,104,.25);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">4</div>
+        <div class="mono" style="background:rgba(178,237,104,.15);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">3</div>
+        <div class="mono" style="background:rgba(178,237,104,.15);border-radius:3px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;color:var(--lime)">3</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="reveal d3" style="margin-top:32px;display:flex;justify-content:center;gap:32px">
+    <div style="text-align:center"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">12/12</div><div style="font-size:11px;color:var(--t3);margin-top:2px">MONTHS COVERED</div></div>
+    <div style="width:1px;background:var(--border)"></div>
+    <div style="text-align:center"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">~430</div><div style="font-size:11px;color:var(--t3);margin-top:2px">EVENTS / YEAR</div></div>
+    <div style="width:1px;background:var(--border)"></div>
+    <div style="text-align:center"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">4</div><div style="font-size:11px;color:var(--t3);margin-top:2px">LEAGUES</div></div>
+  </div>
+
+  <!-- Off-season explainer -->
+  <div class="reveal d3" style="margin-top:40px;margin-bottom:8px"><span class="lbl" style="color:var(--t3)">Why off-season matters</span></div>
+  <p class="body reveal d3" style="max-width:600px;margin-bottom:24px">The off-season is when fundamentals get rewritten. Closing markets concentrates months of information into a single violent reopen gap. We stay live.</p>
+  <div class="g3" style="margin-top:0">
+    <div class="card reveal d3" style="padding:24px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Transfers + Free Agency</div><div class="card-body">The single biggest driver of team strength. A confirmed star signing reprices the entire team baseline — and it happens in the off-season.</div></div>
+    <div class="card reveal d3" style="padding:24px"><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Manager + Staff Changes</div><div class="card-body">A sacking or hire changes win probability, playing style, and market sentiment overnight. Overwhelmingly an off-season event.</div></div>
+    <div class="card reveal d4" style="padding:24px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Injury Returns + Surgery</div><div class="card-body">Star player availability is a first-order pricing input. Rehab timelines and preseason fitness — tradeable signals that only exist between seasons.</div></div>
+  </div>
+
+</div></div>
+
+<!-- APPENDIX: Brian Armstrong quote -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A4 · Market Thesis</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Prediction markets are growing. <span style="color:var(--lime)">We absorb their output.</span></div>
+
+  <div class="reveal d2" style="margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
+
+    <!-- Left: Tweet screenshot -->
+    <div style="background:var(--bg);padding:24px;display:flex;align-items:center;justify-content:center">
+      <a href="https://x.com/brian_armstrong/status/2016593041532870677" target="_blank" style="display:block;max-width:480px;width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--border)">
+        <img loading="lazy" src="assets/img/img_17_6553a66c.jpg" style="width:100%;display:block;border-radius:12px" alt="Brian Armstrong tweet about prediction markets">
+      </a>
+    </div>
+
+    <!-- Right: Our take -->
+    <div style="background:var(--bg);padding:32px;display:flex;flex-direction:column;justify-content:center">
+      <div class="lbl" style="color:var(--lime);margin-bottom:16px">Our Take</div>
+      <div style="font-size:15px;color:var(--w);line-height:24px;font-weight:700">We agree. Truth = Oracle.</div>
+      <div style="font-size:14px;color:var(--t1);line-height:22px;margin-top:12px">As prediction market volume grows, our oracle directly benefits — more signal, better pricing, deeper liquidity. We don't compete with prediction markets. We absorb their output and build the next layer on top.</div>
+    </div>
+
+  </div>
+
+</div></div>
+
+<!-- APPENDIX: Paradigm data -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A5 · Prediction Market Volume</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">1 month of Polymarket & Kalshi volume. <span style="color:var(--lime)">Sports dominates.</span></div>
+  <div class="reveal d2" style="margin-top:32px;border:1px solid var(--border);overflow:hidden">
+    <img loading="lazy" src="assets/img/img_18_6553a66c.jpg" style="width:100%;display:block" alt="Prediction Markets Volume Distribution from Paradigm">
+  </div>
+  <div class="reveal d2" style="margin-top:12px;text-align:right"><a href="https://predictions.paradigm.xyz" target="_blank" class="mono" style="font-size:12px;color:var(--t3)">Source: predictions.paradigm.xyz</a></div>
+</div></div>
+
+
+<!-- APPENDIX: Why Now -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A6 · Why Now</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Three things just happened. <span style="color:var(--lime)">None existed two years ago.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">The infrastructure, the audience, and the catalyst all arrived in the same window.</p>
+
+  <!-- Timeline rows -->
+  <div class="reveal d2" style="margin-top:40px">
+    <!-- Row 1: Hyperliquid -->
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;border:1px solid var(--border);border-bottom:none">
+      <div style="display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);padding:24px 0">
+        <span class="mono" style="font-weight:700;font-size:16px;color:var(--blue)">2025</span>
+      </div>
+      <div style="padding:24px">
+        <div class="card-title" style="color:var(--blue)">HYPERLIQUID PROVED PERPS</div>
+        <div class="card-body" style="margin-top:8px">On-chain perpetual DEX scaled to $6.7T annualized volume. Proved the mechanic works without a centralized exchange. Robinhood and other retail trading venues are experiencing explosive growth.</div>
+        <div style="margin-top:16px"><span class="mono" style="font-weight:700;font-size:24px;color:var(--blue)">$6.7T</span><div class="stat-lbl">perp DEX vol 2025</div></div>
+      </div>
+    </div>
+
+    <!-- Row 2: Polymarket -->
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;border:1px solid var(--border);border-bottom:none">
+      <div style="display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);padding:24px 0">
+        <span class="mono" style="font-weight:700;font-size:16px;color:var(--purple)">2025</span>
+      </div>
+      <div style="padding:24px">
+        <div class="card-title" style="color:var(--purple)">POLYMARKET PROVED SPORTS</div>
+        <div class="card-body" style="margin-top:8px">Prediction markets went mainstream off the election — then sports became the fastest-growing vertical. Users already think in market terms.</div>
+        <div style="margin-top:16px"><span class="mono" style="font-weight:700;font-size:24px;color:var(--purple)">$64B</span><div class="stat-lbl">prediction vol 2025</div></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Legal War -->
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);padding:24px 0">
+        <span class="mono" style="font-weight:700;font-size:16px;color:var(--lime)">2026</span>
+      </div>
+      <div style="padding:24px">
+        <div class="card-title" style="color:var(--lime)">REGULATORS DECLARED WAR ON PREDICTION MARKETS</div>
+        <div class="card-body" style="margin-top:8px">12+ lawsuits across state and federal courts. Nevada, Arizona, Massachusetts all moving against Kalshi. A bipartisan Senate bill to ban sports contracts on prediction platforms. The legal window for binary-bet sports is closing — perpetual markets sit outside the blast radius.</div>
+        <div style="margin-top:16px"><span class="mono" style="font-weight:700;font-size:24px;color:var(--lime)">12+</span><div class="stat-lbl">active lawsuits in 2026</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout reveal d4"><span>The instrument is proven. The audience is trained. And the competition is getting sued.</span></div>
+</div></div>
+
+<!-- A7 LEGAL WEDGE -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">A7 · Legal Wedge</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:800px">A perpetual derivative. <span style="color:var(--lime)">Not an event contract.</span></div>
+
+  <p class="body reveal d2" style="margin-top:12px;max-width:700px">No settlement, no expiry, no single-game payoff. Notch is a continuous index derivative — designed for the federal derivative framework from day one.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:32px">
+    <div class="card reveal d3" style="padding:28px;background:var(--bg)">
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w)">No settlement. No expiry. No game to bet on.</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:6px;line-height:1.6">Positions stay open across matches, transfers, managerial changes, and entire off-seasons. There is no cash-out event tied to a game result. Price moves continuously — like an equity, not a bet.</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w)">Continuous index, not an event contract</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:6px;line-height:1.6">Team strength index synthesizes bookmaker odds, match history, transfers, injuries, and network effects into a forward-looking estimate. No single match determines the price — the same way no single earnings report determines the S&P.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card reveal d4" style="padding:28px;background:var(--bg)">
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w)">Perp infrastructure already CFTC-approved</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:6px;line-height:1.6">CFTC greenlit crypto perpetuals on Coinbase Derivatives, July 2025. SEC + CFTC "Project Crypto" summit, Jan 2026 — onshoring perpetual derivatives is an explicit regulatory priority.</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w)">Designed for the federal derivative framework</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:6px;line-height:1.6">Standard derivatives mechanics — margin, funding rate, liquidation — that courts and regulators already recognize. Three-entity structure isolates pricing, clearing, and distribution.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- TRADE NOW -->
+<div class="sec"><div class="sec-inner">
+  <div class="lbl reveal" style="color:var(--t2)">Live Product</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Trade now</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Tail.trade is already live on mainnet.</p>
+  <a href="https://tail.trade/trade?market=1" target="_blank" rel="noopener" class="reveal d2" style="display:block;margin-top:32px;border:1px solid var(--border);border-radius:4px;overflow:hidden;text-decoration:none;position:relative;cursor:pointer;transition:border-color .2s;height:600px" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--border)'">
+    <iframe src="https://tail.trade/trade?market=1" style="width:200%;height:1200px;border:none;pointer-events:none;transform:scale(0.5);transform-origin:top left" loading="lazy" title="Tail.trade"></iframe>
+    <div style="position:absolute;inset:0;z-index:1"></div>
+  </a>
+  <div class="reveal d3" style="margin-top:16px;text-align:center"><a href="https://tail.trade/trade?market=1" target="_blank" rel="noopener" class="mono upper" style="display:inline-block;padding:12px 24px;background:var(--lime);color:var(--bg);font-size:14px;font-weight:700;border:none;cursor:pointer;border-radius:2px;text-decoration:none">Open Tail.trade →</a></div>
+</div></div>
+
+
+</div>
+<script>
+// Reveal-on-scroll observer (copied from main deck for standalone viewing)
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.15});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body></html>
