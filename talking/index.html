@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kill the filler — daily speaking drill</title>
+<meta name="description" content="Daily speaking drill — replace filler words with a half-second of silence.">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<meta name="theme-color" content="#0c0e12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e12; --panel:#0f1217; --border:#242629; --ink:#e7ebe6;
+    --dim:#8b9088; --lime:#b2ed68; --strike:#5a3a3a; --strikeink:#c98b8b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    line-height:1.5; padding:28px 18px 60px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:660px;margin:0 auto}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+  h1{font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1.15}
+  h1 .q{color:var(--lime)}
+  .sub{color:var(--dim);font-size:13px;margin-top:8px}
+  .sub b{color:var(--ink);font-weight:500}
+
+  .baseline{
+    border:1px solid var(--border);border-left:3px solid var(--lime);
+    background:var(--panel);padding:16px;margin:22px 0;border-radius:2px;
+  }
+  .baseline .top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .baseline .big{font-family:'Space Mono';font-size:38px;font-weight:700;color:var(--lime);line-height:1}
+  .baseline .lbl{font-size:13px;color:var(--dim)}
+  .baseline .lbl b{color:var(--ink);font-weight:500}
+  .breakdown{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
+  .chip{font-family:'Space Mono';font-size:11px;color:var(--dim);border:1px solid var(--border);border-radius:2px;padding:3px 8px}
+  .chip b{color:var(--strikeink);font-weight:700}
+
+  section{margin:30px 0}
+  .eyebrow{
+    font-family:'Space Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--lime);margin-bottom:12px;display:flex;align-items:center;gap:8px;
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--border)}
+
+  /* the fixes */
+  ol.fixes{list-style:none;counter-reset:f}
+  ol.fixes li{
+    counter-increment:f;position:relative;padding:13px 0 13px 38px;
+    border-bottom:1px solid var(--border);
+  }
+  ol.fixes li:last-child{border-bottom:none}
+  ol.fixes li::before{
+    content:counter(f);position:absolute;left:0;top:13px;
+    font-family:'Space Mono';font-size:13px;font-weight:700;color:var(--lime);
+  }
+  ol.fixes .t{font-size:15px;font-weight:500;color:var(--ink)}
+  ol.fixes .t .cnt{font-family:'Space Mono';font-size:11px;color:var(--strikeink);font-weight:700;margin-left:6px}
+  ol.fixes .d{font-size:13.5px;color:var(--dim);margin-top:4px;line-height:1.5}
+  ol.fixes .ex{font-family:'Space Mono';font-size:12px;margin-top:7px;line-height:1.6}
+  ol.fixes .ex .x{color:var(--strikeink);text-decoration:line-through;text-decoration-color:var(--strike);text-decoration-thickness:2px}
+  ol.fixes .ex .arrow{color:var(--dim);padding:0 6px}
+  ol.fixes .ex .good{color:var(--lime)}
+
+  .keep{
+    border:1px solid var(--lime);border-radius:2px;padding:14px 16px;margin-top:16px;
+    background:rgba(178,237,104,.05);
+  }
+  .keep .k{font-family:'Space Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--lime);margin-bottom:6px}
+  .keep p{font-size:13.5px;color:var(--ink);line-height:1.55}
+  .keep p b{color:var(--lime);font-weight:500}
+
+  .oneline{font-size:14px;color:var(--ink);margin-top:18px;padding-left:14px;border-left:2px solid var(--lime);line-height:1.55}
+  .oneline b{color:var(--lime)}
+
+  ol.steps{list-style:none;counter-reset:s}
+  ol.steps li{
+    counter-increment:s;position:relative;padding:11px 0 11px 40px;
+    border-bottom:1px solid var(--border);font-size:14.5px;
+  }
+  ol.steps li:last-child{border-bottom:none}
+  ol.steps li::before{
+    content:counter(s);position:absolute;left:0;top:11px;
+    font-family:'Space Mono';font-size:12px;font-weight:700;color:var(--bg);
+    background:var(--lime);width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  ol.steps b{color:var(--ink);font-weight:500}
+  ol.steps .min{color:var(--dim);font-family:'Space Mono';font-size:11px}
+
+  /* tracker */
+  .tracker{border:1px solid var(--border);background:var(--panel);border-radius:2px;padding:18px}
+  .trow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .trow label{font-size:13px;color:var(--dim)}
+  input[type=number]{
+    width:90px;background:#070809;border:1px solid var(--border);color:var(--lime);
+    font-family:'Space Mono';font-size:18px;font-weight:700;padding:8px 10px;border-radius:2px;
+    text-align:center;
+  }
+  input[type=number]:focus{outline:none;border-color:var(--lime)}
+  button{
+    background:var(--lime);color:#0a0c0f;border:none;font-family:'Space Grotesk';
+    font-weight:700;font-size:13px;padding:9px 16px;border-radius:2px;cursor:pointer;
+    letter-spacing:.2px;
+  }
+  button:active{transform:translateY(1px)}
+  .stats{display:flex;gap:22px;margin-top:16px;flex-wrap:wrap}
+  .stat .n{font-family:'Space Mono';font-size:22px;font-weight:700;color:var(--ink)}
+  .stat .n.good{color:var(--lime)}
+  .stat .k{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);font-family:'Space Mono'}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:64px;margin-top:18px;padding-top:4px;border-top:1px dashed var(--border)}
+  .bar{flex:1;min-width:6px;background:var(--lime);opacity:.85;border-radius:1px 1px 0 0;position:relative;transition:height .3s}
+  .bar span{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-family:'Space Mono';font-size:9px;color:var(--dim)}
+  .hint{font-size:11.5px;color:var(--dim);margin-top:10px}
+
+  /* drill cards */
+  .card{border:1px solid var(--border);background:var(--panel);border-radius:2px;padding:16px;margin-bottom:12px}
+  .card .src{font-family:'Space Mono';font-size:10px;color:var(--dim);margin-bottom:8px;letter-spacing:.5px}
+  .line{font-size:15px;line-height:1.65}
+  .x{color:var(--strikeink);text-decoration:line-through;text-decoration-color:var(--strike);text-decoration-thickness:2px}
+  .pause{color:var(--lime);font-family:'Space Mono';font-weight:700}
+  .clean{font-size:15px;line-height:1.65;color:var(--ink)}
+  .clean .hit{color:var(--lime);font-weight:500}
+  .note{font-size:13px;color:var(--dim);margin-top:8px;border-top:1px solid var(--border);padding-top:8px}
+  .legend{font-size:12px;color:var(--dim);margin-bottom:14px}
+  .legend .x{font-size:12px}
+  .legend .pause{font-size:12px}
+  footer{margin-top:36px;font-size:12px;color:var(--dim);text-align:center;border-top:1px solid var(--border);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Kill the <span class="q">filler</span> — daily speaking drill</h1>
+  <div class="sub">"Right?", "kind of", "essentially", uptalk, the trailing "yeah, that's kind of it" — all the same move: your brain buying time. You don't delete them, you replace them with <b>a half-second of silence</b>. Train one habit, they all fall together.</div>
+
+  <div class="baseline">
+    <div class="top">
+      <div class="big">~230</div>
+      <div class="lbl"><b>Filler words in the YZi pitch.</b> One every ~8 seconds across 32 minutes.<br>Roughly half your words doing no work. That's the number to beat.</div>
+    </div>
+    <div class="breakdown">
+      <span class="chip">"right?" <b>×101</b></span>
+      <span class="chip">"kind of" <b>×33</b></span>
+      <span class="chip">"essentially" <b>×20</b></span>
+      <span class="chip">"just" <b>×41</b></span>
+      <span class="chip">"you know" <b>×12</b></span>
+      <span class="chip">"I think" <b>×12</b></span>
+      <span class="chip">"sort of" <b>×8</b></span>
+    </div>
+  </div>
+
+  <section>
+    <div class="eyebrow">The 6 fixes</div>
+    <ol class="fixes">
+      <li>
+        <div class="t">Cut the hedge stack <span class="cnt">76×</span></div>
+        <div class="d">"Kind of / essentially / sort of / you know" make you sound unsure of your own product. You're not kind-of-first. You're first.</div>
+        <div class="ex"><span class="x">we're kind of the first ones, essentially building a new asset class</span><br><span class="arrow">→</span><span class="good">we're first. we're building a new asset class.</span></div>
+      </li>
+      <li>
+        <div class="t">One idea per sentence</div>
+        <div class="d">Yours spiral and restart — you open a clause, abandon it, reopen. Short declaratives. Full stops. Biggest single upgrade to sounding sharp.</div>
+        <div class="ex"><span class="x">this is 200x more capital efficient and could be a massive way to— jump in and affect it</span><br><span class="arrow">→</span><span class="good">it's 200x more capital efficient. that's how you take the market.</span></div>
+      </li>
+      <li>
+        <div class="t">Lead with the punch, don't trail off</div>
+        <div class="d">Strongest line first; stop on it. Your best material gets buried mid-ramble and your answers die on "yeah, that's kind of it" / "things like that."</div>
+        <div class="ex"><span class="good">Open the liquidity answer with the 200–300k stat — don't arrive at it three sentences in.</span></div>
+      </li>
+      <li>
+        <div class="t">Pause on the numbers — they're your weapon</div>
+        <div class="d">$23T · 200x · 3–4% median · 40 books. You rattle and hedge them ("like 200, 300k"). Say the number. Stop. Then the implication. Numbers land in silence.</div>
+      </li>
+      <li>
+        <div class="t">Cut the apology <span class="cnt">"I think" ×12</span></div>
+        <div class="d">Never call your moat confusing or your user stupid ("formulas would confuse you," "very stupidly"). Drop reflexive "I think" — it turns assertions into opinions.</div>
+        <div class="ex"><span class="x">I think that's the core of it</span><span class="arrow">→</span><span class="good">that's the core.</span></div>
+      </li>
+      <li>
+        <div class="t">Enumerate on purpose</div>
+        <div class="d">Your clearest stretch was the "number one… number two… third thing" answer — structure forced you crisp. Pre-load moat / GTM / why-now as "Three things. One, two, three."</div>
+      </li>
+    </ol>
+
+    <div class="keep">
+      <div class="k">Do not touch</div>
+      <p>The <b>"I've been liquidated many times, I'll come back, it's an amazing experience"</b> energy. Real, likable, sells the degen appeal to exactly that room. Your problem was never conviction. It's that precision leaks out through the fillers. Plug the leaks, keep the fire.</p>
+    </div>
+
+    <div class="oneline">It's <b>one move</b>, not seven: when you'd reach for filler — pause instead.</div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The 10-minute daily loop</div>
+    <ol class="steps">
+      <li><b>Read aloud, recorded.</b> <span class="min">~5 min</span> — Run the drill cards below out loud. At every <span class="pause">⊘</span>: stop dead, breathe, continue. Record every rep. You can't fix what you can't hear.</li>
+      <li><b>Count every filler. Log it.</b> <span class="min">~1 min</span> — Not just "right?" — kind of, essentially, just, I think, all of it. One number a day. The number dropping is what rewires it.</li>
+      <li><b>One real conversation, on purpose.</b> <span class="min">live</span> — Standup, a founder call, ordering coffee. Run the pause when it's real. Drilling alone doesn't transfer until you do.</li>
+      <li><b>One slow rep.</b> <span class="min">~2 min</span> — Read a card at deliberately-slow pace. Filler spikes when you rush; slowing gives your brain the beat it was stealing.</li>
+      <li><b>Land the period.</b> <span class="min">all reps</span> — End sentences on a downward tone + full stop. Filler rides a rising, agreement-begging note. Statement, not invitation.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="eyebrow">Daily count</div>
+    <div class="tracker">
+      <div class="trow">
+        <label for="cnt">fillers today:</label>
+        <input id="cnt" type="number" min="0" placeholder="0">
+        <button id="save">Log today</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="n" id="todayN">—</div><div class="k">today</div></div>
+        <div class="stat"><div class="n good" id="bestN">—</div><div class="k">best day</div></div>
+        <div class="stat"><div class="n" id="avgN">—</div><div class="k">7-day avg</div></div>
+        <div class="stat"><div class="n" id="daysN">0</div><div class="k">days logged</div></div>
+      </div>
+      <div class="bars" id="bars"></div>
+      <div class="hint" id="hint">No reps logged yet. Do a recorded read, count every filler, log the number.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Drill A — your worst clusters (kill them in place)</div>
+    <div class="legend">Read out loud exactly as written. Strike-through = what you said. At each <span class="pause">⊘</span>, replace it with a silent beat and keep going.</div>
+
+    <div class="card">
+      <div class="src">YZi pitch · 29:24 · the $100 line — 4 "right?"s in ten seconds</div>
+      <div class="line">"You can reuse your $100 in a number of ways<span class="x">, right?</span><span class="pause"> ⊘ </span> In a prediction market or a sportsbook<span class="x">, right?</span><span class="pause"> ⊘ </span> a hundred dollars is a hundred dollars<span class="x">, right?</span><span class="pause"> ⊘ </span> With leverage, a hundred becomes ten thousand<span class="x">, right?</span><span class="pause"> ⊘</span>"</div>
+      <div class="note">Goal: say it with all four beats silent. Four pauses where four "right?"s used to be.</div>
+    </div>
+
+    <div class="card">
+      <div class="src">YZi pitch · 13:14 · hedge-stack cluster</div>
+      <div class="line">"<span class="x">Obviously,</span> we're <span class="x">kind of</span> the first ones to do this, so <span class="x">essentially</span> we have to build everything ourselves<span class="x">, right?</span><span class="pause"> ⊘</span>"</div>
+      <div class="note">Four softeners in one sentence. Clean: "We're the first to do this. We build everything ourselves." Same idea, half the words, twice the conviction.</div>
+    </div>
+
+    <div class="card">
+      <div class="src">YZi pitch · 13:36 · the oracle cluster — 3 "right?"s in a row</div>
+      <div class="line">"All these odds get aggregated<span class="x">, right?</span><span class="pause"> ⊘ </span> and they give a continuous market view of the team's strength<span class="x">, right?</span><span class="pause"> ⊘ </span> heading into the next match<span class="x">, right?</span><span class="pause"> ⊘</span>"</div>
+      <div class="note">These chained "right?"s are your tell that you're explaining the moat — exactly where you most need to sound certain.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Drill B — clean reps (groove the pattern)</div>
+    <div class="legend">Your three core lines, rewritten with zero filler. Read these last, every day. You're overwriting the reflex with the right pattern.</div>
+
+    <div class="card">
+      <div class="src">Team, in one breath</div>
+      <div class="clean">"I'm Igor — nine years in crypto, built oracles and DeFi infra, ran and sold a launchpad. Ilya, my co-founder, ran Gear to a Coinbase listing and was on the team behind Bloom. Our CTO and I have shipped together for six years; he built into MGM's systems fifteen years ago. So: <span class="hit">oracle, derivatives, and sports betting — under one roof.</span>"</div>
+      <div class="note">60 seconds, roles unambiguous. Kills the "how do you all know each other?" question before it's asked.</div>
+    </div>
+
+    <div class="card">
+      <div class="src">The reframe</div>
+      <div class="clean">"Sports betting is a $23-trillion market built on event contracts. Liquidity floods in before a game, then evaporates when it settles. We turn those events into <span class="hit">perpetual team markets</span> — long or short a team, priced continuously off the odds. The liquidity doesn't leave. It compounds. With 200–300k a team we're the most liquid soccer venue on earth, 80% of the time."</div>
+    </div>
+
+    <div class="card">
+      <div class="src">The moat — go DEEPER here, don't stop</div>
+      <div class="clean">"We aggregate 40-plus books into a single network-coherent strength rating — Bradley-Terry across the whole league. That's the manipulation answer: <span class="hit">you can't move one team's price without moving the entire network consistently.</span> You'd have to corrupt forty books at once. Think VIX — a composite index, not a single quote."</div>
+      <div class="note">The question that decides the round. Last time you said "formulas would just confuse you" and stopped. Don't. This room wants the depth — and it's your strongest card.</div>
+    </div>
+  </section>
+
+  <footer>Two weeks and it's mostly gone. A month and it's dead.<br>Beat ~230.</footer>
+
+</div>
+
+<script>
+  const KEY = "filler_drill_log";
+  const BASELINE = 230;
+  let log = []; // [{date:'YYYY-MM-DD', count:Number}]
+
+  const todayStr = () => new Date().toISOString().slice(0,10);
+
+  function load(){
+    try{
+      const v = localStorage.getItem(KEY);
+      if(v) log = JSON.parse(v);
+    }catch(e){ log = []; }
+    if(!Array.isArray(log)) log = [];
+    render();
+  }
+  function persist(){
+    try{ localStorage.setItem(KEY, JSON.stringify(log)); }
+    catch(e){ /* storage unavailable: state stays in memory for the session */ }
+  }
+
+  function render(){
+    const sorted = [...log].sort((a,b)=>a.date.localeCompare(b.date));
+    const today = sorted.find(e=>e.date===todayStr());
+    const $ = id => document.getElementById(id);
+
+    $("todayN").textContent = today ? today.count : "—";
+    if(today){ $("cnt").value = today.count; }
+
+    if(sorted.length){
+      const counts = sorted.map(e=>e.count);
+      $("bestN").textContent = Math.min(...counts);
+      const last7 = sorted.slice(-7).map(e=>e.count);
+      $("avgN").textContent = Math.round(last7.reduce((a,b)=>a+b,0)/last7.length);
+      $("daysN").textContent = sorted.length;
+    }
+
+    const bars = $("bars");
+    bars.innerHTML = "";
+    const recent = sorted.slice(-14);
+    const max = Math.max(BASELINE, ...recent.map(e=>e.count), 1);
+    if(!recent.length){
+      bars.style.display = "none";
+    }else{
+      bars.style.display = "flex";
+      recent.forEach(e=>{
+        const h = Math.max(6, Math.round((e.count/max)*60));
+        const d = document.createElement("div");
+        d.className = "bar";
+        d.style.height = h + "px";
+        const lbl = document.createElement("span");
+        lbl.textContent = e.count;
+        d.appendChild(lbl);
+        d.title = e.date + ": " + e.count;
+        bars.appendChild(d);
+      });
+    }
+
+    const hint = $("hint");
+    if(sorted.length >= 2){
+      const first = sorted[0].count, last = sorted[sorted.length-1].count;
+      const drop = first - last;
+      hint.textContent = drop > 0
+        ? `Down ${drop} from your first logged day (${first} → ${last}). Keep going.`
+        : `Logged ${sorted.length} days. Trend's flat — slow your pace 15% and do an extra recorded rep.`;
+    }else if(sorted.length === 1){
+      hint.textContent = `First day logged: ${sorted[0].count}. Tomorrow, beat it.`;
+    }
+  }
+
+  document.getElementById("save").addEventListener("click", ()=>{
+    const v = parseInt(document.getElementById("cnt").value, 10);
+    if(isNaN(v) || v < 0) return;
+    const t = todayStr();
+    const existing = log.find(e=>e.date===t);
+    if(existing){ existing.count = v; }
+    else { log.push({date:t, count:v}); }
+    persist();
+    render();
+  });
+
+  document.getElementById("cnt").addEventListener("keydown", e=>{
+    if(e.key === "Enter") document.getElementById("save").click();
+  });
+
+  load();
+</script>
+</body>
+</html>
