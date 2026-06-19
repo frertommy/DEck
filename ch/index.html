@@ -1,35 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hans">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notch Deck</title>
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<title>Notch 项目介绍</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 <meta name="theme-color" content="#0c0e12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0c0e12;--border:#242629;--hover:#181b20;--lime:#b2ed68;--lime-bg:rgba(178,237,104,.06);--w:#eef1f6;--t1:#b0b5be;--t2:#8a8f98;--t3:#606267;--blue:#5b8def;--purple:#a78bfa;--amber:#f5c542;--red:#ef6b6b}
-*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--t1);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.mono{font-family:'Space Mono',monospace}.upper{text-transform:uppercase}a{color:var(--lime);text-decoration:none}a:hover{text-decoration:underline}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--t1);font-family:'Space Grotesk','Noto Sans SC',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Space Mono','Noto Sans SC',monospace}.upper{text-transform:uppercase}a{color:var(--lime);text-decoration:none}a:hover{text-decoration:underline}
 #grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.25}
 .content{position:relative;z-index:1}
 .sec{border-bottom:1px solid var(--border)}.sec-inner{max-width:1200px;margin:0 auto;padding:5rem 1.5rem}
 @media(min-width:768px){.sec-inner{padding:7rem 3rem}}@media(min-width:1280px){.sec-inner{padding:8rem 4rem}}
-.lbl{font-family:'Space Mono',monospace;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.08em}
-.h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(32px,6vw,56px);line-height:1.1;color:var(--w)}
-.h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(24px,4vw,38px);line-height:1.15;color:var(--w)}
+.lbl{font-family:'Space Mono','Noto Sans SC',monospace;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.08em}
+.h1{font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-weight:700;font-size:clamp(32px,6vw,56px);line-height:1.1;color:var(--w)}
+.h2{font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-weight:700;font-size:clamp(24px,4vw,38px);line-height:1.15;color:var(--w)}
 .body{font-size:15px;line-height:24px;color:var(--t1)}
 .g2{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}.g3{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}.g4{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
 @media(min-width:768px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}}
 .g2>*,.g3>*,.g4>*{background:var(--bg)}
 .card{background:var(--bg);padding:28px;transition:background .2s}.card:hover{background:var(--hover)}
-.card-title{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;line-height:22px;text-transform:uppercase;color:var(--w);margin-bottom:10px}
+.card-title{font-family:'Space Mono','Noto Sans SC',monospace;font-weight:700;font-size:15px;line-height:22px;text-transform:uppercase;color:var(--w);margin-bottom:10px}
 .card-body{font-size:13px;line-height:20px;color:var(--t1)}
-.stat-val{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;line-height:32px;color:var(--w)}
-.stat-lbl{font-family:'Space Mono',monospace;font-size:12px;line-height:16px;color:var(--t2);text-transform:uppercase;margin-top:6px}
-.badge{display:inline-block;font-family:'Space Mono',monospace;font-size:11px;text-transform:uppercase;padding:4px 10px;border-radius:2px}
+.stat-val{font-family:'Space Mono','Noto Sans SC',monospace;font-weight:700;font-size:24px;line-height:32px;color:var(--w)}
+.stat-lbl{font-family:'Space Mono','Noto Sans SC',monospace;font-size:12px;line-height:16px;color:var(--t2);text-transform:uppercase;margin-top:6px}
+.badge{display:inline-block;font-family:'Space Mono','Noto Sans SC',monospace;font-size:11px;text-transform:uppercase;padding:4px 10px;border-radius:2px}
 .bar-t{height:2px;margin-bottom:16px}
 .vbar{height:4px;background:var(--border);margin-top:12px}.vbar-fill{height:100%;width:0;transition:width 1.5s cubic-bezier(.16,1,.3,1)}.vbar-fill.active{width:var(--w)}
 .callout{margin-top:24px;padding:20px 24px;border:1px solid var(--border);border-left:2px solid var(--lime)}
@@ -39,7 +40,7 @@
 .ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .ticker{display:flex;animation:tickScroll 40s linear infinite;width:max-content}@keyframes tickScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .tick-item{display:flex;align-items:center;gap:12px;padding:12px 24px;border-right:1px solid var(--border);white-space:nowrap}
-.tick-name{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;color:var(--w);text-transform:uppercase}.tick-price{font-family:'Space Mono',monospace;font-size:12px;color:var(--t1)}
+.tick-name{font-family:'Space Mono','Noto Sans SC',monospace;font-weight:700;font-size:13px;color:var(--w);text-transform:uppercase}.tick-price{font-family:'Space Mono','Noto Sans SC',monospace;font-size:12px;color:var(--t1)}
 .reveal{opacity:0;transform:translateY(20px);transition:all .6s cubic-bezier(.16,1,.3,1)}.reveal.visible{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
 .pulse{width:6px;height:6px;background:var(--lime);animation:pul 2s ease-in-out infinite}@keyframes pul{0%,100%{box-shadow:0 0 0 0 rgba(178,237,104,.4)}50%{box-shadow:0 0 0 8px rgba(178,237,104,0)}}
@@ -50,13 +51,13 @@
 @media(max-width:767px){
   /* Font loading optimization */
   .mono{font-size:inherit}
-  
+
   /* Feature strip below chart */
   [style*="grid-template-columns:repeat(4,1fr)"],
   [style*="grid-template-columns:repeat(5,1fr)"]{
     grid-template-columns:1fr 1fr !important;
   }
-  
+
   /* Oracle calendar grid - horizontal scroll on mobile */
   .oracle-scroll{
     overflow-x:auto !important;
@@ -65,20 +66,20 @@
   .oracle-scroll > div{
     min-width:700px;
   }
-  
+
   /* Two-column layouts go single */
   [style*="grid-template-columns:3fr 5fr"],
   [style*="grid-template-columns:1fr 1fr;gap:1px"]{
     grid-template-columns:1fr !important;
   }
-  
+
   /* Fee comparison table - horizontal scroll */
   [style*="grid-template-columns:2fr 1fr 1fr 1fr 1fr"],
   [style*="grid-template-columns:2.5fr 0.8fr 1.2fr 2fr"]{
     grid-template-columns:1.5fr 1fr 1fr 1fr 1fr !important;
     font-size:10px !important;
   }
-  
+
   /* Trade scenario cards - stack */
   [style*="grid-template-columns:1fr 140px"]{
     grid-template-columns:1fr !important;
@@ -89,63 +90,63 @@
     padding:16px !important;
     height:80px;
   }
-  
+
   /* Match card two-col */
   [style*="grid-template-columns:1fr 40px 1fr"]{
     grid-template-columns:1fr 30px 1fr !important;
   }
-  
+
   /* Odds grid */
   [style*="grid-template-columns:50px 1fr 1fr 1fr"]{
     grid-template-columns:40px 1fr 1fr 1fr !important;
   }
-  
+
   /* Stat values smaller on mobile */
   .mono[style*="font-size:36px"]{font-size:24px !important}
   .mono[style*="font-size:32px"]{font-size:22px !important}
   .mono[style*="font-size:28px"]{font-size:20px !important}
-  
+
   /* Chart header wrap */
   [style*="display:flex;gap:16px;margin-left:auto"]{
     display:none !important;
   }
-  
+
   /* Inline flex wrapping */
   [style*="display:flex;align-items:center;gap:0;overflow-x:hidden"]{
     flex-wrap:wrap !important;
     gap:8px !important;
   }
-  
+
   /* Section padding tighter */
   .sec-inner{padding:3rem 1.25rem !important}
-  
+
   /* Body text */
   .body{font-size:14px;line-height:22px}
-  
+
   /* Cards */
   .card{padding:20px}
-  
+
   /* Buttons */
   button.mono{font-size:12px !important;padding:8px 14px !important}
-  
+
   /* Flywheel / funnel canvases */
   canvas[id="fw-canvas"],canvas[id="funnel-canvas"]{
     min-height:300px;
   }
-  
+
   /* Nav */
   [style*="position:sticky"] [style*="font-size:18px"]{
     font-size:15px !important;
   }
-  
+
   /* Appendix header */
   [style*="font-size:clamp(48px,8vw,80px)"]{
     font-size:clamp(32px,10vw,60px) !important;
   }
-  
+
   /* Callout */
   .callout{padding:16px}
-  
+
   /* Logo boxes consistent */
   [style*="height:56px"][style*="background:#000"]{
     height:48px !important;
@@ -183,12 +184,12 @@
 <div class="content">
 
 <!-- NAV -->
-<div class="sec" style="position:sticky;top:0;z-index:100;background:rgba(12,14,18,.85);backdrop-filter:blur(12px)"><div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center"><svg width="120" height="18" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg></div><div style="display:flex;align-items:center;gap:14px"><a href="./" class="mono upper" style="font-size:11px;color:var(--lime);letter-spacing:.08em">EN</a><a href="ru/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">RU</a><a href="ch/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">中文</a><a href="vietnamese/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">VI</a></div></div></div>
+<div class="sec" style="position:sticky;top:0;z-index:100;background:rgba(12,14,18,.85);backdrop-filter:blur(12px)"><div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center"><svg width="120" height="18" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg></div><div style="display:flex;align-items:center;gap:14px"><a href="../" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">EN</a><a href="../ru/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">RU</a><a href="../ch/" class="mono upper" style="font-size:11px;color:var(--lime);letter-spacing:.08em">中文</a><a href="../vietnamese/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">VI</a></div></div></div>
 
 <!-- 01 HERO -->
-<div class="sec" style="position:relative;overflow:hidden"><video autoplay muted loop playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.18;z-index:0;pointer-events:none"><source src="assets/hero-bg.mp4" type="video/mp4"></video><div class="sec-inner" style="min-height:calc(100vh - 57px);display:flex;flex-direction:column;justify-content:flex-end;gap:16px;position:relative;z-index:1">
-  <div class="reveal d1"><span class="h1" style="display:block"><svg style="height:0.85em;width:auto;vertical-align:baseline;position:relative;top:0.02em;margin-right:0.15em" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg> is the first</span><span class="h1" style="display:block">perpetual market</span><span class="h1" style="display:block">for <span style="color:var(--lime)">sports.</span></span></div>
-  <p class="body reveal d2" style="max-width:460px;margin-top:12px;font-size:16px;line-height:26px">Sports is the largest market still trapped in expiring contracts.</p>
+<div class="sec" style="position:relative;overflow:hidden"><video autoplay muted loop playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.18;z-index:0;pointer-events:none"><source src="../assets/hero-bg.mp4" type="video/mp4"></video><div class="sec-inner" style="min-height:calc(100vh - 57px);display:flex;flex-direction:column;justify-content:flex-end;gap:16px;position:relative;z-index:1">
+  <div class="reveal d1"><span class="h1" style="display:block"><svg style="height:0.85em;width:auto;vertical-align:baseline;position:relative;top:0.02em;margin-right:0.15em" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg> 是首个面向</span><span class="h1" style="display:block">体育的</span><span class="h1" style="display:block"><span style="color:var(--lime)">永续市场。</span></span></div>
+  <p class="body reveal d2" style="max-width:460px;margin-top:12px;font-size:16px;line-height:26px">体育是仍被困在到期合约里的最大市场。</p>
 </div></div>
 
 <!-- TICKER -->
@@ -196,18 +197,18 @@
 
 <!-- 02 PROBLEM -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">02 · Problem</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">A trillion-dollar category still runs on <span style="color:var(--t2)">bets with an expiration date.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Today's sports products monetize opinions, but they never let those opinions compound. Every existing sports position has a death sentence.</p>
+  <div class="lbl reveal" style="color:var(--t2)">02 · 问题</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">一个万亿美元的赛道，仍然靠<span style="color:var(--t2)">带到期日的下注在运转。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">如今的体育产品把观点变现，却从不让这些观点复利增长。每一个现有的体育头寸，都被判了死刑。</p>
   <div class="reveal d2" style="margin-top:32px;border:1px solid var(--border);padding:24px;display:flex;align-items:center;gap:0;overflow-x:hidden;flex-wrap:wrap;justify-content:center">
-    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--lime)">Pre-match</div><div style="width:40px;height:2px;background:var(--lime);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
-    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--amber)">In play</div><div style="width:40px;height:2px;background:var(--amber);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
-    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--red)">Final whistle</div><div style="width:40px;height:2px;background:var(--red);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
-    <div style="text-align:center;padding:0 20px"><div class="mono upper" style="font-weight:700;font-size:18px;color:var(--red)">SETTLED</div><div style="font-size:11px;color:var(--t3);margin-top:4px">Zero. Gone.</div></div>
+    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--lime)">赛前</div><div style="width:40px;height:2px;background:var(--lime);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
+    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--amber)">进行中</div><div style="width:40px;height:2px;background:var(--amber);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
+    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--red)">终场哨</div><div style="width:40px;height:2px;background:var(--red);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
+    <div style="text-align:center;padding:0 20px"><div class="mono upper" style="font-weight:700;font-size:18px;color:var(--red)">已结算</div><div style="font-size:11px;color:var(--t3);margin-top:4px">归零。消失。</div></div>
   </div>
   <div class="g2" style="margin-top:32px">
-    <div class="card reveal d3" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$166.9B</div><div class="stat-lbl">U.S. legal sports handle 2025</div></div>
-    <div class="card reveal d4" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$64B</div><div class="stat-lbl">Prediction market volume 2025</div></div>
+    <div class="card reveal d3" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$166.9B</div><div class="stat-lbl">2025年美国合法体育投注额</div></div>
+    <div class="card reveal d4" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$64B</div><div class="stat-lbl">2025年预测市场成交量</div></div>
   </div>
 
 </div></div>
@@ -215,37 +216,37 @@
 <!-- BRIDGE: THE IDEA -->
 <style>
 .badge-expired{margin-top:auto;padding-top:16px;display:flex;align-items:center;gap:10px}
-.badge-expired .box{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--red);border:1.5px solid var(--red);padding:10px 20px;text-transform:uppercase;position:relative;overflow:hidden}
+.badge-expired .box{font-family:'Space Mono','Noto Sans SC',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--red);border:1.5px solid var(--red);padding:10px 20px;text-transform:uppercase;position:relative;overflow:hidden}
 .badge-expired .box::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(239,107,107,.06)}
 .badge-expired .line{flex:1;height:1.5px;background:var(--red);opacity:.25}
 .badge-perp{margin-top:auto;padding-top:16px;display:flex;align-items:center;gap:10px}
-.badge-perp .box{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--bg);background:var(--lime);padding:10px 20px;text-transform:uppercase}
+.badge-perp .box{font-family:'Space Mono','Noto Sans SC',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--bg);background:var(--lime);padding:10px 20px;text-transform:uppercase}
 .badge-perp .line{flex:1;height:1.5px;background:var(--lime);opacity:.3}
 .badge-perp .pulse{width:8px;height:8px;background:var(--lime);border-radius:50%;flex-shrink:0;animation:pul 2s ease-in-out infinite}
 @keyframes pul{0%,100%{box-shadow:0 0 0 0 rgba(178,237,104,.5)}50%{box-shadow:0 0 0 8px rgba(178,237,104,0)}}
 </style>
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">03 · The Idea</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">What if we made sports markets <span style="color:var(--lime)">perpetual</span>?</div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Every sports fan already holds a view on their team. But today, the only way to express it is a bet that dies at the final whistle. There's no instrument that lets you hold a position on team strength over time.</p>
+  <div class="lbl reveal" style="color:var(--t2)">03 · 理念</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">如果我们把体育市场变成<span style="color:var(--lime)">永续的</span>，会怎样？</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">每个球迷早已对自己支持的球队有看法。但今天，唯一能表达它的方式，是一笔在终场哨声中死去的下注。没有任何工具能让你持有一个关于球队长期实力的头寸。</p>
 
   <div class="reveal d3" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
     <div style="background:var(--bg);padding:28px;display:flex;flex-direction:column;gap:12px">
-      <div class="lbl" style="color:var(--red);margin-bottom:0">Today</div>
-      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal will beat Chelsea on Saturday"</div>
-      <div style="font-size:13px;color:var(--t2);line-height:1.6">Binary outcome. One game. Position dies at 90 minutes.</div>
+      <div class="lbl" style="color:var(--red);margin-bottom:0">今天</div>
+      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal 周六会赢 Chelsea"</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">二元结果。一场比赛。头寸在90分钟后死去。</div>
       <div class="badge-expired" style="padding-right:35%">
         <div class="line"></div>
-        <div class="box">Expired</div>
+        <div class="box">已到期</div>
       </div>
     </div>
     <div style="background:var(--bg);padding:28px;display:flex;flex-direction:column;gap:12px">
       <div class="lbl" style="color:var(--lime);margin-bottom:0">Notch</div>
-      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal is undervalued. I'm going long."</div>
-      <div style="font-size:13px;color:var(--t2);line-height:1.6">Continuous position. Every match, transfer, and injury reprices it. Hold for a week, a month or even across seasons.</div>
+      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal 被低估了，我做多。"</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">连续的头寸。每一场比赛、转会和伤病都会为它重新定价。可以持有一周、一个月，甚至跨越多个赛季。</div>
       <div class="badge-perp">
         <div class="line"></div>
-        <div class="box">Perpetual</div>
+        <div class="box">永续</div>
         <div class="line"></div>
         <div class="pulse"></div>
       </div>
@@ -256,9 +257,9 @@
 
 <!-- 03 PRODUCT -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">04 · Product</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Go long Arsenal. <span style="color:var(--lime)">Hold it for six months.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Notch turns sports teams into continuous, marginable instruments. Users don't buy a one-off match slip — they take a view on the team itself.</p>
+  <div class="lbl reveal" style="color:var(--t2)">04 · 产品</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">做多 Arsenal。<span style="color:var(--lime)">持有它六个月。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Notch 把体育球队变成连续、可保证金交易的标的。用户买的不是一张单场赛果票——而是对球队本身下注。</p>
 
   <!-- Full-width chart with match events -->
   <div class="reveal d3" style="margin-top:32px;border:1px solid var(--border);overflow:hidden">
@@ -268,65 +269,65 @@
       <span class="mono" style="font-weight:700;font-size:18px;color:var(--lime)">223.42</span>
       <span class="mono" style="font-size:12px;color:var(--lime)">+3.2%</span>
       <div style="display:flex;gap:16px;margin-left:auto">
-        <div><span class="mono" style="font-size:10px;color:var(--t3)">24h High </span><span class="mono" style="font-size:11px;color:var(--t1)">228.10</span></div>
-        <div><span class="mono" style="font-size:10px;color:var(--t3)">24h Low </span><span class="mono" style="font-size:11px;color:var(--t1)">219.55</span></div>
-        <div><span class="mono" style="font-size:10px;color:var(--t3)">Funding </span><span class="mono" style="font-size:11px;color:var(--lime)">0.01%</span></div>
+        <div><span class="mono" style="font-size:10px;color:var(--t3)">24小时最高 </span><span class="mono" style="font-size:11px;color:var(--t1)">228.10</span></div>
+        <div><span class="mono" style="font-size:10px;color:var(--t3)">24小时最低 </span><span class="mono" style="font-size:11px;color:var(--t1)">219.55</span></div>
+        <div><span class="mono" style="font-size:10px;color:var(--t3)">资金费率 </span><span class="mono" style="font-size:11px;color:var(--lime)">0.01%</span></div>
       </div>
     </div>
     <!-- Static chart -->
     <div style="height:280px;position:relative"><canvas id="chart-match" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block"></canvas></div>
     <!-- Match labels -->
     <div style="padding:8px 24px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;text-align:center">
-      <div><span class="mono" style="font-size:10px;color:var(--red)">Loss 0–2 vs MCI</span><br><span class="mono" style="font-size:9px;color:var(--t3)">Mar 8</span></div>
-      <div><span class="mono" style="font-size:10px;color:var(--lime)">Win 3–1 vs CHE</span><br><span class="mono" style="font-size:9px;color:var(--t3)">Mar 15</span></div>
-      <div><span class="mono" style="font-size:10px;color:var(--red)">Loss 1–2 vs LIV</span><br><span class="mono" style="font-size:9px;color:var(--t3)">Mar 22</span></div>
+      <div><span class="mono" style="font-size:10px;color:var(--red)">负 0–2 vs MCI</span><br><span class="mono" style="font-size:9px;color:var(--t3)">3月8日</span></div>
+      <div><span class="mono" style="font-size:10px;color:var(--lime)">胜 3–1 vs CHE</span><br><span class="mono" style="font-size:9px;color:var(--t3)">3月15日</span></div>
+      <div><span class="mono" style="font-size:10px;color:var(--red)">负 1–2 vs LIV</span><br><span class="mono" style="font-size:9px;color:var(--t3)">3月22日</span></div>
     </div>
-    <div style="padding:6px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span class="lbl" style="color:var(--t3)">Arsenal · Team Strength Index</span><span class="mono" style="font-size:11px;color:var(--t3)">Example · 30 days</span></div>
+    <div style="padding:6px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span class="lbl" style="color:var(--t3)">Arsenal · 球队实力指数</span><span class="mono" style="font-size:11px;color:var(--t3)">示例 · 30天</span></div>
   </div>
 
   <!-- Feature strip below chart — heavy hitters -->
   <div class="reveal d3" style="margin-top:0;border:1px solid var(--border);border-top:none;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)">
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">Long / Short</div><div style="font-size:12px;color:var(--t1)">Take a view on the team, not just a game.</div></div>
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">Persistent</div><div style="font-size:12px;color:var(--t1)">Hold through matches, injuries, transfers, seasons.</div></div>
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">Leveraged</div><div style="font-size:12px;color:var(--t1)">$167B in sports handle offers zero margin. We do.</div></div>
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">Arbitrageable</div><div style="font-size:12px;color:var(--t1)">Directly connected to bookmaker + prediction market pricing.</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">做多 / 做空</div><div style="font-size:12px;color:var(--t1)">对球队下注，而不只是一场比赛。</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">持续持有</div><div style="font-size:12px;color:var(--t1)">穿越比赛、伤病、转会和赛季持有。</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">可加杠杆</div><div style="font-size:12px;color:var(--t1)">$167B 体育投注额提供零保证金。我们提供。</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">可套利</div><div style="font-size:12px;color:var(--t1)">直接连通博彩公司与预测市场的定价。</div></div>
   </div>
 </div></div>
 
 <!-- WHY WE WIN -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">05 · Why We Win</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Event markets kill liquidity. <span style="color:var(--lime)">Our perps let it stack.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Match-based products lose their entire liquidity pool at the final whistle. Persistent positions let liquidity stack.</p>
+  <div class="lbl reveal" style="color:var(--t2)">05 · 我们为何胜出</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">赛事市场扼杀流动性。<span style="color:var(--lime)">我们的永续合约让它层层累积。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">基于比赛的产品在终场哨声中失去整个流动性池。持续的头寸让流动性不断堆叠。</p>
 
   <!-- Side-by-side liquidity comparison chart -->
   <div class="reveal d2" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
     <div style="background:var(--bg);padding:20px 20px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--red)"></div><span class="lbl" style="color:var(--red)">Sportsbook & Prediction Market Model</span></div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Liquidity resets to zero after every event</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--red)"></div><span class="lbl" style="color:var(--red)">博彩公司与预测市场模式</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">每场赛事后流动性归零</div>
       <canvas id="chart-sawtooth" style="width:100%;height:200px;display:block"></canvas>
     </div>
     <div style="background:var(--bg);padding:20px 20px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--lime)"></div><span class="lbl" style="color:var(--lime)">Notch Model</span></div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Positions persist — liquidity accumulates</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--lime)"></div><span class="lbl" style="color:var(--lime)">Notch 模式</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">头寸持续存在——流动性不断累积</div>
       <canvas id="chart-staircase" style="width:100%;height:200px;display:block"></canvas>
     </div>
   </div>
   <div class="reveal d2" style="background:var(--bg);border:1px solid var(--border);border-top:none;padding:12px 20px;display:flex;justify-content:center;gap:32px">
-    <div style="display:flex;align-items:center;gap:6px"><div class="mono" style="font-size:11px;color:var(--t3)">←</div><span style="font-size:12px;color:var(--t2)">Match events across seasons — positions never expire</span><div class="mono" style="font-size:11px;color:var(--t3)">→</div></div>
+    <div style="display:flex;align-items:center;gap:6px"><div class="mono" style="font-size:11px;color:var(--t3)">←</div><span style="font-size:12px;color:var(--t2)">跨越多个赛季的赛事——头寸永不到期</span><div class="mono" style="font-size:11px;color:var(--t3)">→</div></div>
   </div>
 
   <!-- Flywheel as horizontal flow -->
   <div class="reveal d3" style="margin-top:32px;display:flex;align-items:center;justify-content:center;gap:0;overflow-x:hidden;flex-wrap:nowrap;padding:24px 0">
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Traders open<br>positions</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">交易者开仓<br>建立头寸</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Deeper<br>liquidity</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">更深的<br>流动性</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Better price<br>discovery</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">更好的<br>价格发现</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">More<br>credibility</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">更高的<br>可信度</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">More<br>traders</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">更多的<br>交易者</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">↻</div>
   </div>
 
@@ -334,29 +335,29 @@
 
 <!-- 04 DATA FEED -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">06 · Data</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Proprietary pricing <span style="color:var(--lime)">as the Oracle.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Our algorithm synthesizes sports data into a tradeable Team Strength Price.</p>
+  <div class="lbl reveal" style="color:var(--t2)">06 · 数据</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">专有定价<span style="color:var(--lime)">即预言机。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">我们的算法将体育数据合成为可交易的球队实力价格。</p>
 
   <!-- Three inputs -->
   <div class="g3" style="margin-top:40px">
     <div class="card reveal d1" style="padding:28px;text-align:center">
-      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">Years</div>
+      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">多年</div>
       <div class="bar-t" style="background:var(--amber)"></div>
-      <div class="mono" style="font-weight:700;font-size:15px;color:var(--amber)">HISTORIC PERFORMANCE</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:12px">Results, xG, form tables, head-to-head records — the foundation of team strength.</div>
+      <div class="mono" style="font-weight:700;font-size:15px;color:var(--amber)">历史战绩</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:12px">赛果、xG、状态榜、交手记录——球队实力的根基。</div>
     </div>
     <div class="card reveal d2" style="padding:28px;text-align:center">
-      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">50–100+ /mo</div>
+      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">每月 50–100+</div>
       <div class="bar-t" style="background:var(--purple)"></div>
-      <div class="mono" style="font-weight:700;font-size:15px;color:var(--purple)">FINALITY</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:12px">Match outcomes, league standings, cup eliminations — hard, indisputable checkpoints.</div>
+      <div class="mono" style="font-weight:700;font-size:15px;color:var(--purple)">确定性结果</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:12px">比赛结果、联赛排名、杯赛淘汰——硬性、无可争辩的检查点。</div>
     </div>
     <div class="card reveal d3" style="padding:28px;text-align:center">
-      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">24/7</div>
+      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">7×24</div>
       <div class="bar-t" style="background:var(--lime)"></div>
-      <div class="mono" style="font-weight:700;font-size:15px;color:var(--lime)">ODDS</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:12px">20+ bookmaker and prediction market feeds reprice teams around the clock — a continuous data layer for the underlying asset.</div>
+      <div class="mono" style="font-weight:700;font-size:15px;color:var(--lime)">赔率</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:12px">20+ 个博彩公司与预测市场数据源全天候为球队重新定价——为底层资产提供连续的数据层。</div>
     </div>
   </div>
 
@@ -374,17 +375,17 @@
   <!-- Oracle output -->
   <div class="reveal d4" style="text-align:center;padding:28px 32px;border:1px solid var(--lime)">
     <div style="position:relative"><div style="position:absolute;top:-29px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--amber),var(--purple),var(--lime))"></div></div>
-    <div class="lbl" style="color:var(--lime);margin-bottom:8px">Oracle Output</div>
-    <div class="mono" style="font-weight:700;font-size:28px;color:var(--w)">TEAM PRICE</div>
-    <div style="font-size:14px;color:var(--t1);margin-top:8px">Continuous, synthetic index per club — updated in real time</div>
+    <div class="lbl" style="color:var(--lime);margin-bottom:8px">预言机输出</div>
+    <div class="mono" style="font-weight:700;font-size:28px;color:var(--w)">球队价格</div>
+    <div style="font-size:14px;color:var(--t1);margin-top:8px">每家俱乐部的连续合成指数——实时更新</div>
   </div>
 </div></div>
 
 <!-- 05 ORACLE IN ACTION -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">07 · Oracle in Action</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Every match <span style="color:var(--lime)">reprices the asset.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Bookmaker odds, prediction market prices, and match outcomes feed into team prices in real time. This makes the perp directly connected to event market pricing — giving bookmaker and prediction market traders a new venue to arb and hedge.</p>
+  <div class="lbl reveal" style="color:var(--t2)">07 · 预言机的实战</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">每一场比赛<span style="color:var(--lime)">都为资产重新定价。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">博彩公司赔率、预测市场价格和比赛结果实时汇入球队价格。这让永续合约直接连通赛事市场的定价——为博彩公司和预测市场的交易者提供一个全新的套利与对冲场所。</p>
 
   <!-- Two-column: match card left, price factors right -->
   <div class="reveal d2" style="margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
@@ -412,7 +413,7 @@
       <div style="margin-top:20px;display:flex;flex-direction:column;gap:0">
         <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t2)">Arsenal Win</span>
+            <span style="font-size:12px;color:var(--t2)">Arsenal 胜</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$4.87</span>
             <span class="mono" style="font-size:10px;color:var(--lime)">+2.0%</span>
             <span style="color:var(--lime);font-size:10px">&#8593;</span>
@@ -421,12 +422,12 @@
             <span style="color:var(--lime);font-size:10px">&#8593;</span>
             <span class="mono" style="font-size:10px;color:var(--lime)">+6.9%</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$9.55</span>
-            <span style="font-size:12px;color:var(--t2)">Bournemouth Win</span>
+            <span style="font-size:12px;color:var(--t2)">Bournemouth 胜</span>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t2)">Draw</span>
+            <span style="font-size:12px;color:var(--t2)">平局</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">$-5.86</span>
             <span class="mono" style="font-size:10px;color:var(--red)">-2.4%</span>
             <span style="color:var(--red);font-size:10px">&#8595;</span>
@@ -435,12 +436,12 @@
             <span style="color:var(--lime);font-size:10px">&#8593;</span>
             <span class="mono" style="font-size:10px;color:var(--lime)">+2.4%</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$3.32</span>
-            <span style="font-size:12px;color:var(--t2)">Draw</span>
+            <span style="font-size:12px;color:var(--t2)">平局</span>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t2)">Arsenal Loss</span>
+            <span style="font-size:12px;color:var(--t2)">Arsenal 负</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">$-16.13</span>
             <span class="mono" style="font-size:10px;color:var(--red)">-6.5%</span>
             <span style="color:var(--red);font-size:10px">&#8595;</span>
@@ -449,7 +450,7 @@
             <span style="color:var(--red);font-size:10px">&#8595;</span>
             <span class="mono" style="font-size:10px;color:var(--red)">-1.9%</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">$-2.65</span>
-            <span style="font-size:12px;color:var(--t2)">Bournemouth Loss</span>
+            <span style="font-size:12px;color:var(--t2)">Bournemouth 负</span>
           </div>
         </div>
       </div>
@@ -458,12 +459,12 @@
         <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center">
           <div></div>
           <div class="mono" style="font-size:10px;font-weight:700;color:var(--lime)">Arsenal</div>
-          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber)">Draw</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber)">平局</div>
           <div class="mono" style="font-size:10px;font-weight:700;color:var(--red)">Bournemouth</div>
           <div></div>
         </div>
         <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center;padding:6px 0">
-          <div class="mono" style="font-size:10px;color:var(--t3);text-align:left">Odds</div>
+          <div class="mono" style="font-size:10px;color:var(--t3);text-align:left">赔率</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">1.40</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">4.85</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">7.50</div>
@@ -492,26 +493,26 @@
     <!-- RIGHT: What affects price -->
     <div style="background:var(--bg);display:flex;flex-direction:column">
       <div style="padding:12px 20px;border-bottom:1px solid var(--border)">
-        <span class="lbl" style="color:var(--t3);font-size:10px">What affects the price</span>
+        <span class="lbl" style="color:var(--t3);font-size:10px">什么影响价格</span>
       </div>
       <div style="padding:20px;flex:1">
-        <div class="lbl" style="color:var(--lime);margin-bottom:12px">Direct Inputs</div>
+        <div class="lbl" style="color:var(--lime);margin-bottom:12px">直接输入</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Match results</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Historical form & xG</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">League standings</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Home / away advantage</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">比赛结果</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">历史状态与 xG</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">联赛排名</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">主客场优势</span></div>
         </div>
       </div>
       <div style="padding:20px;border-top:1px solid var(--border);flex:1">
-        <div class="lbl" style="color:var(--purple);margin-bottom:12px">Market-Priced <span style="color:var(--t3)">(via odds)</span></div>
+        <div class="lbl" style="color:var(--purple);margin-bottom:12px">市场定价 <span style="color:var(--t3)">(经由赔率)</span></div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Injuries & suspensions</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Transfers & new signings</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Manager changes</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Fixture congestion & fatigue</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">伤病与停赛</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">转会与新签</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">主帅更替</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">赛程密集与疲劳</span></div>
         </div>
-        <div style="margin-top:10px;font-size:10px;color:var(--t3)">Bookmakers price these within minutes. Our odds feed inherits the signal.</div>
+        <div style="margin-top:10px;font-size:10px;color:var(--t3)">博彩公司在几分钟内便为这些定价。我们的赔率数据源继承了这一信号。</div>
       </div>
     </div>
 
@@ -520,9 +521,9 @@
 
 <!-- 06 WHAT THIS ENABLES -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">08 · For the Trader</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">What this actually <span style="color:var(--lime)">looks like.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Real scenarios.</p>
+  <div class="lbl reveal" style="color:var(--t2)">08 · 对交易者而言</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">这究竟<span style="color:var(--lime)">是什么样子。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">真实场景。</p>
 
   <div class="g3" style="margin-top:32px">
     <div class="card reveal d1" style="padding:0;overflow:hidden;display:grid;grid-template-columns:1fr 140px">
@@ -532,8 +533,8 @@
           <span class="mono" style="font-weight:700;font-size:13px;color:var(--w)">ARS</span>
           <span class="mono" style="font-size:11px;color:var(--t3)">$182 → $214</span>
         </div>
-        <div style="font-size:13px;color:var(--w);font-weight:600">"7-game win streak + new striker signing"</div>
-        <div class="card-body" style="margin-top:6px;font-size:12px">Hold through transfer window and run of form. Three months. Position compounds.</div>
+        <div style="font-size:13px;color:var(--w);font-weight:600">"7连胜 + 引进新前锋"</div>
+        <div class="card-body" style="margin-top:6px;font-size:12px">穿越转会窗口和一波好状态持有。三个月。头寸复利增长。</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border);position:relative">
         <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:70%;opacity:.4"><defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b2ed68" stop-opacity=".3"/><stop offset="100%" stop-color="#b2ed68" stop-opacity="0"/></linearGradient></defs><path d="M0,40 10,38 20,35 30,32 40,28 50,24 60,20 70,16 80,12 90,8 100,5 100,50 0,50Z" fill="url(#gl2)"/><path d="M0,40 10,38 20,35 30,32 40,28 50,24 60,20 70,16 80,12 90,8 100,5" fill="none" stroke="#b2ed68" stroke-width="1.2"/></svg>
@@ -547,8 +548,8 @@
           <span class="mono" style="font-weight:700;font-size:13px;color:var(--w)">CHE</span>
           <span class="mono" style="font-size:11px;color:var(--t3)">$198 → $179</span>
         </div>
-        <div style="font-size:13px;color:var(--w);font-weight:600">"Chelsea sacked their manager. Again."</div>
-        <div class="card-body" style="margin-top:6px;font-size:12px">New manager bounce lasts two games. Reality sets in. A month later, 6 points dropped.</div>
+        <div style="font-size:13px;color:var(--w);font-weight:600">"Chelsea 又炒掉了主帅。"</div>
+        <div class="card-body" style="margin-top:6px;font-size:12px">新帅红利只持续两场。现实回归。一个月后，丢了6分。</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border);position:relative">
         <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:70%;opacity:.4"><defs><linearGradient id="gr2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ef6b6b" stop-opacity=".3"/><stop offset="100%" stop-color="#ef6b6b" stop-opacity="0"/></linearGradient></defs><path d="M0,10 10,12 20,11 30,15 40,20 50,24 60,28 70,30 80,34 90,38 100,42 100,50 0,50Z" fill="url(#gr2)"/><path d="M0,10 10,12 20,11 30,15 40,20 50,24 60,28 70,30 80,34 90,38 100,42" fill="none" stroke="#ef6b6b" stroke-width="1.2"/></svg>
@@ -562,8 +563,8 @@
           <span class="mono" style="font-weight:700;font-size:13px;color:var(--w)">MUN</span>
           <span class="mono" style="font-size:11px;color:var(--t3)">$165 → $203</span>
         </div>
-        <div style="font-size:13px;color:var(--w);font-weight:600">"I've supported United my whole life."</div>
-        <div class="card-body" style="margin-top:6px;font-size:12px">You go long at the start of the season and hold. Every win, every signing, every climb up the table — your position grows. The closest thing to owning a piece of your club.</div>
+        <div style="font-size:13px;color:var(--w);font-weight:600">"我支持 United 一辈子了。"</div>
+        <div class="card-body" style="margin-top:6px;font-size:12px">你在赛季初做多并一直持有。每一场胜利、每一笔签约、每一次排名上升——你的头寸都在增长。这是最接近拥有自己俱乐部一部分的方式。</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border);position:relative">
         <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:70%;opacity:.4"><defs><linearGradient id="gf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b2ed68" stop-opacity=".3"/><stop offset="100%" stop-color="#b2ed68" stop-opacity="0"/></linearGradient></defs><path d="M0,42 8,40 16,38 24,37 32,34 40,32 48,30 56,27 64,24 72,20 80,17 88,13 96,10 100,8 100,50 0,50Z" fill="url(#gf2)"/><path d="M0,42 8,40 16,38 24,37 32,34 40,32 48,30 56,27 64,24 72,20 80,17 88,13 96,10 100,8" fill="none" stroke="#b2ed68" stroke-width="1.2"/></svg>
@@ -572,46 +573,46 @@
     </div>
   </div>
 
-  <div class="callout reveal d4"><span>None of this exists today. Every one of these positions would expire at the final whistle on a sportsbook. On Notch, they compound — and for the first time, fans can own their conviction.</span></div>
+  <div class="callout reveal d4"><span>这一切如今都不存在。在博彩公司里，这些头寸中的每一个都会在终场哨声中到期。在 Notch 上，它们复利增长——而球迷们第一次得以拥有自己的信念。</span></div>
 </div></div>
 
 <!-- 06 ARCHITECTURE -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">09 · Architecture</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Three entities needed.</div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Separating pricing, clearing, and distribution creates regulatory isolation and compounding defensibility at each layer.</p>
+  <div class="lbl reveal" style="color:var(--t2)">09 · 架构</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">需要三个实体。</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">把定价、清算和分发分离，在每一层都创造了监管隔离和不断累积的护城河。</p>
   <div class="g3" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="lbl" style="color:var(--purple)">Prices the Asset</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">ORACLE COMPANY</div><div class="card-body" style="margin-top:16px">Proprietary algorithm synthesizes odds, results, injuries, transfers, and sentiment into a continuous team price index.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Key insight</div><div style="font-size:12px;color:var(--t1)">The price has value beyond our own exchange. Other venues will pay for it.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="assets/kops.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="KOPS"></div><a href="https://kops.ai" target="_blank" class="mono" style="font-size:11px;color:var(--purple);display:block;text-align:center;margin-top:8px">kops.ai</a></div></div>
-    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="lbl" style="color:var(--blue)">Is the Market</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">PERP DEX</div><div class="card-body" style="margin-top:16px">Order matching, margin, funding, and liquidation turn the price into a tradable market.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Key insight</div><div style="font-size:12px;color:var(--t1)">Hyperliquid model. Builder codes for all existing sports betting platforms.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="assets/tail.trade.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="TAIL.TRADE"></div><a href="https://tail.trade" target="_blank" class="mono" style="font-size:11px;color:var(--blue);display:block;text-align:center;margin-top:8px">tail.trade</a></div></div>
-    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="lbl" style="color:var(--lime)">Distributes to Retail</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">CONSUMER APP</div><div class="card-body" style="margin-top:16px">Consumer UX, non-custodial wallet, and fiat on-ramp make the perp market accessible to anyone with a phone.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Key insight</div><div style="font-size:12px;color:var(--t1)">Enables retail to participate via fiat. The only entity that touches regulators.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="assets/notch.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="NOTCH"></div><a href="https://notch.win" target="_blank" class="mono" style="font-size:11px;color:var(--lime);display:block;text-align:center;margin-top:8px">notch.win</a></div></div>
+    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="lbl" style="color:var(--purple)">为资产定价</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">预言机公司</div><div class="card-body" style="margin-top:16px">专有算法将赔率、赛果、伤病、转会和情绪合成为连续的球队价格指数。</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">关键洞察</div><div style="font-size:12px;color:var(--t1)">这一价格的价值超越我们自己的交易所。其他平台会为它付费。</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/kops.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="KOPS"></div><a href="https://kops.ai" target="_blank" class="mono" style="font-size:11px;color:var(--purple);display:block;text-align:center;margin-top:8px">kops.ai</a></div></div>
+    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="lbl" style="color:var(--blue)">即市场本身</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">PERP DEX</div><div class="card-body" style="margin-top:16px">订单撮合、保证金、资金费率和清算把价格变成一个可交易的市场。</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">关键洞察</div><div style="font-size:12px;color:var(--t1)">Hyperliquid 模式。为所有现有体育博彩平台提供 builder codes。</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/tail.trade.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="TAIL.TRADE"></div><a href="https://tail.trade" target="_blank" class="mono" style="font-size:11px;color:var(--blue);display:block;text-align:center;margin-top:8px">tail.trade</a></div></div>
+    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="lbl" style="color:var(--lime)">向零售分发</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">消费级应用</div><div class="card-body" style="margin-top:16px">消费级体验、非托管钱包和法币 on-ramp，让任何拥有手机的人都能进入这个永续市场。</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">关键洞察</div><div style="font-size:12px;color:var(--t1)">让零售用户通过法币参与。唯一与监管机构接触的实体。</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/notch.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="NOTCH"></div><a href="https://notch.win" target="_blank" class="mono" style="font-size:11px;color:var(--lime);display:block;text-align:center;margin-top:8px">notch.win</a></div></div>
   </div>
 
 </div></div>
 
 <!-- 08 MARKET -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">10 · Market</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">We sit at the intersection of three <span style="color:var(--lime)">already-proven markets.</span></div>
+  <div class="lbl reveal" style="color:var(--t2)">10 · 市场</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">我们处于三个<span style="color:var(--lime)">已被验证的市场</span>的交汇点。</div>
 
   <!-- Three market columns -->
   <div class="g3" style="margin-top:40px">
     <div class="card reveal d1" style="padding:32px;text-align:center">
-      <div class="lbl" style="color:var(--lime)">Sports Wagering</div>
+      <div class="lbl" style="color:var(--lime)">体育投注</div>
       <div class="mono" style="font-weight:700;font-size:36px;color:var(--w);margin-top:16px">$166.9B</div>
-      <div class="stat-lbl">U.S. handle 2025</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:16px">The audience and the habit already exist at massive scale.</div>
+      <div class="stat-lbl">2025年美国投注额</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:16px">受众和习惯已经存在，且规模庞大。</div>
     </div>
     <div class="card reveal d2" style="padding:32px;text-align:center">
-      <div class="lbl" style="color:var(--purple)">Prediction Markets</div>
+      <div class="lbl" style="color:var(--purple)">预测市场</div>
       <div class="mono" style="font-weight:700;font-size:36px;color:var(--w);margin-top:16px">$64B</div>
-      <div class="stat-lbl">2025 volume</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:16px">Sports pulled prediction markets mainstream. Users already think in market terms.</div>
+      <div class="stat-lbl">2025年成交量</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:16px">体育把预测市场带向主流。用户已经在用市场思维思考。</div>
     </div>
     <div class="card reveal d3" style="padding:32px;text-align:center">
-      <div class="lbl" style="color:var(--blue)">Perp Exchanges</div>
+      <div class="lbl" style="color:var(--blue)">永续合约交易所</div>
       <div class="mono" style="font-weight:700;font-size:36px;color:var(--w);margin-top:16px">$6.7T</div>
-      <div class="stat-lbl">Perp DEX volume 2025</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:16px">Persistent, leveraged trading is now a familiar crypto-native behavior.</div>
+      <div class="stat-lbl">2025年 Perp DEX 成交量</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:16px">持续、带杠杆的交易，如今已是加密原生用户熟悉的行为。</div>
     </div>
   </div>
 
@@ -619,72 +620,72 @@
   <div class="reveal d3" style="margin-top:24px;text-align:center;padding:28px 32px;border:1px solid var(--lime);position:relative">
     <div style="position:absolute;top:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--lime),var(--purple),var(--blue))"></div>
     <div class="mono upper" style="font-weight:700;font-size:20px;color:var(--lime)">NOTCH</div>
-    <div style="font-size:15px;color:var(--w);margin-top:8px">The first venue for continuous team-level sports positions</div>
-    <div style="font-size:13px;color:var(--t2);margin-top:4px">Audience from wagering · Market format from prediction markets · Infrastructure from perps</div>
+    <div style="font-size:15px;color:var(--w);margin-top:8px">首个面向连续、球队级体育头寸的交易场所</div>
+    <div style="font-size:13px;color:var(--t2);margin-top:4px">受众来自投注 · 市场形态来自预测市场 · 基础设施来自永续合约</div>
   </div>
 </div></div>
 
 <!-- 08.5 COMPETITORS -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">11 · Competitors</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Competitors <span style="color:var(--lime)">aka Sources of Liquidity.</span></div>
+  <div class="lbl reveal" style="color:var(--t2)">11 · 竞争对手</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">竞争对手<span style="color:var(--lime)">，亦即流动性来源。</span></div>
   <div class="g3" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="assets/img/img_1_bec86799.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="assets/img/img_2_dd5c6077.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="assets/img/img_3_c6d3008c.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Bet365 · FanDuel · DraftKings</div><div class="card-title" style="color:var(--lime);margin-bottom:16px">Sportsbooks</div><div class="card-body">Their users already trade team-level opinions with real money. Every bettor whose position dies at the final whistle is a potential Notch user whose position doesn't have to.</div></div>
-    <div class="card reveal d2" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="assets/img/img_4_f49981db.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="assets/img/img_5_1d68af5d.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Polymarket · Kalshi</div><div class="card-title" style="color:var(--purple);margin-bottom:16px">Prediction Markets</div><div class="card-body">Their traders already think in market terms. Every binary that expires is a user who could hold a continuous position instead. Same instinct, better instrument.</div></div>
-    <div class="card reveal d3" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="assets/img/img_6_f369890a.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="assets/img/img_7_ca78d1d5.jpg" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Hyperliquid · Lighter</div><div class="card-title" style="color:var(--blue);margin-bottom:16px">Perp DEXs</div><div class="card-body">Their traders are fluent in leverage, funding, and margin. Sports gives them an entirely new uncorrelated asset class — same mechanics, fresh alpha.</div></div>
+    <div class="card reveal d1" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_1_bec86799.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_2_dd5c6077.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_3_c6d3008c.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Bet365 · FanDuel · DraftKings</div><div class="card-title" style="color:var(--lime);margin-bottom:16px">博彩公司</div><div class="card-body">他们的用户早已在用真金白银交易球队级的观点。每一个头寸会在终场哨声中死去的投注者，都是一个潜在的 Notch 用户——而他的头寸本不必死去。</div></div>
+    <div class="card reveal d2" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_4_f49981db.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_5_1d68af5d.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Polymarket · Kalshi</div><div class="card-title" style="color:var(--purple);margin-bottom:16px">预测市场</div><div class="card-body">他们的交易者早已用市场思维思考。每一个会到期的二元合约，都是一个本可改为持有连续头寸的用户。同样的本能，更好的工具。</div></div>
+    <div class="card reveal d3" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_6_f369890a.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_7_ca78d1d5.jpg" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Hyperliquid · Lighter</div><div class="card-title" style="color:var(--blue);margin-bottom:16px">Perp DEX</div><div class="card-body">他们的交易者精通杠杆、资金费率和保证金。体育为他们带来一个全新、不相关的资产类别——同样的机制，全新的 alpha。</div></div>
   </div>
 </div></div>
 
 <!-- 09 TRACTION -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">12 · Traction</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Ready to <span style="color:var(--lime)">scale.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Core infrastructure is live. Capital goes to growth, not R&D.</p>
+  <div class="lbl reveal" style="color:var(--t2)">12 · 进展</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">已经准备好<span style="color:var(--lime)">规模化。</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">核心基础设施已上线。资金用于增长，而非研发。</p>
   <div class="g3" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:24px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Oracle <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">LIVE</span></div><div class="card-body" style="margin-top:12px">Live price feeds ready for:</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">Soccer</span><span style="font-size:11px;color:var(--t2)">96 teams — EPL · La Liga · Bundesliga · Serie A · Ligue 1 · CL</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">NBA</span><span style="font-size:11px;color:var(--t2)">Full league coverage</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">MLB</span><span style="font-size:11px;color:var(--t2)">Full league coverage</span></div></div></div>
-    <div class="card reveal d2" style="padding:24px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Perp DEX <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">LIVE</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Non-custodial Perp DEX on Solana</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">13 markets live</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Pro trading UI</span></div></div></div>
-    <div class="card reveal d3" style="padding:24px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Consumer App <span class="mono" style="font-size:10px;color:var(--amber);font-weight:400">IN DEV</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Retail-oriented UX</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Create leagues with friends + social</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Fiat on-ramp integration</span></div></div></div>
+    <div class="card reveal d1" style="padding:24px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">预言机 <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">已上线</span></div><div class="card-body" style="margin-top:12px">已就绪的实时价格数据源：</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">足球</span><span style="font-size:11px;color:var(--t2)">96 支球队 — EPL · La Liga · Bundesliga · Serie A · Ligue 1 · CL</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">NBA</span><span style="font-size:11px;color:var(--t2)">全联盟覆盖</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">MLB</span><span style="font-size:11px;color:var(--t2)">全联盟覆盖</span></div></div></div>
+    <div class="card reveal d2" style="padding:24px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Perp DEX <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">已上线</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Solana 上的非托管 Perp DEX</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">13 个市场已上线</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">专业交易界面</span></div></div></div>
+    <div class="card reveal d3" style="padding:24px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">消费级应用 <span class="mono" style="font-size:10px;color:var(--amber);font-weight:400">开发中</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">面向零售的体验</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">与好友创建联赛 + 社交</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">法币 on-ramp 集成</span></div></div></div>
   </div>
 </div></div>
 
 <!-- 10 ROADMAP -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">13 · Roadmap</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Soccer markets are <span style="color:var(--lime)">already live.</span></div>
+  <div class="lbl reveal" style="color:var(--t2)">13 · 路线图</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">足球市场<span style="color:var(--lime)">已经上线。</span></div>
   <div class="g4" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="assets/img/img_8_9d4e0eb0.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="assets/img/img_9_2c416dd6.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="assets/img/img_10_2ae7e55d.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="assets/img/img_11_dec8e271.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="assets/img/img_12_ca78d1d5.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Phase 1</div><div class="card-body">Soccer<br>Perp DEX live</div></div>
-    <div class="card reveal d2" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="assets/img/img_13_85aef283.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Phase 2</div><div class="card-body">Baseball<br>Consumer App<br>Fiat on-ramp</div></div>
-    <div class="card reveal d3" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="assets/img/img_14_d79dab0c.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Phase 3</div><div class="card-body">Basketball<br>Scale</div></div>
-    <div class="card reveal d4" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="assets/img/img_15_d1eee6f1.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="assets/img/img_16_8a45ae67.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Phase 4</div><div class="card-body">NHL + more<br>Institutional APIs<br>Licensing surface</div></div>
+    <div class="card reveal d1" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_8_9d4e0eb0.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_9_2c416dd6.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_10_2ae7e55d.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_11_dec8e271.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_12_ca78d1d5.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">第一阶段</div><div class="card-body">足球<br>Perp DEX 上线</div></div>
+    <div class="card reveal d2" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_13_85aef283.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">第二阶段</div><div class="card-body">棒球<br>消费级应用<br>法币 on-ramp</div></div>
+    <div class="card reveal d3" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_14_d79dab0c.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">第三阶段</div><div class="card-body">篮球<br>规模化</div></div>
+    <div class="card reveal d4" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_15_d1eee6f1.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_16_8a45ae67.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">第四阶段</div><div class="card-body">NHL 及更多<br>机构级 API<br>授权许可面</div></div>
   </div>
 </div></div>
 
 <!-- 11 TEAM -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">14 · Team</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Team.</div>
+  <div class="lbl reveal" style="color:var(--t2)">14 · 团队</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">团队。</div>
   <div class="g4" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Igor / CEO</div><div class="card-body" style="margin-top:8px">1 exit. Built the first multichain oracle in 2018, scaled identity and DePIN products to 1M+ users, ran over 1B+ OTC. Deep background across crypto, exchanges, and oracle systems.</div></div>
-    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Ngoc / CTO</div><div class="card-body" style="margin-top:8px">CTO in multiple large-scale AI and crypto ventures. Previously Lead BA in IT at MGM — managed telebetting systems, oversaw 10+ casino software integrations. 20+ years across gaming, AI, and decentralized infrastructure.</div></div>
-    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Son / Head of Infra</div><div class="card-body" style="margin-top:8px">Built the real-time pricing engine behind Treehouse — a DeFi protocol that hit $500M+ TVL. Previously architected national-scale critical infrastructure serving 1.6M users across healthcare, education, and government.</div></div>
-    <div class="card reveal d4" style="padding:28px"><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Veller / COO</div><div class="card-body" style="margin-top:8px">12y institutional trading at Morgan Stanley, Bank of America. COO at Blum 90M-user Telegram DEX and Perps, backed by OKX Ventures and Binance Labs. Co-founded Gear Technologies, raising $12M+ from top-tier crypto VCs and securing a Coinbase listing.</div></div>
+    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Igor / CEO</div><div class="card-body" style="margin-top:8px">1 次成功退出。2018年打造了首个多链预言机，将身份和 DePIN 产品扩展到100万+用户，操盘超过10亿+的 OTC 交易。在加密、交易所和预言机系统领域有深厚背景。</div></div>
+    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Ngoc / CTO</div><div class="card-body" style="margin-top:8px">在多个大规模 AI 与加密项目担任 CTO。此前在 MGM 任 IT 部门首席业务分析师——管理远程投注系统，监督10+个赌场软件集成。在博彩、AI 和去中心化基础设施领域有20+年经验。</div></div>
+    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Son / 基础设施负责人</div><div class="card-body" style="margin-top:8px">打造了 Treehouse 背后的实时定价引擎——一个 TVL 突破5亿美元+的 DeFi 协议。此前架构了服务160万用户、覆盖医疗、教育和政务的国家级关键基础设施。</div></div>
+    <div class="card reveal d4" style="padding:28px"><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Veller / COO</div><div class="card-body" style="margin-top:8px">在 Morgan Stanley、Bank of America 拥有12年机构交易经验。曾任 Blum 的 COO，这是一个拥有9000万用户、由 OKX Ventures 和 Binance Labs 支持的 Telegram DEX 与永续合约平台。联合创办 Gear Technologies，从顶级加密 VC 融资1200万美元+并获得 Coinbase 上线。</div></div>
   </div>
 </div></div>
 
 <!-- 12 THE ASK -->
 <div class="sec"><div class="sec-inner" style="text-align:center">
-  <div class="lbl reveal" style="color:var(--t2)">15 · The Ask</div>
-  <div class="h2 reveal d1" style="margin-top:20px">Seed Round.</div>
+  <div class="lbl reveal" style="color:var(--t2)">15 · 融资诉求</div>
+  <div class="h2 reveal d1" style="margin-top:20px">种子轮。</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:32px;text-align:center">
-    <div class="card reveal d1" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:36px;color:var(--lime)">$3-5M</div><div class="stat-lbl" style="margin-top:8px">Target Raise</div></div>
-    <div class="card reveal d2" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:16px;color:var(--w);line-height:28px">SAFE (Post-Money)<br>+ Token Warrant</div><div class="stat-lbl" style="margin-top:8px">Instrument</div></div>
+    <div class="card reveal d1" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:36px;color:var(--lime)">$3-5M</div><div class="stat-lbl" style="margin-top:8px">目标融资额</div></div>
+    <div class="card reveal d2" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:16px;color:var(--w);line-height:28px">SAFE (Post-Money)<br>+ Token Warrant</div><div class="stat-lbl" style="margin-top:8px">融资工具</div></div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);margin-top:1px;text-align:left">
-    <div class="card reveal d1" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">35%</div><div class="card-body" style="margin-top:4px">Engineering</div></div>
-    <div class="card reveal d2" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--blue)">35%</div><div class="card-body" style="margin-top:4px">GTM</div></div>
-    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--purple)">15%</div><div class="card-body" style="margin-top:4px">Initial liquidity</div></div>
-    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--amber)">10%</div><div class="card-body" style="margin-top:4px">Legal / compliance</div></div>
-    <div class="card reveal d4" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--t2)">5%</div><div class="card-body" style="margin-top:4px">Oracle / data</div></div>
+    <div class="card reveal d1" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">35%</div><div class="card-body" style="margin-top:4px">工程研发</div></div>
+    <div class="card reveal d2" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--blue)">35%</div><div class="card-body" style="margin-top:4px">市场拓展</div></div>
+    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--purple)">15%</div><div class="card-body" style="margin-top:4px">初始流动性</div></div>
+    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--amber)">10%</div><div class="card-body" style="margin-top:4px">法务 / 合规</div></div>
+    <div class="card reveal d4" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--t2)">5%</div><div class="card-body" style="margin-top:4px">预言机 / 数据</div></div>
   </div>
 
 </div></div>
@@ -693,9 +694,9 @@
 <!-- CTA -->
 <div class="sec"><div class="sec-inner" style="text-align:center;padding-top:8rem;padding-bottom:8rem">
   <div class="reveal" style="display:flex;justify-content:center"><svg width="280" height="41" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg></div>
-  <div class="body reveal d1" style="margin-top:16px;font-size:16px">First ever perpetual markets for sports. Changing sports forever.</div>
-  <div style="display:flex;justify-content:center;gap:12px;margin-top:32px" class="reveal d2"><a href="https://t.me/sempertrade" target="_blank" rel="noopener" class="mono upper" style="display:inline-block;padding:12px 24px;background:var(--lime);color:var(--bg);font-size:14px;font-weight:700;border:none;cursor:pointer;border-radius:2px;text-decoration:none">Get in touch</a></div>
-  <div class="reveal d4" style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border)"><span class="lbl" style="color:var(--t3)">notch.win · Confidential · 2026</span></div>
+  <div class="body reveal d1" style="margin-top:16px;font-size:16px">史上首个面向体育的永续市场。永远改变体育。</div>
+  <div style="display:flex;justify-content:center;gap:12px;margin-top:32px" class="reveal d2"><a href="https://t.me/sempertrade" target="_blank" rel="noopener" class="mono upper" style="display:inline-block;padding:12px 24px;background:var(--lime);color:var(--bg);font-size:14px;font-weight:700;border:none;cursor:pointer;border-radius:2px;text-decoration:none">联系我们</a></div>
+  <div class="reveal d4" style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border)"><span class="lbl" style="color:var(--t3)">notch.win · 保密 · 2026</span></div>
 </div></div>
 
 
@@ -767,7 +768,7 @@ function render(){
     ctx.beginPath();ctx.moveTo(x+12,pad.t);ctx.lineTo(x+12,pad.t+gH);ctx.stroke();
     ctx.setLineDash([]);
     // Match label on chart
-    ctx.font="700 10px 'Space Mono',monospace";
+    ctx.font="700 10px 'Space Mono','Noto Sans SC',monospace";
     ctx.fillStyle=m.type==='win'?'#b2ed68':'#ef6b6b';
     ctx.textAlign='center';// removed inline label
   }
@@ -789,7 +790,7 @@ function render(){
   ctx.beginPath();ctx.arc(toX(last.x),toY(last.y),3,0,Math.PI*2);ctx.fillStyle='#b2ed68';ctx.fill();
   ctx.beginPath();ctx.arc(toX(last.x),toY(last.y),7,0,Math.PI*2);ctx.fillStyle='rgba(178,237,104,.15)';ctx.fill();
   // Price labels on right
-  ctx.font="400 10px 'Space Mono',monospace";ctx.fillStyle='#606267';ctx.textAlign='right';
+  ctx.font="400 10px 'Space Mono','Noto Sans SC',monospace";ctx.fillStyle='#606267';ctx.textAlign='right';
   ctx.fillText('$'+Math.round(mx),W-pad.r-4,pad.t+10);
   ctx.fillText('$'+Math.round(mn),W-pad.r-4,H-pad.b-4);
 }
@@ -918,9 +919,9 @@ function render(){
 const c=document.getElementById('funnel-canvas');if(!c)return;
 const ctx=c.getContext('2d');
 const streams=[
-  {label:'SPORTS WAGERING',sub:'$166.9B handle',color:'#b2ed68',rgb:[178,237,104]},
-  {label:'PREDICTION MARKETS',sub:'$64B volume',color:'#a78bfa',rgb:[167,139,250]},
-  {label:'PERP EXCHANGES',sub:'$6.7T volume',color:'#5b8def',rgb:[91,141,239]}
+  {label:'体育投注',sub:'$166.9B 投注额',color:'#b2ed68',rgb:[178,237,104]},
+  {label:'预测市场',sub:'$64B 成交量',color:'#a78bfa',rgb:[167,139,250]},
+  {label:'永续合约交易所',sub:'$6.7T 成交量',color:'#5b8def',rgb:[91,141,239]}
 ];
 let particles=[];let t=0;let inView=false;
 const io=new IntersectionObserver(es=>{inView=es[0].isIntersecting},{threshold:.1});
@@ -946,10 +947,10 @@ function draw(){
   for(let i=0;i<3;i++){
     ctx.beginPath();ctx.arc(srcX[i],topY-20,4,0,Math.PI*2);ctx.fillStyle=streams[i].color;ctx.fill();
     ctx.beginPath();ctx.arc(srcX[i],topY-20,8,0,Math.PI*2);ctx.fillStyle='rgba('+streams[i].rgb.join(',')+',0.15)';ctx.fill();
-    ctx.font="700 "+Math.max(10,Math.min(12,W*.012))+"px 'Space Mono',monospace";
+    ctx.font="700 "+Math.max(10,Math.min(12,W*.012))+"px 'Space Mono','Noto Sans SC',monospace";
     ctx.fillStyle=streams[i].color;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(streams[i].label,srcX[i],topY+10);
-    ctx.font="400 "+Math.max(9,Math.min(11,W*.01))+"px 'Space Mono',monospace";ctx.fillStyle='#8a8f98';
+    ctx.font="400 "+Math.max(9,Math.min(11,W*.01))+"px 'Space Mono','Noto Sans SC',monospace";ctx.fillStyle='#8a8f98';
     ctx.fillText(streams[i].sub,srcX[i],topY+28);
   }
   if(inView)spawn();particles=particles.filter(p=>p.prog<1.05);
@@ -968,23 +969,23 @@ function draw(){
   ctx.fillStyle=grd;ctx.fillRect(cx-60,botY-70,120,120);
   ctx.beginPath();ctx.arc(cx,mergeY,6,0,Math.PI*2);ctx.fillStyle='#b2ed68';ctx.fill();
   ctx.beginPath();ctx.arc(cx,mergeY,12,0,Math.PI*2);ctx.fillStyle='rgba(178,237,104,.12)';ctx.fill();
-  ctx.font="700 "+Math.max(14,Math.min(18,W*.018))+"px 'Space Mono',monospace";
+  ctx.font="700 "+Math.max(14,Math.min(18,W*.018))+"px 'Space Mono','Noto Sans SC',monospace";
   ctx.fillStyle='#eef1f6';ctx.textAlign='center';
   ctx.fillText('NOTCH',cx,botY+5);
-  ctx.font="400 "+Math.max(10,Math.min(13,W*.012))+"px 'Space Grotesk',sans-serif";
+  ctx.font="400 "+Math.max(10,Math.min(13,W*.012))+"px 'Space Grotesk','Noto Sans SC',sans-serif";
   ctx.fillStyle='#8a8f98';
-  ctx.fillText('The first venue for continuous team-level sports positions',cx,botY+25);
+  ctx.fillText('首个面向连续、球队级体育头寸的交易场所',cx,botY+25);
   t+=.01;requestAnimationFrame(draw);
 }draw()})();
 // Flywheel - KOPS AI center + 6 orbital nodes
 (function(){const c=document.getElementById('fw-canvas');if(!c)return;const ctx=c.getContext('2d');
 const nodes=[
-  {label:'Oracle\npublishes\nteam price',color:'#e8943a'},
-  {label:'Traders\nopen\npositions',color:'#606267'},
-  {label:'Deeper\nliquidity',color:'#b2ed68'},
-  {label:'Better\nprice\ndiscovery',color:'#b2ed68'},
-  {label:'More\ncredibility',color:'#606267'},
-  {label:'More\ntraders',color:'#606267'},
+  {label:'预言机\n发布\n球队价格',color:'#e8943a'},
+  {label:'交易者\n开仓\n建立头寸',color:'#606267'},
+  {label:'更深的\n流动性',color:'#b2ed68'},
+  {label:'更好的\n价格\n发现',color:'#b2ed68'},
+  {label:'更高的\n可信度',color:'#606267'},
+  {label:'更多的\n交易者',color:'#606267'},
 ];
 let t=0;
 function draw(){
@@ -1003,8 +1004,8 @@ function draw(){
   ctx.beginPath();ctx.arc(cx,cy,centerR,0,Math.PI*2);
   ctx.fillStyle='rgba(232,148,58,.03)';ctx.fill();
   // Center text
-  ctx.font="700 "+Math.floor(centerR*.38)+"px 'Space Mono',monospace";ctx.fillStyle='#eef1f6';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#eef1f6';ctx.fillText('ORACLE',cx,cy);
+  ctx.font="700 "+Math.floor(centerR*.38)+"px 'Space Mono','Noto Sans SC',monospace";ctx.fillStyle='#eef1f6';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#eef1f6';ctx.fillText('预言机',cx,cy);
 
   // Orbital nodes
   for(let i=0;i<6;i++){
@@ -1040,7 +1041,7 @@ function draw(){
 
     // Node label (multiline)
     const lines=nodes[i].label.split('\n');
-    ctx.font="500 "+Math.max(9,Math.floor(nodeR*.22))+"px 'Space Grotesk',sans-serif";
+    ctx.font="500 "+Math.max(9,Math.floor(nodeR*.22))+"px 'Space Grotesk','Noto Sans SC',sans-serif";
     ctx.fillStyle='#eef1f6';ctx.textAlign='center';ctx.textBaseline='middle';
     const lh=Math.floor(nodeR*.28);
     const startY=ny-((lines.length-1)*lh)/2;
