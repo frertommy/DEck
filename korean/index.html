@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,27 +9,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0c0e12;--border:#242629;--hover:#181b20;--lime:#b2ed68;--lime-bg:rgba(178,237,104,.06);--w:#eef1f6;--t1:#b0b5be;--t2:#8a8f98;--t3:#606267;--blue:#5b8def;--purple:#a78bfa;--amber:#f5c542;--red:#ef6b6b}
-*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--t1);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.mono{font-family:'Space Mono',monospace}.upper{text-transform:uppercase}a{color:var(--lime);text-decoration:none}a:hover{text-decoration:underline}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--t1);font-family:'Space Grotesk','Noto Sans KR',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Space Mono','Noto Sans KR',monospace}.upper{text-transform:uppercase}a{color:var(--lime);text-decoration:none}a:hover{text-decoration:underline}
 #grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.25}
 .content{position:relative;z-index:1}
 .sec{border-bottom:1px solid var(--border)}.sec-inner{max-width:1200px;margin:0 auto;padding:5rem 1.5rem}
 @media(min-width:768px){.sec-inner{padding:7rem 3rem}}@media(min-width:1280px){.sec-inner{padding:8rem 4rem}}
-.lbl{font-family:'Space Mono',monospace;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.08em}
-.h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(32px,6vw,56px);line-height:1.1;color:var(--w)}
-.h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(24px,4vw,38px);line-height:1.15;color:var(--w)}
+.lbl{font-family:'Space Mono','Noto Sans KR',monospace;font-size:12px;line-height:16px;text-transform:uppercase;letter-spacing:.08em}
+.h1{font-family:'Space Grotesk','Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(32px,6vw,56px);line-height:1.1;color:var(--w)}
+.h2{font-family:'Space Grotesk','Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(24px,4vw,38px);line-height:1.15;color:var(--w)}
 .body{font-size:15px;line-height:24px;color:var(--t1)}
 .g2{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}.g3{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border)}.g4{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
 @media(min-width:768px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}}
 .g2>*,.g3>*,.g4>*{background:var(--bg)}
 .card{background:var(--bg);padding:28px;transition:background .2s}.card:hover{background:var(--hover)}
-.card-title{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;line-height:22px;text-transform:uppercase;color:var(--w);margin-bottom:10px}
+.card-title{font-family:'Space Mono','Noto Sans KR',monospace;font-weight:700;font-size:15px;line-height:22px;text-transform:uppercase;color:var(--w);margin-bottom:10px}
 .card-body{font-size:13px;line-height:20px;color:var(--t1)}
-.stat-val{font-family:'Space Mono',monospace;font-weight:700;font-size:24px;line-height:32px;color:var(--w)}
-.stat-lbl{font-family:'Space Mono',monospace;font-size:12px;line-height:16px;color:var(--t2);text-transform:uppercase;margin-top:6px}
-.badge{display:inline-block;font-family:'Space Mono',monospace;font-size:11px;text-transform:uppercase;padding:4px 10px;border-radius:2px}
+.stat-val{font-family:'Space Mono','Noto Sans KR',monospace;font-weight:700;font-size:24px;line-height:32px;color:var(--w)}
+.stat-lbl{font-family:'Space Mono','Noto Sans KR',monospace;font-size:12px;line-height:16px;color:var(--t2);text-transform:uppercase;margin-top:6px}
+.badge{display:inline-block;font-family:'Space Mono','Noto Sans KR',monospace;font-size:11px;text-transform:uppercase;padding:4px 10px;border-radius:2px}
 .bar-t{height:2px;margin-bottom:16px}
 .vbar{height:4px;background:var(--border);margin-top:12px}.vbar-fill{height:100%;width:0;transition:width 1.5s cubic-bezier(.16,1,.3,1)}.vbar-fill.active{width:var(--w)}
 .callout{margin-top:24px;padding:20px 24px;border:1px solid var(--border);border-left:2px solid var(--lime)}
@@ -39,7 +40,7 @@
 .ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .ticker{display:flex;animation:tickScroll 40s linear infinite;width:max-content}@keyframes tickScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .tick-item{display:flex;align-items:center;gap:12px;padding:12px 24px;border-right:1px solid var(--border);white-space:nowrap}
-.tick-name{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;color:var(--w);text-transform:uppercase}.tick-price{font-family:'Space Mono',monospace;font-size:12px;color:var(--t1)}
+.tick-name{font-family:'Space Mono','Noto Sans KR',monospace;font-weight:700;font-size:13px;color:var(--w);text-transform:uppercase}.tick-price{font-family:'Space Mono','Noto Sans KR',monospace;font-size:12px;color:var(--t1)}
 .reveal{opacity:0;transform:translateY(20px);transition:all .6s cubic-bezier(.16,1,.3,1)}.reveal.visible{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
 .pulse{width:6px;height:6px;background:var(--lime);animation:pul 2s ease-in-out infinite}@keyframes pul{0%,100%{box-shadow:0 0 0 0 rgba(178,237,104,.4)}50%{box-shadow:0 0 0 8px rgba(178,237,104,0)}}
@@ -183,12 +184,12 @@
 <div class="content">
 
 <!-- NAV -->
-<div class="sec" style="position:sticky;top:0;z-index:100;background:rgba(12,14,18,.85);backdrop-filter:blur(12px)"><div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center"><svg width="120" height="18" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg></div><div style="display:flex;align-items:center;gap:14px"><a href="../" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">EN</a><a href="../ru/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">RU</a><a href="../ch/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">中文</a><a href="../vietnamese/" class="mono upper" style="font-size:11px;color:var(--lime);letter-spacing:.08em">VI</a><a href="../korean/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">KO</a></div></div></div>
+<div class="sec" style="position:sticky;top:0;z-index:100;background:rgba(12,14,18,.85);backdrop-filter:blur(12px)"><div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center"><svg width="120" height="18" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg></div><div style="display:flex;align-items:center;gap:14px"><a href="../" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">EN</a><a href="../ru/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">RU</a><a href="../ch/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">中文</a><a href="../vietnamese/" class="mono upper" style="font-size:11px;color:var(--t3);letter-spacing:.08em">VI</a><a href="../korean/" class="mono upper" style="font-size:11px;color:var(--lime);letter-spacing:.08em">KO</a></div></div></div>
 
 <!-- 01 HERO -->
 <div class="sec" style="position:relative;overflow:hidden"><video autoplay muted loop playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.18;z-index:0;pointer-events:none"><source src="../assets/hero-bg.mp4" type="video/mp4"></video><div class="sec-inner" style="min-height:calc(100vh - 57px);display:flex;flex-direction:column;justify-content:flex-end;gap:16px;position:relative;z-index:1">
-  <div class="reveal d1"><span class="h1" style="display:block"><svg style="height:0.85em;width:auto;vertical-align:baseline;position:relative;top:0.02em;margin-right:0.15em" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg> là thị trường</span><span class="h1" style="display:block">vĩnh viễn đầu tiên</span><span class="h1" style="display:block">cho <span style="color:var(--lime)">thể thao.</span></span></div>
-  <p class="body reveal d2" style="max-width:460px;margin-top:12px;font-size:16px;line-height:26px">Thể thao là thị trường lớn nhất vẫn còn mắc kẹt trong những hợp đồng có ngày đáo hạn.</p>
+  <div class="reveal d1"><span class="h1" style="display:block"><svg style="height:0.85em;width:auto;vertical-align:baseline;position:relative;top:0.02em;margin-right:0.15em" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg> 는 최초의</span><span class="h1" style="display:block">스포츠 무기한 시장</span><span class="h1" style="display:block">입니다 <span style="color:var(--lime)">.</span></span></div>
+  <p class="body reveal d2" style="max-width:460px;margin-top:12px;font-size:16px;line-height:26px">스포츠는 여전히 만기형 계약에 갇혀 있는 가장 큰 시장입니다.</p>
 </div></div>
 
 <!-- TICKER -->
@@ -196,18 +197,18 @@
 
 <!-- 02 PROBLEM -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">02 · Vấn đề</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Một ngành nghìn tỷ đô vẫn vận hành trên <span style="color:var(--t2)">những vụ cược có hạn sử dụng.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Các sản phẩm thể thao hiện nay kiếm tiền từ quan điểm của người chơi, nhưng không bao giờ cho phép quan điểm đó tích lũy. Mọi vị thế thể thao hiện hữu đều đã bị tuyên án tử.</p>
+  <div class="lbl reveal" style="color:var(--t2)">02 · 문제</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">조 단위 시장이 여전히 <span style="color:var(--t2)">만기일이 정해진 베팅</span>으로 돌아갑니다.</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">오늘날의 스포츠 상품은 의견을 수익화하지만, 그 의견이 복리로 쌓이게 두지는 않습니다. 기존의 모든 스포츠 포지션에는 사형 선고가 내려져 있습니다.</p>
   <div class="reveal d2" style="margin-top:32px;border:1px solid var(--border);padding:24px;display:flex;align-items:center;gap:0;overflow-x:hidden;flex-wrap:wrap;justify-content:center">
-    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--lime)">Trước trận</div><div style="width:40px;height:2px;background:var(--lime);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
-    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--amber)">Trong trận</div><div style="width:40px;height:2px;background:var(--amber);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
-    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--red)">Tiếng còi cuối</div><div style="width:40px;height:2px;background:var(--red);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
-    <div style="text-align:center;padding:0 20px"><div class="mono upper" style="font-weight:700;font-size:18px;color:var(--red)">TẤT TOÁN</div><div style="font-size:11px;color:var(--t3);margin-top:4px">Về không. Biến mất.</div></div>
+    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--lime)">경기 전</div><div style="width:40px;height:2px;background:var(--lime);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
+    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--amber)">경기 중</div><div style="width:40px;height:2px;background:var(--amber);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
+    <div style="text-align:center;padding:0 20px"><div class="lbl" style="color:var(--red)">경기 종료</div><div style="width:40px;height:2px;background:var(--red);margin:8px auto"></div></div><div class="mono" style="color:var(--t3)">→</div>
+    <div style="text-align:center;padding:0 20px"><div class="mono upper" style="font-weight:700;font-size:18px;color:var(--red)">정산</div><div style="font-size:11px;color:var(--t3);margin-top:4px">제로. 끝.</div></div>
   </div>
   <div class="g2" style="margin-top:32px">
-    <div class="card reveal d3" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$166.9B</div><div class="stat-lbl">Tổng cược thể thao hợp pháp tại Mỹ 2025</div></div>
-    <div class="card reveal d4" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$64B</div><div class="stat-lbl">Khối lượng thị trường dự đoán 2025</div></div>
+    <div class="card reveal d3" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$166.9B</div><div class="stat-lbl">2025년 미국 합법 스포츠 베팅 핸들</div></div>
+    <div class="card reveal d4" style="text-align:center;padding:32px"><div class="mono" style="font-weight:700;font-size:36px;color:var(--w)">$64B</div><div class="stat-lbl">2025년 예측 시장 거래량</div></div>
   </div>
 
 </div></div>
@@ -215,37 +216,37 @@
 <!-- BRIDGE: THE IDEA -->
 <style>
 .badge-expired{margin-top:auto;padding-top:16px;display:flex;align-items:center;gap:10px}
-.badge-expired .box{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--red);border:1.5px solid var(--red);padding:10px 20px;text-transform:uppercase;position:relative;overflow:hidden}
+.badge-expired .box{font-family:'Space Mono','Noto Sans KR',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--red);border:1.5px solid var(--red);padding:10px 20px;text-transform:uppercase;position:relative;overflow:hidden}
 .badge-expired .box::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(239,107,107,.06)}
 .badge-expired .line{flex:1;height:1.5px;background:var(--red);opacity:.25}
 .badge-perp{margin-top:auto;padding-top:16px;display:flex;align-items:center;gap:10px}
-.badge-perp .box{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--bg);background:var(--lime);padding:10px 20px;text-transform:uppercase}
+.badge-perp .box{font-family:'Space Mono','Noto Sans KR',monospace;font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--bg);background:var(--lime);padding:10px 20px;text-transform:uppercase}
 .badge-perp .line{flex:1;height:1.5px;background:var(--lime);opacity:.3}
 .badge-perp .pulse{width:8px;height:8px;background:var(--lime);border-radius:50%;flex-shrink:0;animation:pul 2s ease-in-out infinite}
 @keyframes pul{0%,100%{box-shadow:0 0 0 0 rgba(178,237,104,.5)}50%{box-shadow:0 0 0 8px rgba(178,237,104,0)}}
 </style>
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">03 · Ý tưởng</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Nếu chúng ta biến thị trường thể thao thành <span style="color:var(--lime)">vĩnh viễn</span> thì sao?</div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Mọi fan thể thao đều đã có quan điểm về đội bóng của mình. Nhưng hôm nay, cách duy nhất để thể hiện nó là một vụ cược chết ngay tiếng còi cuối. Không có công cụ nào cho phép bạn nắm giữ một vị thế về sức mạnh đội bóng theo thời gian.</p>
+  <div class="lbl reveal" style="color:var(--t2)">03 · 아이디어</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">스포츠 시장을 <span style="color:var(--lime)">무기한</span>으로 만들면 어떨까요?</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">모든 스포츠 팬은 이미 자기 팀에 대한 견해를 가지고 있습니다. 하지만 지금은 그것을 표현하는 유일한 방법이 경기 종료와 함께 소멸하는 베팅뿐입니다. 시간에 걸쳐 팀의 전력에 대한 포지션을 보유하게 해 주는 상품은 어디에도 없습니다.</p>
 
   <div class="reveal d3" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
     <div style="background:var(--bg);padding:28px;display:flex;flex-direction:column;gap:12px">
-      <div class="lbl" style="color:var(--red);margin-bottom:0">Hôm nay</div>
-      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal sẽ thắng Chelsea vào thứ Bảy"</div>
-      <div style="font-size:13px;color:var(--t2);line-height:1.6">Kết quả nhị phân. Một trận đấu. Vị thế chết sau 90 phút.</div>
+      <div class="lbl" style="color:var(--red);margin-bottom:0">지금</div>
+      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal이 토요일에 Chelsea를 이긴다"</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">단판 승부. 한 경기. 포지션은 90분이면 끝납니다.</div>
       <div class="badge-expired" style="padding-right:35%">
         <div class="line"></div>
-        <div class="box">Hết hạn</div>
+        <div class="box">만기 소멸</div>
       </div>
     </div>
     <div style="background:var(--bg);padding:28px;display:flex;flex-direction:column;gap:12px">
       <div class="lbl" style="color:var(--lime);margin-bottom:0">Notch</div>
-      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal đang bị định giá thấp. Tôi long."</div>
-      <div style="font-size:13px;color:var(--t2);line-height:1.6">Vị thế liên tục. Mỗi trận đấu, mỗi vụ chuyển nhượng, mỗi chấn thương đều định giá lại nó. Giữ một tuần, một tháng hay xuyên suốt nhiều mùa giải.</div>
+      <div style="font-size:14px;color:var(--w);font-weight:600">"Arsenal은 저평가됐다. 롱으로 간다."</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">연속적인 포지션. 모든 경기, 이적, 부상이 가격을 다시 매깁니다. 일주일, 한 달, 시즌을 넘겨서까지 보유하세요.</div>
       <div class="badge-perp">
         <div class="line"></div>
-        <div class="box">Vĩnh viễn</div>
+        <div class="box">무기한</div>
         <div class="line"></div>
         <div class="pulse"></div>
       </div>
@@ -256,9 +257,9 @@
 
 <!-- 03 PRODUCT -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">04 · Sản phẩm</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Long Arsenal. <span style="color:var(--lime)">Giữ trong sáu tháng.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Notch biến các đội thể thao thành công cụ liên tục, có thể ký quỹ. Người dùng không mua một phiếu cược cho một trận — họ đặt cược vào chính đội bóng đó.</p>
+  <div class="lbl reveal" style="color:var(--t2)">04 · 제품</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Arsenal을 롱으로. <span style="color:var(--lime)">6개월 동안 보유하세요.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Notch는 스포츠 팀을 연속적이고 증거금 거래가 가능한 상품으로 바꿉니다. 사용자는 일회성 경기 베팅 슬립을 사는 게 아니라, 팀 그 자체에 대한 견해를 취합니다.</p>
 
   <!-- Full-width chart with match events -->
   <div class="reveal d3" style="margin-top:32px;border:1px solid var(--border);overflow:hidden">
@@ -268,65 +269,65 @@
       <span class="mono" style="font-weight:700;font-size:18px;color:var(--lime)">223.42</span>
       <span class="mono" style="font-size:12px;color:var(--lime)">+3.2%</span>
       <div style="display:flex;gap:16px;margin-left:auto">
-        <div><span class="mono" style="font-size:10px;color:var(--t3)">Cao 24h </span><span class="mono" style="font-size:11px;color:var(--t1)">228.10</span></div>
-        <div><span class="mono" style="font-size:10px;color:var(--t3)">Thấp 24h </span><span class="mono" style="font-size:11px;color:var(--t1)">219.55</span></div>
-        <div><span class="mono" style="font-size:10px;color:var(--t3)">Funding </span><span class="mono" style="font-size:11px;color:var(--lime)">0.01%</span></div>
+        <div><span class="mono" style="font-size:10px;color:var(--t3)">24h 고가 </span><span class="mono" style="font-size:11px;color:var(--t1)">228.10</span></div>
+        <div><span class="mono" style="font-size:10px;color:var(--t3)">24h 저가 </span><span class="mono" style="font-size:11px;color:var(--t1)">219.55</span></div>
+        <div><span class="mono" style="font-size:10px;color:var(--t3)">펀딩 </span><span class="mono" style="font-size:11px;color:var(--lime)">0.01%</span></div>
       </div>
     </div>
     <!-- Static chart -->
     <div style="height:280px;position:relative"><canvas id="chart-match" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block"></canvas></div>
     <!-- Match labels -->
     <div style="padding:8px 24px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;text-align:center">
-      <div><span class="mono" style="font-size:10px;color:var(--red)">Thua 0–2 vs MCI</span><br><span class="mono" style="font-size:9px;color:var(--t3)">8 Th3</span></div>
-      <div><span class="mono" style="font-size:10px;color:var(--lime)">Thắng 3–1 vs CHE</span><br><span class="mono" style="font-size:9px;color:var(--t3)">15 Th3</span></div>
-      <div><span class="mono" style="font-size:10px;color:var(--red)">Thua 1–2 vs LIV</span><br><span class="mono" style="font-size:9px;color:var(--t3)">22 Th3</span></div>
+      <div><span class="mono" style="font-size:10px;color:var(--red)">패 0–2 vs MCI</span><br><span class="mono" style="font-size:9px;color:var(--t3)">3월 8일</span></div>
+      <div><span class="mono" style="font-size:10px;color:var(--lime)">승 3–1 vs CHE</span><br><span class="mono" style="font-size:9px;color:var(--t3)">3월 15일</span></div>
+      <div><span class="mono" style="font-size:10px;color:var(--red)">패 1–2 vs LIV</span><br><span class="mono" style="font-size:9px;color:var(--t3)">3월 22일</span></div>
     </div>
-    <div style="padding:6px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span class="lbl" style="color:var(--t3)">Arsenal · Chỉ số Sức mạnh Đội bóng</span><span class="mono" style="font-size:11px;color:var(--t3)">Ví dụ · 30 ngày</span></div>
+    <div style="padding:6px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span class="lbl" style="color:var(--t3)">Arsenal · 팀 전력 지수</span><span class="mono" style="font-size:11px;color:var(--t3)">예시 · 30일</span></div>
   </div>
 
   <!-- Feature strip below chart — heavy hitters -->
   <div class="reveal d3" style="margin-top:0;border:1px solid var(--border);border-top:none;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)">
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">Long / Short</div><div style="font-size:12px;color:var(--t1)">Đặt cược vào đội bóng, không chỉ một trận đấu.</div></div>
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">Bền bỉ</div><div style="font-size:12px;color:var(--t1)">Giữ qua các trận đấu, chấn thương, chuyển nhượng, mùa giải.</div></div>
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">Đòn bẩy</div><div style="font-size:12px;color:var(--t1)">$167B cược thể thao không cho chút ký quỹ nào. Chúng tôi có.</div></div>
-    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">Có thể arbitrage</div><div style="font-size:12px;color:var(--t1)">Kết nối trực tiếp với giá của nhà cái + thị trường dự đoán.</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">롱 / 숏</div><div style="font-size:12px;color:var(--t1)">한 경기가 아니라 팀에 대한 견해를 취하세요.</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">지속성</div><div style="font-size:12px;color:var(--t1)">경기, 부상, 이적, 시즌을 넘겨 보유하세요.</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--lime);margin-bottom:6px">레버리지</div><div style="font-size:12px;color:var(--t1)">$167B 규모 스포츠 베팅 핸들에 증거금은 전무합니다. 우리는 제공합니다.</div></div>
+    <div style="background:var(--bg);padding:20px"><div class="mono upper" style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">차익거래 가능</div><div style="font-size:12px;color:var(--t1)">북메이커와 예측 시장 가격에 직접 연결됩니다.</div></div>
   </div>
 </div></div>
 
 <!-- WHY WE WIN -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">05 · Vì sao chúng tôi thắng</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Thị trường sự kiện giết thanh khoản. <span style="color:var(--lime)">Perp của chúng tôi để nó tích lũy.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Các sản phẩm theo trận mất toàn bộ pool thanh khoản ngay tiếng còi cuối. Vị thế bền bỉ cho phép thanh khoản tích lũy.</p>
+  <div class="lbl reveal" style="color:var(--t2)">05 · 우리가 이기는 이유</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">이벤트 시장은 유동성을 죽입니다. <span style="color:var(--lime)">우리의 무기한 시장은 유동성을 쌓습니다.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">경기 기반 상품은 경기 종료와 함께 유동성 풀 전체를 잃습니다. 지속되는 포지션은 유동성을 쌓이게 합니다.</p>
 
   <!-- Side-by-side liquidity comparison chart -->
   <div class="reveal d2" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
     <div style="background:var(--bg);padding:20px 20px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--red)"></div><span class="lbl" style="color:var(--red)">Mô hình Nhà cái & Thị trường dự đoán</span></div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Thanh khoản về không sau mỗi sự kiện</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--red)"></div><span class="lbl" style="color:var(--red)">스포츠북 & 예측 시장 모델</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">매 이벤트가 끝날 때마다 유동성이 0으로 초기화됩니다</div>
       <canvas id="chart-sawtooth" style="width:100%;height:200px;display:block"></canvas>
     </div>
     <div style="background:var(--bg);padding:20px 20px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--lime)"></div><span class="lbl" style="color:var(--lime)">Mô hình Notch</span></div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Vị thế tồn tại — thanh khoản tích lũy</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="width:6px;height:6px;background:var(--lime)"></div><span class="lbl" style="color:var(--lime)">Notch 모델</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">포지션이 지속되며 유동성이 누적됩니다</div>
       <canvas id="chart-staircase" style="width:100%;height:200px;display:block"></canvas>
     </div>
   </div>
   <div class="reveal d2" style="background:var(--bg);border:1px solid var(--border);border-top:none;padding:12px 20px;display:flex;justify-content:center;gap:32px">
-    <div style="display:flex;align-items:center;gap:6px"><div class="mono" style="font-size:11px;color:var(--t3)">←</div><span style="font-size:12px;color:var(--t2)">Các sự kiện trận đấu xuyên mùa giải — vị thế không bao giờ hết hạn</span><div class="mono" style="font-size:11px;color:var(--t3)">→</div></div>
+    <div style="display:flex;align-items:center;gap:6px"><div class="mono" style="font-size:11px;color:var(--t3)">←</div><span style="font-size:12px;color:var(--t2)">여러 시즌에 걸친 경기 이벤트 — 포지션은 결코 만기되지 않습니다</span><div class="mono" style="font-size:11px;color:var(--t3)">→</div></div>
   </div>
 
   <!-- Flywheel as horizontal flow -->
   <div class="reveal d3" style="margin-top:32px;display:flex;align-items:center;justify-content:center;gap:0;overflow-x:hidden;flex-wrap:nowrap;padding:24px 0">
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Trader mở<br>vị thế</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">트레이더가<br>포지션 개시</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Thanh khoản<br>sâu hơn</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">더 깊은<br>유동성</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Định giá<br>chuẩn hơn</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">더 나은<br>가격 발견</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Uy tín<br>cao hơn</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">더 높은<br>신뢰도</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">→</div>
-    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">Nhiều<br>trader hơn</div></div>
+    <div style="text-align:center;padding:0 16px;min-width:100px"><div class="mono" style="font-weight:700;font-size:13px;color:var(--lime);line-height:18px">더 많은<br>트레이더</div></div>
     <div class="mono" style="color:var(--t3);font-size:14px;flex-shrink:0">↻</div>
   </div>
 
@@ -334,29 +335,29 @@
 
 <!-- 04 DATA FEED -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">06 · Dữ liệu</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Định giá độc quyền <span style="color:var(--lime)">làm Oracle.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Thuật toán của chúng tôi tổng hợp dữ liệu thể thao thành một Giá Sức mạnh Đội bóng có thể giao dịch.</p>
+  <div class="lbl reveal" style="color:var(--t2)">06 · 데이터</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">독자 개발 가격 산정이 <span style="color:var(--lime)">곧 오라클입니다.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">우리의 알고리즘은 스포츠 데이터를 거래 가능한 팀 전력 가격으로 합성합니다.</p>
 
   <!-- Three inputs -->
   <div class="g3" style="margin-top:40px">
     <div class="card reveal d1" style="padding:28px;text-align:center">
-      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">Nhiều năm</div>
+      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">수년치</div>
       <div class="bar-t" style="background:var(--amber)"></div>
-      <div class="mono" style="font-weight:700;font-size:15px;color:var(--amber)">PHONG ĐỘ LỊCH SỬ</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:12px">Kết quả, xG, bảng phong độ, đối đầu trực tiếp — nền tảng của sức mạnh đội bóng.</div>
+      <div class="mono" style="font-weight:700;font-size:15px;color:var(--amber)">역대 성적</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:12px">경기 결과, xG, 폼 테이블, 상대 전적 — 팀 전력의 토대입니다.</div>
     </div>
     <div class="card reveal d2" style="padding:28px;text-align:center">
-      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">50–100+ /tháng</div>
+      <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">월 50–100+</div>
       <div class="bar-t" style="background:var(--purple)"></div>
-      <div class="mono" style="font-weight:700;font-size:15px;color:var(--purple)">CHUNG CUỘC</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:12px">Kết quả trận đấu, bảng xếp hạng, bị loại khỏi cúp — những cột mốc cứng, không thể bàn cãi.</div>
+      <div class="mono" style="font-weight:700;font-size:15px;color:var(--purple)">확정 이벤트</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:12px">경기 결과, 리그 순위, 컵 탈락 — 명확하고 반박 불가능한 체크포인트입니다.</div>
     </div>
     <div class="card reveal d3" style="padding:28px;text-align:center">
       <div class="mono" style="font-weight:700;font-size:24px;color:var(--w);margin-bottom:12px">24/7</div>
       <div class="bar-t" style="background:var(--lime)"></div>
-      <div class="mono" style="font-weight:700;font-size:15px;color:var(--lime)">TỶ LỆ KÈO</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:12px">20+ luồng dữ liệu từ nhà cái và thị trường dự đoán định giá lại các đội suốt ngày đêm — một lớp dữ liệu liên tục cho tài sản cơ sở.</div>
+      <div class="mono" style="font-weight:700;font-size:15px;color:var(--lime)">배당</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:12px">20곳 이상의 북메이커와 예측 시장 피드가 24시간 내내 팀 가격을 다시 매깁니다 — 기초 자산을 위한 연속 데이터 계층입니다.</div>
     </div>
   </div>
 
@@ -374,17 +375,17 @@
   <!-- Oracle output -->
   <div class="reveal d4" style="text-align:center;padding:28px 32px;border:1px solid var(--lime)">
     <div style="position:relative"><div style="position:absolute;top:-29px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--amber),var(--purple),var(--lime))"></div></div>
-    <div class="lbl" style="color:var(--lime);margin-bottom:8px">Kết quả Oracle</div>
-    <div class="mono" style="font-weight:700;font-size:28px;color:var(--w)">GIÁ ĐỘI BÓNG</div>
-    <div style="font-size:14px;color:var(--t1);margin-top:8px">Chỉ số tổng hợp, liên tục cho từng câu lạc bộ — cập nhật theo thời gian thực</div>
+    <div class="lbl" style="color:var(--lime);margin-bottom:8px">오라클 산출값</div>
+    <div class="mono" style="font-weight:700;font-size:28px;color:var(--w)">팀 가격</div>
+    <div style="font-size:14px;color:var(--t1);margin-top:8px">구단별 연속 합성 지수 — 실시간 업데이트</div>
   </div>
 </div></div>
 
 <!-- 05 ORACLE IN ACTION -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">07 · Oracle vận hành</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Mỗi trận đấu <span style="color:var(--lime)">định giá lại tài sản.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Tỷ lệ kèo của nhà cái, giá thị trường dự đoán và kết quả trận đấu liên tục đổ vào giá đội bóng theo thời gian thực. Điều này khiến perp kết nối trực tiếp với giá của thị trường sự kiện — cho trader nhà cái và thị trường dự đoán một nơi mới để arb và hedge.</p>
+  <div class="lbl reveal" style="color:var(--t2)">07 · 작동하는 오라클</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">모든 경기가 <span style="color:var(--lime)">자산 가격을 다시 매깁니다.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">북메이커 배당, 예측 시장 가격, 경기 결과가 실시간으로 팀 가격에 반영됩니다. 덕분에 무기한 상품이 이벤트 시장 가격과 직접 연결되어, 북메이커와 예측 시장 트레이더에게 차익거래와 헤지를 위한 새로운 거래의 장을 제공합니다.</p>
 
   <!-- Two-column: match card left, price factors right -->
   <div class="reveal d2" style="margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
@@ -400,19 +401,19 @@
       <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:0">
         <div>
           <div style="font-weight:700;font-size:17px;color:var(--w)">Arsenal</div>
-          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$248.99 · Idx 1917</div>
+          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$248.99 · 지수 1917</div>
         </div>
         <div class="mono" style="font-size:13px;color:var(--t3);font-weight:700;padding:0 20px;padding-top:2px">VS</div>
         <div style="text-align:right">
           <div style="font-weight:700;font-size:17px;color:var(--w)">Bournemouth</div>
-          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$137.89 · Idx 1712</div>
+          <div class="mono" style="font-size:12px;color:var(--t2);margin-top:2px">$137.89 · 지수 1712</div>
         </div>
       </div>
       <!-- Impact rows -->
       <div style="margin-top:20px;display:flex;flex-direction:column;gap:0">
         <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t2)">Arsenal Thắng</span>
+            <span style="font-size:12px;color:var(--t2)">Arsenal 승</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$4.87</span>
             <span class="mono" style="font-size:10px;color:var(--lime)">+2.0%</span>
             <span style="color:var(--lime);font-size:10px">&#8593;</span>
@@ -421,12 +422,12 @@
             <span style="color:var(--lime);font-size:10px">&#8593;</span>
             <span class="mono" style="font-size:10px;color:var(--lime)">+6.9%</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$9.55</span>
-            <span style="font-size:12px;color:var(--t2)">Bournemouth Thắng</span>
+            <span style="font-size:12px;color:var(--t2)">Bournemouth 승</span>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t2)">Hòa</span>
+            <span style="font-size:12px;color:var(--t2)">무승부</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">$-5.86</span>
             <span class="mono" style="font-size:10px;color:var(--red)">-2.4%</span>
             <span style="color:var(--red);font-size:10px">&#8595;</span>
@@ -435,12 +436,12 @@
             <span style="color:var(--lime);font-size:10px">&#8593;</span>
             <span class="mono" style="font-size:10px;color:var(--lime)">+2.4%</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--lime)">+$3.32</span>
-            <span style="font-size:12px;color:var(--t2)">Hòa</span>
+            <span style="font-size:12px;color:var(--t2)">무승부</span>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:12px;color:var(--t2)">Arsenal Thua</span>
+            <span style="font-size:12px;color:var(--t2)">Arsenal 패</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">$-16.13</span>
             <span class="mono" style="font-size:10px;color:var(--red)">-6.5%</span>
             <span style="color:var(--red);font-size:10px">&#8595;</span>
@@ -449,7 +450,7 @@
             <span style="color:var(--red);font-size:10px">&#8595;</span>
             <span class="mono" style="font-size:10px;color:var(--red)">-1.9%</span>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--red)">$-2.65</span>
-            <span style="font-size:12px;color:var(--t2)">Bournemouth Thua</span>
+            <span style="font-size:12px;color:var(--t2)">Bournemouth 패</span>
           </div>
         </div>
       </div>
@@ -458,12 +459,12 @@
         <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center">
           <div></div>
           <div class="mono" style="font-size:10px;font-weight:700;color:var(--lime)">Arsenal</div>
-          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber)">Hòa</div>
+          <div class="mono" style="font-size:10px;font-weight:700;color:var(--amber)">무승부</div>
           <div class="mono" style="font-size:10px;font-weight:700;color:var(--red)">Bournemouth</div>
           <div></div>
         </div>
         <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr auto;gap:0;text-align:center;padding:6px 0">
-          <div class="mono" style="font-size:10px;color:var(--t3);text-align:left">Kèo</div>
+          <div class="mono" style="font-size:10px;color:var(--t3);text-align:left">배당</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">1.40</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">4.85</div>
           <div class="mono" style="font-size:12px;color:var(--t1)">7.50</div>
@@ -492,26 +493,26 @@
     <!-- RIGHT: What affects price -->
     <div style="background:var(--bg);display:flex;flex-direction:column">
       <div style="padding:12px 20px;border-bottom:1px solid var(--border)">
-        <span class="lbl" style="color:var(--t3);font-size:10px">Điều gì ảnh hưởng đến giá</span>
+        <span class="lbl" style="color:var(--t3);font-size:10px">가격에 영향을 주는 요소</span>
       </div>
       <div style="padding:20px;flex:1">
-        <div class="lbl" style="color:var(--lime);margin-bottom:12px">Đầu vào trực tiếp</div>
+        <div class="lbl" style="color:var(--lime);margin-bottom:12px">직접 입력값</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Kết quả trận đấu</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Phong độ lịch sử & xG</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Bảng xếp hạng giải đấu</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Lợi thế sân nhà / sân khách</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">경기 결과</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">과거 폼 & xG</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">리그 순위</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">홈 / 원정 이점</span></div>
         </div>
       </div>
       <div style="padding:20px;border-top:1px solid var(--border);flex:1">
-        <div class="lbl" style="color:var(--purple);margin-bottom:12px">Định giá theo thị trường <span style="color:var(--t3)">(qua tỷ lệ kèo)</span></div>
+        <div class="lbl" style="color:var(--purple);margin-bottom:12px">시장 가격 반영 <span style="color:var(--t3)">(배당 경유)</span></div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Chấn thương & treo giò</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Chuyển nhượng & tân binh</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Thay đổi HLV</span></div>
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">Lịch thi đấu dày đặc & mệt mỏi</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">부상 & 출전 정지</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">이적 & 신규 영입</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">감독 교체</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--purple);flex-shrink:0"></div><span style="font-size:12px;color:var(--w)">일정 과밀 & 체력 소모</span></div>
         </div>
-        <div style="margin-top:10px;font-size:10px;color:var(--t3)">Nhà cái định giá những yếu tố này trong vài phút. Luồng kèo của chúng tôi kế thừa tín hiệu đó.</div>
+        <div style="margin-top:10px;font-size:10px;color:var(--t3)">북메이커는 이를 몇 분 안에 가격에 반영합니다. 우리의 배당 피드는 그 신호를 그대로 이어받습니다.</div>
       </div>
     </div>
 
@@ -520,9 +521,9 @@
 
 <!-- 06 WHAT THIS ENABLES -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">08 · Cho trader</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Thực tế nó <span style="color:var(--lime)">trông như thế nào.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Những kịch bản có thật.</p>
+  <div class="lbl reveal" style="color:var(--t2)">08 · 트레이더의 관점</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">실제로 <span style="color:var(--lime)">이런 모습입니다.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">실제 시나리오.</p>
 
   <div class="g3" style="margin-top:32px">
     <div class="card reveal d1" style="padding:0;overflow:hidden;display:grid;grid-template-columns:1fr 140px">
@@ -532,8 +533,8 @@
           <span class="mono" style="font-weight:700;font-size:13px;color:var(--w)">ARS</span>
           <span class="mono" style="font-size:11px;color:var(--t3)">$182 → $214</span>
         </div>
-        <div style="font-size:13px;color:var(--w);font-weight:600">"Chuỗi 7 trận thắng + ký hợp đồng tiền đạo mới"</div>
-        <div class="card-body" style="margin-top:6px;font-size:12px">Giữ qua kỳ chuyển nhượng và chuỗi phong độ. Ba tháng. Vị thế tích lũy.</div>
+        <div style="font-size:13px;color:var(--w);font-weight:600">"7연승 + 신규 공격수 영입"</div>
+        <div class="card-body" style="margin-top:6px;font-size:12px">이적 시장과 호조의 흐름을 넘겨 보유. 3개월. 포지션이 복리로 불어납니다.</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border);position:relative">
         <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:70%;opacity:.4"><defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b2ed68" stop-opacity=".3"/><stop offset="100%" stop-color="#b2ed68" stop-opacity="0"/></linearGradient></defs><path d="M0,40 10,38 20,35 30,32 40,28 50,24 60,20 70,16 80,12 90,8 100,5 100,50 0,50Z" fill="url(#gl2)"/><path d="M0,40 10,38 20,35 30,32 40,28 50,24 60,20 70,16 80,12 90,8 100,5" fill="none" stroke="#b2ed68" stroke-width="1.2"/></svg>
@@ -547,8 +548,8 @@
           <span class="mono" style="font-weight:700;font-size:13px;color:var(--w)">CHE</span>
           <span class="mono" style="font-size:11px;color:var(--t3)">$198 → $179</span>
         </div>
-        <div style="font-size:13px;color:var(--w);font-weight:600">"Chelsea sa thải HLV. Lại nữa."</div>
-        <div class="card-body" style="margin-top:6px;font-size:12px">Cú hích HLV mới kéo dài hai trận. Thực tế ập đến. Một tháng sau, mất 6 điểm.</div>
+        <div style="font-size:13px;color:var(--w);font-weight:600">"Chelsea가 또 감독을 경질했다."</div>
+        <div class="card-body" style="margin-top:6px;font-size:12px">새 감독 효과는 두 경기를 못 갑니다. 현실이 닥칩니다. 한 달 뒤, 승점 6점 증발.</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border);position:relative">
         <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:70%;opacity:.4"><defs><linearGradient id="gr2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ef6b6b" stop-opacity=".3"/><stop offset="100%" stop-color="#ef6b6b" stop-opacity="0"/></linearGradient></defs><path d="M0,10 10,12 20,11 30,15 40,20 50,24 60,28 70,30 80,34 90,38 100,42 100,50 0,50Z" fill="url(#gr2)"/><path d="M0,10 10,12 20,11 30,15 40,20 50,24 60,28 70,30 80,34 90,38 100,42" fill="none" stroke="#ef6b6b" stroke-width="1.2"/></svg>
@@ -562,8 +563,8 @@
           <span class="mono" style="font-weight:700;font-size:13px;color:var(--w)">MUN</span>
           <span class="mono" style="font-size:11px;color:var(--t3)">$165 → $203</span>
         </div>
-        <div style="font-size:13px;color:var(--w);font-weight:600">"Tôi cổ vũ United cả đời."</div>
-        <div class="card-body" style="margin-top:6px;font-size:12px">Bạn long từ đầu mùa giải và giữ. Mỗi chiến thắng, mỗi bản hợp đồng, mỗi bước leo bảng xếp hạng — vị thế của bạn lớn lên. Thứ gần nhất với việc sở hữu một phần câu lạc bộ của mình.</div>
+        <div style="font-size:13px;color:var(--w);font-weight:600">"평생 United를 응원해 왔다."</div>
+        <div class="card-body" style="margin-top:6px;font-size:12px">시즌 초에 롱으로 들어가 계속 보유. 매 승리, 매 영입, 순위표를 오를 때마다 포지션이 커집니다. 내 구단의 지분을 갖는 데 가장 가까운 경험입니다.</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border);position:relative">
         <svg viewBox="0 0 100 50" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:70%;opacity:.4"><defs><linearGradient id="gf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b2ed68" stop-opacity=".3"/><stop offset="100%" stop-color="#b2ed68" stop-opacity="0"/></linearGradient></defs><path d="M0,42 8,40 16,38 24,37 32,34 40,32 48,30 56,27 64,24 72,20 80,17 88,13 96,10 100,8 100,50 0,50Z" fill="url(#gf2)"/><path d="M0,42 8,40 16,38 24,37 32,34 40,32 48,30 56,27 64,24 72,20 80,17 88,13 96,10 100,8" fill="none" stroke="#b2ed68" stroke-width="1.2"/></svg>
@@ -572,46 +573,46 @@
     </div>
   </div>
 
-  <div class="callout reveal d4"><span>Không có thứ nào trong số này tồn tại hôm nay. Mọi vị thế kể trên sẽ hết hạn ngay tiếng còi cuối trên một nhà cái. Trên Notch, chúng tích lũy — và lần đầu tiên, người hâm mộ có thể sở hữu niềm tin của mình.</span></div>
+  <div class="callout reveal d4"><span>이 중 어느 것도 지금은 존재하지 않습니다. 이 포지션들은 하나같이 스포츠북에서라면 경기 종료와 함께 만기 소멸할 것입니다. Notch에서는 복리로 불어나고, 처음으로 팬들이 자신의 확신을 직접 소유할 수 있습니다.</span></div>
 </div></div>
 
 <!-- 06 ARCHITECTURE -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">09 · Kiến trúc</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Cần ba pháp nhân.</div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Tách bạch định giá, thanh toán bù trừ và phân phối tạo ra sự cô lập về pháp lý và lợi thế phòng thủ tích lũy ở mỗi lớp.</p>
+  <div class="lbl reveal" style="color:var(--t2)">09 · 아키텍처</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">세 개의 법인이 필요합니다.</div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">가격 산정, 청산, 유통을 분리하면 규제 측면에서 격리가 확보되고, 각 계층마다 복리로 쌓이는 방어력이 생깁니다.</p>
   <div class="g3" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="lbl" style="color:var(--purple)">Định giá tài sản</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">CÔNG TY ORACLE</div><div class="card-body" style="margin-top:16px">Thuật toán độc quyền tổng hợp tỷ lệ kèo, kết quả, chấn thương, chuyển nhượng và tâm lý thị trường thành một chỉ số giá đội bóng liên tục.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Điểm cốt lõi</div><div style="font-size:12px;color:var(--t1)">Giá này có giá trị vượt ra ngoài sàn của chúng tôi. Các sàn khác sẽ trả tiền để có nó.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/kops.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="KOPS"></div><a href="https://kops.ai" target="_blank" class="mono" style="font-size:11px;color:var(--purple);display:block;text-align:center;margin-top:8px">kops.ai</a></div></div>
-    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="lbl" style="color:var(--blue)">Là thị trường</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">PERP DEX</div><div class="card-body" style="margin-top:16px">Khớp lệnh, ký quỹ, funding và thanh lý biến giá thành một thị trường có thể giao dịch.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Điểm cốt lõi</div><div style="font-size:12px;color:var(--t1)">Mô hình Hyperliquid. Builder code cho mọi nền tảng cá cược thể thao hiện hữu.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/tail.trade.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="TAIL.TRADE"></div><a href="https://tail.trade" target="_blank" class="mono" style="font-size:11px;color:var(--blue);display:block;text-align:center;margin-top:8px">tail.trade</a></div></div>
-    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="lbl" style="color:var(--lime)">Phân phối đến retail</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">ỨNG DỤNG NGƯỜI DÙNG</div><div class="card-body" style="margin-top:16px">UX thân thiện, ví không lưu ký và on-ramp fiat đưa thị trường perp đến với bất kỳ ai có điện thoại.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">Điểm cốt lõi</div><div style="font-size:12px;color:var(--t1)">Cho phép retail tham gia bằng fiat. Pháp nhân duy nhất tiếp xúc với cơ quan quản lý.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/notch.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="NOTCH"></div><a href="https://notch.win" target="_blank" class="mono" style="font-size:11px;color:var(--lime);display:block;text-align:center;margin-top:8px">notch.win</a></div></div>
+    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="lbl" style="color:var(--purple)">자산 가격 산정</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">오라클 회사</div><div class="card-body" style="margin-top:16px">독자 알고리즘이 배당, 결과, 부상, 이적, 시장 심리를 연속적인 팀 가격 지수로 합성합니다.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">핵심 통찰</div><div style="font-size:12px;color:var(--t1)">이 가격은 우리 거래소를 넘어서는 가치를 지닙니다. 다른 거래의 장들이 비용을 지불하고 사용할 것입니다.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/kops.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="KOPS"></div><a href="https://kops.ai" target="_blank" class="mono" style="font-size:11px;color:var(--purple);display:block;text-align:center;margin-top:8px">kops.ai</a></div></div>
+    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="lbl" style="color:var(--blue)">시장 그 자체</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">PERP DEX</div><div class="card-body" style="margin-top:16px">주문 체결, 증거금, 펀딩, 청산이 가격을 거래 가능한 시장으로 만듭니다.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">핵심 통찰</div><div style="font-size:12px;color:var(--t1)">Hyperliquid 모델. 기존 모든 스포츠 베팅 플랫폼을 위한 빌더 코드.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/tail.trade.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="TAIL.TRADE"></div><a href="https://tail.trade" target="_blank" class="mono" style="font-size:11px;color:var(--blue);display:block;text-align:center;margin-top:8px">tail.trade</a></div></div>
+    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="lbl" style="color:var(--lime)">리테일 유통</div><div class="mono upper" style="font-weight:700;font-size:20px;color:var(--w);margin-top:12px">컨슈머 앱</div><div class="card-body" style="margin-top:16px">소비자 친화적 UX, 비수탁형 지갑, 법정화폐 on-ramp이 무기한 시장을 휴대폰 한 대만 있으면 누구나 접근 가능하게 만듭니다.</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><div class="lbl" style="color:var(--t3);margin-bottom:4px">핵심 통찰</div><div style="font-size:12px;color:var(--t1)">리테일이 법정화폐로 참여할 수 있게 합니다. 규제 당국과 접점을 갖는 유일한 법인입니다.</div></div><div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="background:#000;border-radius:4px;padding:16px 20px;display:flex;align-items:center;justify-content:center;height:56px"><img src="../assets/notch.svg" style="height:24px;width:auto;max-width:100%;display:block" alt="NOTCH"></div><a href="https://notch.win" target="_blank" class="mono" style="font-size:11px;color:var(--lime);display:block;text-align:center;margin-top:8px">notch.win</a></div></div>
   </div>
 
 </div></div>
 
 <!-- 08 MARKET -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">10 · Thị trường</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Chúng tôi nằm ở giao điểm của ba <span style="color:var(--lime)">thị trường đã được chứng minh.</span></div>
+  <div class="lbl reveal" style="color:var(--t2)">10 · 시장</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">우리는 이미 검증된 세 시장의 <span style="color:var(--lime)">교차점에 자리합니다.</span></div>
 
   <!-- Three market columns -->
   <div class="g3" style="margin-top:40px">
     <div class="card reveal d1" style="padding:32px;text-align:center">
-      <div class="lbl" style="color:var(--lime)">Cá cược thể thao</div>
+      <div class="lbl" style="color:var(--lime)">스포츠 베팅</div>
       <div class="mono" style="font-weight:700;font-size:36px;color:var(--w);margin-top:16px">$166.9B</div>
-      <div class="stat-lbl">Tổng cược Mỹ 2025</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:16px">Khán giả và thói quen đã tồn tại ở quy mô khổng lồ.</div>
+      <div class="stat-lbl">2025년 미국 핸들</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:16px">관객도, 습관도 이미 거대한 규모로 존재합니다.</div>
     </div>
     <div class="card reveal d2" style="padding:32px;text-align:center">
-      <div class="lbl" style="color:var(--purple)">Thị trường dự đoán</div>
+      <div class="lbl" style="color:var(--purple)">예측 시장</div>
       <div class="mono" style="font-weight:700;font-size:36px;color:var(--w);margin-top:16px">$64B</div>
-      <div class="stat-lbl">Khối lượng 2025</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:16px">Thể thao đưa thị trường dự đoán vào dòng chính. Người dùng đã tư duy theo ngôn ngữ thị trường.</div>
+      <div class="stat-lbl">2025년 거래량</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:16px">스포츠가 예측 시장을 주류로 끌어올렸습니다. 사용자는 이미 시장의 관점으로 사고합니다.</div>
     </div>
     <div class="card reveal d3" style="padding:32px;text-align:center">
-      <div class="lbl" style="color:var(--blue)">Sàn Perp</div>
+      <div class="lbl" style="color:var(--blue)">무기한 거래소</div>
       <div class="mono" style="font-weight:700;font-size:36px;color:var(--w);margin-top:16px">$6.7T</div>
-      <div class="stat-lbl">Khối lượng Perp DEX 2025</div>
-      <div style="font-size:13px;color:var(--t1);margin-top:16px">Giao dịch đòn bẩy, bền bỉ nay đã là hành vi quen thuộc với dân crypto.</div>
+      <div class="stat-lbl">2025년 Perp DEX 거래량</div>
+      <div style="font-size:13px;color:var(--t1);margin-top:16px">지속적이고 레버리지를 활용한 거래는 이제 크립토 네이티브에게 익숙한 행동입니다.</div>
     </div>
   </div>
 
@@ -619,72 +620,72 @@
   <div class="reveal d3" style="margin-top:24px;text-align:center;padding:28px 32px;border:1px solid var(--lime);position:relative">
     <div style="position:absolute;top:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--lime),var(--purple),var(--blue))"></div>
     <div class="mono upper" style="font-weight:700;font-size:20px;color:var(--lime)">NOTCH</div>
-    <div style="font-size:15px;color:var(--w);margin-top:8px">Nơi đầu tiên cho các vị thế thể thao liên tục ở cấp độ đội bóng</div>
-    <div style="font-size:13px;color:var(--t2);margin-top:4px">Khán giả từ cá cược · Định dạng thị trường từ thị trường dự đoán · Hạ tầng từ perp</div>
+    <div style="font-size:15px;color:var(--w);margin-top:8px">팀 단위 스포츠 포지션을 연속으로 거래하는 최초의 거래의 장</div>
+    <div style="font-size:13px;color:var(--t2);margin-top:4px">관객은 베팅에서 · 시장 형식은 예측 시장에서 · 인프라는 무기한 시장에서</div>
   </div>
 </div></div>
 
 <!-- 08.5 COMPETITORS -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">11 · Đối thủ</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Đối thủ <span style="color:var(--lime)">hay còn gọi là Nguồn thanh khoản.</span></div>
+  <div class="lbl reveal" style="color:var(--t2)">11 · 경쟁자</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">경쟁자, <span style="color:var(--lime)">곧 유동성의 원천.</span></div>
   <div class="g3" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_1_bec86799.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_2_dd5c6077.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_3_c6d3008c.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Bet365 · FanDuel · DraftKings</div><div class="card-title" style="color:var(--lime);margin-bottom:16px">Nhà cái</div><div class="card-body">Người dùng của họ đã giao dịch quan điểm cấp đội bóng bằng tiền thật. Mỗi người cược có vị thế chết ngay tiếng còi cuối là một người dùng Notch tiềm năng có vị thế không nhất thiết phải chết.</div></div>
-    <div class="card reveal d2" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_4_f49981db.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_5_1d68af5d.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Polymarket · Kalshi</div><div class="card-title" style="color:var(--purple);margin-bottom:16px">Thị trường dự đoán</div><div class="card-body">Trader của họ đã tư duy theo ngôn ngữ thị trường. Mỗi kèo nhị phân hết hạn là một người dùng có thể nắm giữ một vị thế liên tục thay thế. Cùng bản năng, công cụ tốt hơn.</div></div>
-    <div class="card reveal d3" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_6_f369890a.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_7_ca78d1d5.jpg" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Hyperliquid · Lighter</div><div class="card-title" style="color:var(--blue);margin-bottom:16px">Perp DEX</div><div class="card-body">Trader của họ thành thạo đòn bẩy, funding và ký quỹ. Thể thao mang đến một lớp tài sản hoàn toàn mới, không tương quan — cùng cơ chế, alpha mới mẻ.</div></div>
+    <div class="card reveal d1" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_1_bec86799.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_2_dd5c6077.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_3_c6d3008c.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Bet365 · FanDuel · DraftKings</div><div class="card-title" style="color:var(--lime);margin-bottom:16px">스포츠북</div><div class="card-body">그들의 사용자는 이미 실제 돈으로 팀 단위 의견을 거래합니다. 경기 종료와 함께 포지션이 소멸하는 모든 베터는, 포지션이 소멸할 필요 없는 잠재적 Notch 사용자입니다.</div></div>
+    <div class="card reveal d2" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_4_f49981db.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_5_1d68af5d.png" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Polymarket · Kalshi</div><div class="card-title" style="color:var(--purple);margin-bottom:16px">예측 시장</div><div class="card-body">그들의 트레이더는 이미 시장의 관점으로 사고합니다. 만기되는 모든 바이너리는, 대신 연속 포지션을 보유할 수 있는 사용자입니다. 같은 본능, 더 나은 상품.</div></div>
+    <div class="card reveal d3" style="padding:28px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><img loading="lazy" src="../assets/img/img_6_f369890a.png" style="width:32px;height:32px;border-radius:6px"><img loading="lazy" src="../assets/img/img_7_ca78d1d5.jpg" style="width:32px;height:32px;border-radius:6px"></div><div class="card-title">Hyperliquid · Lighter</div><div class="card-title" style="color:var(--blue);margin-bottom:16px">Perp DEX</div><div class="card-body">그들의 트레이더는 레버리지, 펀딩, 증거금에 능숙합니다. 스포츠는 이들에게 전혀 새로운 비상관 자산군을 제공합니다 — 같은 메커니즘, 신선한 알파.</div></div>
   </div>
 </div></div>
 
 <!-- 09 TRACTION -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">12 · Lực kéo</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Sẵn sàng <span style="color:var(--lime)">bứt tốc.</span></div>
-  <p class="body reveal d2" style="margin-top:12px;max-width:600px">Hạ tầng cốt lõi đã hoạt động. Vốn đổ vào tăng trưởng, không phải R&D.</p>
+  <div class="lbl reveal" style="color:var(--t2)">12 · 트랙션</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">스케일업 <span style="color:var(--lime)">준비 완료.</span></div>
+  <p class="body reveal d2" style="margin-top:12px;max-width:600px">핵심 인프라는 이미 가동 중입니다. 자본은 R&D가 아니라 성장에 투입됩니다.</p>
   <div class="g3" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:24px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Oracle <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">LIVE</span></div><div class="card-body" style="margin-top:12px">Luồng giá trực tiếp sẵn sàng cho:</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">Bóng đá</span><span style="font-size:11px;color:var(--t2)">96 đội — EPL · La Liga · Bundesliga · Serie A · Ligue 1 · CL</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">NBA</span><span style="font-size:11px;color:var(--t2)">Phủ toàn giải</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">MLB</span><span style="font-size:11px;color:var(--t2)">Phủ toàn giải</span></div></div></div>
-    <div class="card reveal d2" style="padding:24px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Perp DEX <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">LIVE</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Perp DEX không lưu ký trên Solana</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">13 thị trường đã hoạt động</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Giao diện giao dịch chuyên nghiệp</span></div></div></div>
-    <div class="card reveal d3" style="padding:24px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Ứng dụng người dùng <span class="mono" style="font-size:10px;color:var(--amber);font-weight:400">ĐANG PHÁT TRIỂN</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">UX hướng tới retail</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Tạo giải đấu cùng bạn bè + tính năng xã hội</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Tích hợp on-ramp fiat</span></div></div></div>
+    <div class="card reveal d1" style="padding:24px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">오라클 <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">LIVE</span></div><div class="card-body" style="margin-top:12px">다음 종목에 실시간 가격 피드 제공 준비 완료:</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">축구</span><span style="font-size:11px;color:var(--t2)">96개 팀 — EPL · La Liga · Bundesliga · Serie A · Ligue 1 · CL</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">NBA</span><span style="font-size:11px;color:var(--t2)">리그 전체 커버리지</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="mono" style="font-weight:700;font-size:12px;color:var(--w);min-width:50px">MLB</span><span style="font-size:11px;color:var(--t2)">리그 전체 커버리지</span></div></div></div>
+    <div class="card reveal d2" style="padding:24px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">Perp DEX <div class="pulse"></div><span class="mono" style="font-size:10px;color:var(--lime);font-weight:400">LIVE</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">Solana 기반 비수탁형 Perp DEX</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">13개 시장 가동 중</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--blue);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">프로용 트레이딩 UI</span></div></div></div>
+    <div class="card reveal d3" style="padding:24px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title" style="display:flex;align-items:center;gap:8px">컨슈머 앱 <span class="mono" style="font-size:10px;color:var(--amber);font-weight:400">IN DEV</span></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">리테일 지향 UX</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">친구와 리그 만들기 + 소셜</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:4px;height:4px;background:var(--lime);flex-shrink:0"></div><span style="font-size:13px;color:var(--w)">법정화폐 on-ramp 연동</span></div></div></div>
   </div>
 </div></div>
 
 <!-- 10 ROADMAP -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">13 · Lộ trình</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Thị trường bóng đá <span style="color:var(--lime)">đã hoạt động.</span></div>
+  <div class="lbl reveal" style="color:var(--t2)">13 · 로드맵</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">축구 시장은 <span style="color:var(--lime)">이미 가동 중입니다.</span></div>
   <div class="g4" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_8_9d4e0eb0.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_9_2c416dd6.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_10_2ae7e55d.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_11_dec8e271.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_12_ca78d1d5.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Giai đoạn 1</div><div class="card-body">Bóng đá<br>Perp DEX hoạt động</div></div>
-    <div class="card reveal d2" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_13_85aef283.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Giai đoạn 2</div><div class="card-body">Bóng chày<br>Ứng dụng người dùng<br>On-ramp fiat</div></div>
-    <div class="card reveal d3" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_14_d79dab0c.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Giai đoạn 3</div><div class="card-body">Bóng rổ<br>Mở rộng</div></div>
-    <div class="card reveal d4" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_15_d1eee6f1.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_16_8a45ae67.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Giai đoạn 4</div><div class="card-body">NHL + nhiều hơn<br>API cho tổ chức<br>Bề mặt cấp phép</div></div>
+    <div class="card reveal d1" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_8_9d4e0eb0.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_9_2c416dd6.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_10_2ae7e55d.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_11_dec8e271.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_12_ca78d1d5.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Phase 1</div><div class="card-body">축구<br>Perp DEX 가동</div></div>
+    <div class="card reveal d2" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_13_85aef283.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Phase 2</div><div class="card-body">야구<br>컨슈머 앱<br>법정화폐 on-ramp</div></div>
+    <div class="card reveal d3" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_14_d79dab0c.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Phase 3</div><div class="card-body">농구<br>스케일업</div></div>
+    <div class="card reveal d4" style="padding:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><img loading="lazy" src="../assets/img/img_15_d1eee6f1.png" style="width:28px;height:28px;border-radius:4px"><img loading="lazy" src="../assets/img/img_16_8a45ae67.png" style="width:28px;height:28px;border-radius:4px"></div><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Phase 4</div><div class="card-body">NHL + 추가 종목<br>기관용 API<br>라이선싱 영역</div></div>
   </div>
 </div></div>
 
 <!-- 11 TEAM -->
 <div class="sec"><div class="sec-inner">
-  <div class="lbl reveal" style="color:var(--t2)">14 · Đội ngũ</div>
-  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">Đội ngũ.</div>
+  <div class="lbl reveal" style="color:var(--t2)">14 · 팀</div>
+  <div class="h2 reveal d1" style="margin-top:20px;max-width:700px">팀.</div>
   <div class="g4" style="margin-top:32px">
-    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Igor / CEO</div><div class="card-body" style="margin-top:8px">1 lần exit. Xây dựng oracle đa chuỗi đầu tiên năm 2018, mở rộng các sản phẩm danh tính và DePIN tới hơn 1M người dùng, vận hành hơn 1B OTC. Nền tảng sâu rộng về crypto, sàn giao dịch và hệ thống oracle.</div></div>
-    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Ngoc / CTO</div><div class="card-body" style="margin-top:8px">CTO tại nhiều dự án AI và crypto quy mô lớn. Trước đây là Lead BA về IT tại MGM — quản lý các hệ thống cá cược qua điện thoại, giám sát hơn 10 lần tích hợp phần mềm sòng bạc. Hơn 20 năm trong gaming, AI và hạ tầng phi tập trung.</div></div>
-    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Son / Head of Infra</div><div class="card-body" style="margin-top:8px">Xây dựng engine định giá thời gian thực phía sau Treehouse — một giao thức DeFi đạt hơn $500M TVL. Trước đó kiến trúc hạ tầng trọng yếu quy mô quốc gia phục vụ 1.6M người dùng trong y tế, giáo dục và chính phủ.</div></div>
-    <div class="card reveal d4" style="padding:28px"><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Veller / COO</div><div class="card-body" style="margin-top:8px">12 năm giao dịch cho tổ chức tại Morgan Stanley, Bank of America. COO tại Blum — DEX và Perp trên Telegram với 90M người dùng, được OKX Ventures và Binance Labs hậu thuẫn. Đồng sáng lập Gear Technologies, gọi hơn $12M từ các quỹ VC crypto hàng đầu và đạt được niêm yết trên Coinbase.</div></div>
+    <div class="card reveal d1" style="padding:28px"><div class="bar-t" style="background:var(--lime)"></div><div class="card-title">Igor / CEO</div><div class="card-body" style="margin-top:8px">엑시트 1회. 2018년 최초의 멀티체인 오라클을 구축, 아이덴티티 및 DePIN 제품을 100만+ 사용자 규모로 성장시키고 10억+ 규모의 OTC를 운영. 크립토, 거래소, 오라클 시스템 전반에 걸친 깊은 경력.</div></div>
+    <div class="card reveal d2" style="padding:28px"><div class="bar-t" style="background:var(--purple)"></div><div class="card-title">Ngoc / CTO</div><div class="card-body" style="margin-top:8px">다수의 대규모 AI 및 크립토 벤처에서 CTO 역임. 이전 MGM IT 부문 Lead BA로서 텔레베팅 시스템을 관리하고 10개+ 카지노 소프트웨어 통합을 총괄. 게이밍, AI, 탈중앙 인프라 전반 20년+ 경력.</div></div>
+    <div class="card reveal d3" style="padding:28px"><div class="bar-t" style="background:var(--blue)"></div><div class="card-title">Son / Head of Infra</div><div class="card-body" style="margin-top:8px">TVL $500M+를 달성한 DeFi 프로토콜 Treehouse의 실시간 가격 산정 엔진을 구축. 이전에는 의료, 교육, 정부 부문에서 160만 사용자를 지원하는 국가급 핵심 인프라를 설계.</div></div>
+    <div class="card reveal d4" style="padding:28px"><div class="bar-t" style="background:var(--amber)"></div><div class="card-title">Veller / COO</div><div class="card-body" style="margin-top:8px">Morgan Stanley, Bank of America에서 기관 트레이딩 12년. OKX Ventures와 Binance Labs가 투자한 9,000만 사용자 규모 Telegram DEX 및 무기한 거래소 Blum의 COO. Gear Technologies를 공동 창업해 톱티어 크립토 VC로부터 $12M+를 유치하고 Coinbase 상장을 성사.</div></div>
   </div>
 </div></div>
 
 <!-- 12 THE ASK -->
 <div class="sec"><div class="sec-inner" style="text-align:center">
-  <div class="lbl reveal" style="color:var(--t2)">15 · Lời mời gọi vốn</div>
-  <div class="h2 reveal d1" style="margin-top:20px">Vòng Seed.</div>
+  <div class="lbl reveal" style="color:var(--t2)">15 · 투자 제안</div>
+  <div class="h2 reveal d1" style="margin-top:20px">시드 라운드.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:32px;text-align:center">
-    <div class="card reveal d1" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:36px;color:var(--lime)">$3-5M</div><div class="stat-lbl" style="margin-top:8px">Mục tiêu gọi vốn</div></div>
-    <div class="card reveal d2" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:16px;color:var(--w);line-height:28px">SAFE (Post-Money)<br>+ Token Warrant</div><div class="stat-lbl" style="margin-top:8px">Công cụ</div></div>
+    <div class="card reveal d1" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:36px;color:var(--lime)">$3-5M</div><div class="stat-lbl" style="margin-top:8px">목표 조달액</div></div>
+    <div class="card reveal d2" style="padding:32px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:16px;color:var(--w);line-height:28px">SAFE (Post-Money)<br>+ 토큰 워런트</div><div class="stat-lbl" style="margin-top:8px">투자 방식</div></div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);margin-top:1px;text-align:left">
-    <div class="card reveal d1" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">35%</div><div class="card-body" style="margin-top:4px">Kỹ thuật</div></div>
+    <div class="card reveal d1" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--lime)">35%</div><div class="card-body" style="margin-top:4px">엔지니어링</div></div>
     <div class="card reveal d2" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--blue)">35%</div><div class="card-body" style="margin-top:4px">GTM</div></div>
-    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--purple)">15%</div><div class="card-body" style="margin-top:4px">Thanh khoản ban đầu</div></div>
-    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--amber)">10%</div><div class="card-body" style="margin-top:4px">Pháp lý / tuân thủ</div></div>
-    <div class="card reveal d4" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--t2)">5%</div><div class="card-body" style="margin-top:4px">Oracle / dữ liệu</div></div>
+    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--purple)">15%</div><div class="card-body" style="margin-top:4px">초기 유동성</div></div>
+    <div class="card reveal d3" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--amber)">10%</div><div class="card-body" style="margin-top:4px">법무 / 컴플라이언스</div></div>
+    <div class="card reveal d4" style="padding:20px;background:var(--bg)"><div class="mono" style="font-weight:700;font-size:20px;color:var(--t2)">5%</div><div class="card-body" style="margin-top:4px">오라클 / 데이터</div></div>
   </div>
 
 </div></div>
@@ -693,9 +694,9 @@
 <!-- CTA -->
 <div class="sec"><div class="sec-inner" style="text-align:center;padding-top:8rem;padding-bottom:8rem">
   <div class="reveal" style="display:flex;justify-content:center"><svg width="280" height="41" viewBox="0 0 500 73" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M82.082 45.6016L54.7227 72.9629H0L54.7227 18.2402H82.082V45.6016Z" fill="white"/><path d="M109.445 72.9629H82.082V45.6016L127.684 0H182.405L109.445 72.9629Z" fill="white"/><path d="M212.721 30.8262C212.721 22.1921 220.369 15.1944 229.803 15.1943H234.225C247.966 15.1943 259.104 25.3869 259.104 37.9629V72.9629H246.885V40.2471C246.885 31.6128 239.237 24.6152 229.803 24.6152C220.369 24.6153 212.721 31.6128 212.721 40.2471V72.9629H200.644V15.1943H212.721V30.8262Z" fill="white"/><path d="M353.708 16.4502H368.94V26.1201H353.708V60.2725C353.708 61.8449 355.099 63.1191 356.817 63.1191H368.94V72.9629H354.071C347.202 72.9629 341.631 67.8644 341.631 61.5781V26.0488H332.848V16.4502H341.631V5.30762H353.708V16.4502Z" fill="white"/><path d="M453.616 30.8262C453.616 22.1921 461.264 15.1944 470.698 15.1943H475.12C488.862 15.1944 500 25.3869 500 37.9629V72.9629H487.78V40.2471C487.78 31.6128 480.132 24.6152 470.698 24.6152C461.264 24.6153 453.616 31.6128 453.616 40.2471V72.9629H441.539V0H453.616V30.8262Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M298.11 13.9385C315.918 13.9385 330.357 27.1518 330.357 43.4492C330.357 59.7464 315.918 72.959 298.11 72.959C280.303 72.959 265.863 59.7464 265.863 43.4492C265.863 27.1519 280.299 13.9385 298.11 13.9385ZM298.11 24.9922C286.969 24.9922 277.937 33.2562 277.937 43.4521C277.937 53.6482 286.969 61.9131 298.11 61.9131C309.252 61.9131 318.284 53.6482 318.284 43.4521C318.284 33.2562 309.252 24.9922 298.11 24.9922Z" fill="white"/><path d="M405.624 13.9355C419.426 13.9355 431.116 22.1891 435.14 33.5947H421.792C418.395 28.4398 412.22 24.9883 405.162 24.9883H403.618C392.904 24.9883 384.217 32.9365 384.217 42.7412V44.1533C384.217 53.9581 392.904 61.9062 403.618 61.9062H405.162C412.223 61.9062 418.398 58.4582 421.792 53.2998H435.14C431.116 64.7055 419.426 72.959 405.624 72.959H403.155C386.027 72.9589 372.143 60.2517 372.143 44.5771V42.3174C372.143 26.6428 386.027 13.9357 403.155 13.9355H405.624Z" fill="white"/></svg></div>
-  <div class="body reveal d1" style="margin-top:16px;font-size:16px">Thị trường vĩnh viễn đầu tiên cho thể thao. Thay đổi thể thao mãi mãi.</div>
-  <div style="display:flex;justify-content:center;gap:12px;margin-top:32px" class="reveal d2"><a href="https://t.me/sempertrade" target="_blank" rel="noopener" class="mono upper" style="display:inline-block;padding:12px 24px;background:var(--lime);color:var(--bg);font-size:14px;font-weight:700;border:none;cursor:pointer;border-radius:2px;text-decoration:none">Liên hệ</a></div>
-  <div class="reveal d4" style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border)"><span class="lbl" style="color:var(--t3)">notch.win · Bảo mật · 2026</span></div>
+  <div class="body reveal d1" style="margin-top:16px;font-size:16px">최초의 스포츠 무기한 시장. 스포츠를 영원히 바꿉니다.</div>
+  <div style="display:flex;justify-content:center;gap:12px;margin-top:32px" class="reveal d2"><a href="https://t.me/sempertrade" target="_blank" rel="noopener" class="mono upper" style="display:inline-block;padding:12px 24px;background:var(--lime);color:var(--bg);font-size:14px;font-weight:700;border:none;cursor:pointer;border-radius:2px;text-decoration:none">문의하기</a></div>
+  <div class="reveal d4" style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border)"><span class="lbl" style="color:var(--t3)">notch.win · 대외비 · 2026</span></div>
 </div></div>
 
 
@@ -767,7 +768,7 @@ function render(){
     ctx.beginPath();ctx.moveTo(x+12,pad.t);ctx.lineTo(x+12,pad.t+gH);ctx.stroke();
     ctx.setLineDash([]);
     // Match label on chart
-    ctx.font="700 10px 'Space Mono',monospace";
+    ctx.font="700 10px 'Space Mono','Noto Sans KR',monospace";
     ctx.fillStyle=m.type==='win'?'#b2ed68':'#ef6b6b';
     ctx.textAlign='center';// removed inline label
   }
@@ -789,7 +790,7 @@ function render(){
   ctx.beginPath();ctx.arc(toX(last.x),toY(last.y),3,0,Math.PI*2);ctx.fillStyle='#b2ed68';ctx.fill();
   ctx.beginPath();ctx.arc(toX(last.x),toY(last.y),7,0,Math.PI*2);ctx.fillStyle='rgba(178,237,104,.15)';ctx.fill();
   // Price labels on right
-  ctx.font="400 10px 'Space Mono',monospace";ctx.fillStyle='#606267';ctx.textAlign='right';
+  ctx.font="400 10px 'Space Mono','Noto Sans KR',monospace";ctx.fillStyle='#606267';ctx.textAlign='right';
   ctx.fillText('$'+Math.round(mx),W-pad.r-4,pad.t+10);
   ctx.fillText('$'+Math.round(mn),W-pad.r-4,H-pad.b-4);
 }
@@ -918,9 +919,9 @@ function render(){
 const c=document.getElementById('funnel-canvas');if(!c)return;
 const ctx=c.getContext('2d');
 const streams=[
-  {label:'CÁ CƯỢC THỂ THAO',sub:'$166.9B tổng cược',color:'#b2ed68',rgb:[178,237,104]},
-  {label:'THỊ TRƯỜNG DỰ ĐOÁN',sub:'$64B khối lượng',color:'#a78bfa',rgb:[167,139,250]},
-  {label:'SÀN PERP',sub:'$6.7T khối lượng',color:'#5b8def',rgb:[91,141,239]}
+  {label:'스포츠 베팅',sub:'$166.9B 핸들',color:'#b2ed68',rgb:[178,237,104]},
+  {label:'예측 시장',sub:'$64B 거래량',color:'#a78bfa',rgb:[167,139,250]},
+  {label:'무기한 거래소',sub:'$6.7T 거래량',color:'#5b8def',rgb:[91,141,239]}
 ];
 let particles=[];let t=0;let inView=false;
 const io=new IntersectionObserver(es=>{inView=es[0].isIntersecting},{threshold:.1});
@@ -946,10 +947,10 @@ function draw(){
   for(let i=0;i<3;i++){
     ctx.beginPath();ctx.arc(srcX[i],topY-20,4,0,Math.PI*2);ctx.fillStyle=streams[i].color;ctx.fill();
     ctx.beginPath();ctx.arc(srcX[i],topY-20,8,0,Math.PI*2);ctx.fillStyle='rgba('+streams[i].rgb.join(',')+',0.15)';ctx.fill();
-    ctx.font="700 "+Math.max(10,Math.min(12,W*.012))+"px 'Space Mono',monospace";
+    ctx.font="700 "+Math.max(10,Math.min(12,W*.012))+"px 'Space Mono','Noto Sans KR',monospace";
     ctx.fillStyle=streams[i].color;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(streams[i].label,srcX[i],topY+10);
-    ctx.font="400 "+Math.max(9,Math.min(11,W*.01))+"px 'Space Mono',monospace";ctx.fillStyle='#8a8f98';
+    ctx.font="400 "+Math.max(9,Math.min(11,W*.01))+"px 'Space Mono','Noto Sans KR',monospace";ctx.fillStyle='#8a8f98';
     ctx.fillText(streams[i].sub,srcX[i],topY+28);
   }
   if(inView)spawn();particles=particles.filter(p=>p.prog<1.05);
@@ -968,23 +969,23 @@ function draw(){
   ctx.fillStyle=grd;ctx.fillRect(cx-60,botY-70,120,120);
   ctx.beginPath();ctx.arc(cx,mergeY,6,0,Math.PI*2);ctx.fillStyle='#b2ed68';ctx.fill();
   ctx.beginPath();ctx.arc(cx,mergeY,12,0,Math.PI*2);ctx.fillStyle='rgba(178,237,104,.12)';ctx.fill();
-  ctx.font="700 "+Math.max(14,Math.min(18,W*.018))+"px 'Space Mono',monospace";
+  ctx.font="700 "+Math.max(14,Math.min(18,W*.018))+"px 'Space Mono','Noto Sans KR',monospace";
   ctx.fillStyle='#eef1f6';ctx.textAlign='center';
   ctx.fillText('NOTCH',cx,botY+5);
-  ctx.font="400 "+Math.max(10,Math.min(13,W*.012))+"px 'Space Grotesk',sans-serif";
+  ctx.font="400 "+Math.max(10,Math.min(13,W*.012))+"px 'Space Grotesk','Noto Sans KR',sans-serif";
   ctx.fillStyle='#8a8f98';
-  ctx.fillText('Nơi đầu tiên cho các vị thế thể thao liên tục ở cấp độ đội bóng',cx,botY+25);
+  ctx.fillText('팀 단위 스포츠 포지션을 연속으로 거래하는 최초의 거래의 장',cx,botY+25);
   t+=.01;requestAnimationFrame(draw);
 }draw()})();
 // Flywheel - KOPS AI center + 6 orbital nodes
 (function(){const c=document.getElementById('fw-canvas');if(!c)return;const ctx=c.getContext('2d');
 const nodes=[
-  {label:'Oracle\ncông bố\ngiá đội bóng',color:'#e8943a'},
-  {label:'Trader\nmở\nvị thế',color:'#606267'},
-  {label:'Thanh khoản\nsâu hơn',color:'#b2ed68'},
-  {label:'Định giá\nchuẩn\nhơn',color:'#b2ed68'},
-  {label:'Uy tín\ncao hơn',color:'#606267'},
-  {label:'Nhiều\ntrader hơn',color:'#606267'},
+  {label:'오라클이\n팀 가격\n발표',color:'#e8943a'},
+  {label:'트레이더\n포지션\n개시',color:'#606267'},
+  {label:'더 깊은\n유동성',color:'#b2ed68'},
+  {label:'더 나은\n가격\n발견',color:'#b2ed68'},
+  {label:'더 높은\n신뢰도',color:'#606267'},
+  {label:'더 많은\n트레이더',color:'#606267'},
 ];
 let t=0;
 function draw(){
@@ -1003,7 +1004,7 @@ function draw(){
   ctx.beginPath();ctx.arc(cx,cy,centerR,0,Math.PI*2);
   ctx.fillStyle='rgba(232,148,58,.03)';ctx.fill();
   // Center text
-  ctx.font="700 "+Math.floor(centerR*.38)+"px 'Space Mono',monospace";ctx.fillStyle='#eef1f6';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font="700 "+Math.floor(centerR*.38)+"px 'Space Mono','Noto Sans KR',monospace";ctx.fillStyle='#eef1f6';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='#eef1f6';ctx.fillText('ORACLE',cx,cy);
 
   // Orbital nodes
@@ -1040,7 +1041,7 @@ function draw(){
 
     // Node label (multiline)
     const lines=nodes[i].label.split('\n');
-    ctx.font="500 "+Math.max(9,Math.floor(nodeR*.22))+"px 'Space Grotesk',sans-serif";
+    ctx.font="500 "+Math.max(9,Math.floor(nodeR*.22))+"px 'Space Grotesk','Noto Sans KR',sans-serif";
     ctx.fillStyle='#eef1f6';ctx.textAlign='center';ctx.textBaseline='middle';
     const lh=Math.floor(nodeR*.28);
     const startY=ny-((lines.length-1)*lh)/2;
